@@ -1,0 +1,13 @@
+# IDE
+.idea
+*.iml
+
+# Gradle
+.gradle
+build
+
+# macOS
+.DS_Store
+
+# Nessy CLI
+.nessy
