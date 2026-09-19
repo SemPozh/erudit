@@ -10,4 +10,28 @@ services:
     environment:
       SERVER_PORT: 8080
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-erudit}
+      DB_USERNAME: ${POSTGRES_USER:-erudit}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-erudit}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-erudit}
+      POSTGRES_USER: ${POSTGRES_USER:-erudit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erudit}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erudit} -d ${POSTGRES_DB:-erudit}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

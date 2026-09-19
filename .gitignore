@@ -12,3 +12,6 @@ build
 
 # Nessy CLI
 .nessy
+
+# Local database credentials
+.env
