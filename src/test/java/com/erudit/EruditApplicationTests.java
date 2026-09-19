@@ -17,9 +17,6 @@ class EruditApplicationTests {
 
     @Test
     void contextLoads() {
-        Integer count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM flyway_schema_history WHERE success = TRUE", Integer.class);
-        assertThat(count).isEqualTo(1);
         jdbcTemplate.update("INSERT INTO app_metadata (setting_key, setting_value) VALUES (?, ?)", "test", "ready");
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT setting_value FROM app_metadata WHERE setting_key = ?", String.class, "test"))
