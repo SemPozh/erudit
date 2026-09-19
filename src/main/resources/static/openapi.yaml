@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Erudit API
+  version: 1.0.0
+  description: API приложения Erudit. Ответы используют поля data, error и pagination.
+servers:
+  - url: /
+tags:
+  - name: Diagnostics
+    description: Проверка доступности приложения
+  - name: ContentReports
+    description: Жалобы пользователей на контент
+paths:
+  /hello:
+    get:
+      tags: [Diagnostics]
+      operationId: hello
+      summary: Приветствие
+      responses:
+        '200':
+          description: Приложение отвечает
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloResponse'
+              example:
+                data: Hello, World!
+  /api/v1/content/{id}/report:
+    post:
+      tags: [ContentReports]
+      operationId: reportContent
+      summary: Пожаловаться на контент
+      description: Создаёт жалобу на существующий контент. Текст жалобы будет дополнительно валидироваться в задаче 59.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор контента
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+            example:
+              reason: В материале есть фактическая ошибка
+      responses:
+        '201':
+          description: Жалоба создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCreatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  schemas:
+    HelloResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: string
+          example: Hello, World!
+    ContentReportRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          description: Причина жалобы
+          example: В материале есть фактическая ошибка
+    ReportCreatedResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: string
+          format: uuid
+          description: Идентификатор жалобы
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+  responses:
+    BadRequest:
+      description: Неверный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Контент не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Внутренняя ошибка
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

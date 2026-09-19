@@ -1,13 +1,15 @@
 package com.erudit.web;
 
-import org.springframework.web.bind.annotation.GetMapping;
+import com.erudit.openapi.api.DiagnosticsApi;
+import com.erudit.openapi.model.HelloResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class HelloController {
+public class HelloController implements DiagnosticsApi {
 
-    @GetMapping("/hello")
-    public ApiResponse<String> hello() {
-        return ApiResponse.success("Hello, World!");
+    @Override
+    public ResponseEntity<HelloResponse> hello() {
+        return ResponseEntity.ok(new HelloResponse("Hello, World!"));
     }
 }
