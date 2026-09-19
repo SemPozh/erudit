@@ -4,6 +4,7 @@
 
 # Gradle
 .gradle
+.gradle-local
 build
 
 # macOS
