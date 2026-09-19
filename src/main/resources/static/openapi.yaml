@@ -432,8 +432,8 @@ paths:
       - Users
       operationId: addPushToken
       summary: Добавить push-токен
-      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
-      x-task-id: 13
+      description: Запланировано в задаче 60. До реализации этот маршрут вернёт 404.
+      x-task-id: 60
       x-implementation-status: planned
       requestBody:
         required: true
@@ -456,8 +456,8 @@ paths:
       - Users
       operationId: deletePushToken
       summary: Удалить push-токен
-      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
-      x-task-id: 13
+      description: Запланировано в задаче 60. До реализации этот маршрут вернёт 404.
+      x-task-id: 60
       x-implementation-status: planned
       parameters:
       - name: id
@@ -1168,8 +1168,8 @@ paths:
       - ContentModeration
       operationId: listContentReports
       summary: Жалобы на контент
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
-      x-task-id: 20
+      description: Запланировано в задаче 61. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 61
       x-implementation-status: planned
       parameters: *id004
       responses:
@@ -1192,8 +1192,8 @@ paths:
       - ContentModeration
       operationId: resolveContentReport
       summary: Рассмотреть жалобу
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
-      x-task-id: 20
+      description: Запланировано в задаче 61. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 61
       x-implementation-status: planned
       parameters:
       - name: id
@@ -1583,8 +1583,8 @@ paths:
       - Competitions
       operationId: addCompetitionParticipant
       summary: Добавить участника
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
-      x-task-id: 34
+      description: Запланировано в задаче 63. До реализации этот маршрут вернёт 404.
+      x-task-id: 63
       x-implementation-status: planned
       parameters:
       - name: id
@@ -1617,8 +1617,8 @@ paths:
       - Competitions
       operationId: inviteToCompetition
       summary: Пригласить друга
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
-      x-task-id: 34
+      description: Запланировано в задаче 63. До реализации этот маршрут вернёт 404.
+      x-task-id: 63
       x-implementation-status: planned
       parameters:
       - name: id
@@ -1890,8 +1890,8 @@ paths:
       - Payments
       operationId: paymentWebhook
       summary: Вебхук платёжного провайдера
-      description: Запланировано в задаче 42. До реализации этот маршрут вернёт 404.
-      x-task-id: 42
+      description: Запланировано в задаче 62. До реализации этот маршрут вернёт 404.
+      x-task-id: 62
       x-implementation-status: planned
       security: []
       parameters:
@@ -2273,8 +2273,8 @@ paths:
       - Analytics
       operationId: getEngagementMetrics
       summary: Вовлечённость
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
-      x-task-id: 56
+      description: Запланировано в задаче 64. До реализации этот маршрут вернёт 404.
+      x-task-id: 64
       x-implementation-status: planned
       parameters: *id006
       responses:
@@ -2296,8 +2296,8 @@ paths:
       - Analytics
       operationId: getLearningMetrics
       summary: Обучение
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
-      x-task-id: 56
+      description: Запланировано в задаче 64. До реализации этот маршрут вернёт 404.
+      x-task-id: 64
       x-implementation-status: planned
       parameters: *id006
       responses:
@@ -2319,8 +2319,8 @@ paths:
       - Analytics
       operationId: getFunnelMetrics
       summary: Воронки
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
-      x-task-id: 56
+      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      x-task-id: 65
       x-implementation-status: planned
       parameters: *id006
       responses:
@@ -2342,8 +2342,8 @@ paths:
       - Analytics
       operationId: getMonetizationMetrics
       summary: Монетизация
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
-      x-task-id: 56
+      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      x-task-id: 65
       x-implementation-status: planned
       parameters: *id006
       responses:
@@ -2365,8 +2365,8 @@ paths:
       - Analytics
       operationId: getNotificationMetrics
       summary: Эффективность уведомлений
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
-      x-task-id: 56
+      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      x-task-id: 65
       x-implementation-status: planned
       parameters: *id006
       responses:
@@ -2467,6 +2467,91 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
       x-required-role: ADMIN
+  /api/v1/subscriptions/plans:
+    get:
+      tags:
+      - Subscriptions
+      operationId: listSubscriptionPlans
+      summary: Доступные тарифы
+      description: Запланировано в задаче 66. До реализации этот маршрут вернёт 404.
+      x-task-id: 66
+      x-implementation-status: planned
+      security: []
+      responses:
+        '200':
+          description: Тарифы для оформления подписки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionPlanListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/audit:
+    get:
+      tags:
+      - Admin
+      operationId: listAuditLog
+      summary: Журнал действий администратора
+      description: Запланировано в задаче 58. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 58
+      x-implementation-status: planned
+      x-required-role: ADMIN
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: actorId
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: action
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        '200':
+          description: Страница записей аудита
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   securitySchemes:
     bearerAuth:
@@ -3399,5 +3484,72 @@ components:
           $ref: '#/components/schemas/PageMetadata'
       required:
       - data
+    SubscriptionPlan:
+      type: object
+      required:
+      - code
+      - name
+      - price
+      - currency
+      - period
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        price:
+          type: string
+          description: Десятичная сумма без потери точности
+        currency:
+          type: string
+        period:
+          type: string
+    SubscriptionPlanListResponse:
+      type: object
+      required:
+      - data
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubscriptionPlan'
+    AuditRecord:
+      type: object
+      required:
+      - id
+      - actorId
+      - action
+      - occurredAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        actorId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        targetType:
+          type: string
+        targetId:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+    AuditListResponse:
+      type: object
+      required:
+      - data
+      - pagination
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditRecord'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
 security:
 - bearerAuth: []
