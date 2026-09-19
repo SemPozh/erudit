@@ -19,5 +19,14 @@
 при старте. Для своих учётных данных задайте `POSTGRES_DB`, `POSTGRES_USER` и
 `POSTGRES_PASSWORD` в окружении или в локальном `.env` (файл не коммитить).
 
+Compose также запускает ClickHouse. Скрипт
+`src/main/resources/clickhouse/events.sql` создаёт таблицу событий при первом
+запуске контейнера; приложение применяет тот же идемпотентный скрипт при старте.
+Настройки подключения: `CLICKHOUSE_URL`, `CLICKHOUSE_USERNAME`,
+`CLICKHOUSE_PASSWORD` для приложения вне Docker; `CLICKHOUSE_DB`,
+`CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` для Compose. Тестовый профиль отключает
+подключение к ClickHouse; smoke-тест записи и чтения запускается в CI на
+отдельном сервисе ClickHouse.
+
 При запуске приложения вне Docker задайте `DB_URL`, `DB_USERNAME` и `DB_PASSWORD`.
 Тесты используют профиль `test` и базу H2 в памяти: `./gradlew test`.

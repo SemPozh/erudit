@@ -10,3 +10,8 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+
+clickhouse:
+  url: ${CLICKHOUSE_URL:jdbc:clickhouse:http://localhost:8123/erudit}
+  username: ${CLICKHOUSE_USERNAME:erudit}
+  password: ${CLICKHOUSE_PASSWORD:erudit}
