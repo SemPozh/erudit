@@ -1,0 +1,3403 @@
+openapi: 3.0.3
+info:
+  title: Erudit API
+  version: 1.0.0
+  description: Контракт всех реализованных и запланированных REST-эндпоинтов. Операции с пометкой «Запланировано»
+    появятся после выполнения соответствующих задач; Try it out для них пока вернёт 404.
+servers:
+- url: /
+tags:
+- name: Diagnostics
+  description: Проверка доступности приложения
+- name: Auth
+  description: Регистрация, вход и токены
+- name: Users
+  description: Профиль и настройки пользователя
+- name: Content
+  description: Каталог и управление контентом
+- name: ContentReports
+  description: Жалобы на контент
+- name: ContentModeration
+  description: Модерация контента
+- name: Media
+  description: Загрузка и выдача медиа
+- name: Assessment
+  description: Входное тестирование
+- name: Programs
+  description: Персональная программа обучения
+- name: Quizzes
+  description: Квизы
+- name: Competitions
+  description: Соревнования
+- name: Ratings
+  description: Рейтинги
+- name: Friends
+  description: Друзья
+- name: Subscriptions
+  description: Подписки
+- name: Payments
+  description: Платежи
+- name: Notifications
+  description: Уведомления
+- name: NotificationAdmin
+  description: Шаблоны уведомлений
+- name: Events
+  description: События аналитики
+- name: Analytics
+  description: Аналитические панели
+- name: Admin
+  description: Администрирование
+paths:
+  /hello:
+    get:
+      tags:
+      - Diagnostics
+      operationId: hello
+      summary: Приветствие
+      description: Реализовано.
+      x-task-id: 1
+      x-implementation-status: implemented
+      security: []
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HelloResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/{id}/report:
+    post:
+      tags:
+      - ContentReports
+      operationId: reportContent
+      summary: Пожаловаться на контент
+      description: Реализовано.
+      x-task-id: 20
+      x-implementation-status: implemented
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: &id001
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentReportRequest'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCreatedResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/register:
+    post:
+      tags:
+      - Auth
+      operationId: register
+      summary: Регистрация
+      description: Запланировано в задаче 6. До реализации этот маршрут вернёт 404.
+      x-task-id: 6
+      x-implementation-status: planned
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/verify-email:
+    post:
+      tags:
+      - Auth
+      operationId: verifyEmail
+      summary: Подтвердить email
+      description: Запланировано в задаче 7. До реализации этот маршрут вернёт 404.
+      x-task-id: 7
+      x-implementation-status: planned
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/login:
+    post:
+      tags:
+      - Auth
+      operationId: login
+      summary: Войти
+      description: Запланировано в задаче 8. До реализации этот маршрут вернёт 404.
+      x-task-id: 8
+      x-implementation-status: planned
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/refresh:
+    post:
+      tags:
+      - Auth
+      operationId: refreshToken
+      summary: Обновить access-токен
+      description: Запланировано в задаче 8. До реализации этот маршрут вернёт 404.
+      x-task-id: 8
+      x-implementation-status: planned
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - Auth
+      operationId: logout
+      summary: Выйти
+      description: Запланировано в задаче 8. До реализации этот маршрут вернёт 404.
+      x-task-id: 8
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/logout-all:
+    post:
+      tags:
+      - Auth
+      operationId: logoutAll
+      summary: Выйти на всех устройствах
+      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
+      x-task-id: 13
+      x-implementation-status: planned
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/password/reset-request:
+    post:
+      tags:
+      - Auth
+      operationId: requestPasswordReset
+      summary: Запросить восстановление пароля
+      description: Запланировано в задаче 10. До реализации этот маршрут вернёт 404.
+      x-task-id: 10
+      x-implementation-status: planned
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRequest'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/password/reset:
+    post:
+      tags:
+      - Auth
+      operationId: resetPassword
+      summary: Сменить пароль по токену
+      description: Запланировано в задаче 10. До реализации этот маршрут вернёт 404.
+      x-task-id: 10
+      x-implementation-status: planned
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/me:
+    get:
+      tags:
+      - Users
+      operationId: getMyProfile
+      summary: Мой профиль
+      description: Запланировано в задаче 11. До реализации этот маршрут вернёт 404.
+      x-task-id: 11
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Users
+      operationId: updateMyProfile
+      summary: Обновить профиль
+      description: Запланировано в задаче 11. До реализации этот маршрут вернёт 404.
+      x-task-id: 11
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfileResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+      - Users
+      operationId: deleteMyAccount
+      summary: Удалить аккаунт
+      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
+      x-task-id: 13
+      x-implementation-status: planned
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/me/settings:
+    get:
+      tags:
+      - Users
+      operationId: getMySettings
+      summary: Настройки профиля
+      description: Запланировано в задаче 12. До реализации этот маршрут вернёт 404.
+      x-task-id: 12
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Users
+      operationId: updateMySettings
+      summary: Изменить настройки профиля
+      description: Запланировано в задаче 12. До реализации этот маршрут вернёт 404.
+      x-task-id: 12
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSettings'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserSettingsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/me/push-tokens:
+    post:
+      tags:
+      - Users
+      operationId: addPushToken
+      summary: Добавить push-токен
+      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
+      x-task-id: 13
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PushTokenRequest'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/me/push-tokens/{id}:
+    delete:
+      tags:
+      - Users
+      operationId: deletePushToken
+      summary: Удалить push-токен
+      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
+      x-task-id: 13
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/users/search:
+    get:
+      tags:
+      - Users
+      operationId: searchUsers
+      summary: Найти пользователей
+      description: Запланировано в задаче 37. До реализации этот маршрут вернёт 404.
+      x-task-id: 37
+      x-implementation-status: planned
+      parameters:
+      - name: query
+        in: query
+        required: true
+        schema:
+          type: string
+      - &id002
+        name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      - &id003
+        name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/friends/requests:
+    post:
+      tags:
+      - Friends
+      operationId: sendFriendRequest
+      summary: Отправить заявку в друзья
+      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      x-task-id: 38
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequestCreate'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendRequestListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      tags:
+      - Friends
+      operationId: listFriendRequests
+      summary: Входящие заявки
+      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      x-task-id: 38
+      x-implementation-status: planned
+      parameters: &id004
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendRequestListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/friends/requests/{id}/accept:
+    post:
+      tags:
+      - Friends
+      operationId: acceptFriendRequest
+      summary: Принять заявку
+      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      x-task-id: 38
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/friends/requests/{id}/reject:
+    post:
+      tags:
+      - Friends
+      operationId: rejectFriendRequest
+      summary: Отклонить заявку
+      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      x-task-id: 38
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/friends:
+    get:
+      tags:
+      - Friends
+      operationId: listFriends
+      summary: Список друзей
+      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      x-task-id: 38
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/friends/{id}:
+    delete:
+      tags:
+      - Friends
+      operationId: removeFriend
+      summary: Удалить друга
+      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      x-task-id: 38
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content:
+    get:
+      tags:
+      - Content
+      operationId: listContent
+      summary: Каталог контента
+      description: Запланировано в задаче 18. До реализации этот маршрут вернёт 404.
+      x-task-id: 18
+      x-implementation-status: planned
+      security: []
+      parameters:
+      - *id002
+      - *id003
+      - name: categoryId
+        in: query
+        required: false
+        schema: *id001
+      - name: type
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: difficulty
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: premium
+        in: query
+        required: false
+        schema: &id008
+          type: boolean
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - Content
+      operationId: createContent
+      summary: Создать контент
+      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 15
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentUpsertRequest'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItemResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/content/categories:
+    get:
+      tags:
+      - Content
+      operationId: listCategories
+      summary: Категории
+      description: Запланировано в задаче 18. До реализации этот маршрут вернёт 404.
+      x-task-id: 18
+      x-implementation-status: planned
+      security: []
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/formats:
+    get:
+      tags:
+      - Content
+      operationId: listFormats
+      summary: Форматы контента
+      description: Запланировано в задаче 18. До реализации этот маршрут вернёт 404.
+      x-task-id: 18
+      x-implementation-status: planned
+      security: []
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormatList'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/feed:
+    get:
+      tags:
+      - Content
+      operationId: getContentFeed
+      summary: Персональная лента
+      description: Запланировано в задаче 19. До реализации этот маршрут вернёт 404.
+      x-task-id: 19
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/{id}:
+    get:
+      tags:
+      - Content
+      operationId: getContent
+      summary: Получить контент
+      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404.
+      x-task-id: 15
+      x-implementation-status: planned
+      security: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItemResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Content
+      operationId: updateContent
+      summary: Обновить контент
+      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 15
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContentUpsertRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItemResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+    delete:
+      tags:
+      - Content
+      operationId: archiveContent
+      summary: Архивировать контент
+      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 15
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/content/{id}/quiz-cards:
+    get:
+      tags:
+      - Content
+      operationId: getContentQuizCards
+      summary: Карточки вопросов по контенту
+      description: Запланировано в задаче 17. До реализации этот маршрут вернёт 404.
+      x-task-id: 17
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizCardListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/{id}/progress:
+    get:
+      tags:
+      - Content
+      operationId: getContentProgress
+      summary: Прогресс по контенту
+      description: Запланировано в задаче 22. До реализации этот маршрут вернёт 404.
+      x-task-id: 22
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProgressResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/{id}/view:
+    post:
+      tags:
+      - Content
+      operationId: markContentViewed
+      summary: Отметить просмотр
+      description: Запланировано в задаче 22. До реализации этот маршрут вернёт 404.
+      x-task-id: 22
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProgressResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/content/{id}/complete:
+    post:
+      tags:
+      - Content
+      operationId: completeContent
+      summary: Завершить изучение
+      description: Запланировано в задаче 22. До реализации этот маршрут вернёт 404.
+      x-task-id: 22
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentProgressResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/media:
+    post:
+      tags:
+      - Media
+      operationId: uploadMedia
+      summary: Загрузить медиа
+      description: Запланировано в задаче 16. До реализации этот маршрут вернёт 404.
+      x-task-id: 16
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+              - file
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaFileResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/media/{id}:
+    get:
+      tags:
+      - Media
+      operationId: getMedia
+      summary: Получить медиа
+      description: Запланировано в задаче 16. До реализации этот маршрут вернёт 404.
+      x-task-id: 16
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/content/moderation:
+    get:
+      tags:
+      - ContentModeration
+      operationId: listModerationQueue
+      summary: Очередь модерации
+      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 20
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/admin/content/{id}/approve:
+    post:
+      tags:
+      - ContentModeration
+      operationId: approveContent
+      summary: Одобрить контент
+      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 20
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItemResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/admin/content/{id}/reject:
+    post:
+      tags:
+      - ContentModeration
+      operationId: rejectContent
+      summary: Отклонить контент
+      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 20
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentItemResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/admin/content/reports:
+    get:
+      tags:
+      - ContentModeration
+      operationId: listContentReports
+      summary: Жалобы на контент
+      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 20
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContentReportListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/admin/content/reports/{id}/resolve:
+    post:
+      tags:
+      - ContentModeration
+      operationId: resolveContentReport
+      summary: Рассмотреть жалобу
+      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 20
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportResolutionRequest'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/assessment/start:
+    post:
+      tags:
+      - Assessment
+      operationId: startAssessment
+      summary: Начать входное тестирование
+      description: Запланировано в задаче 23. До реализации этот маршрут вернёт 404.
+      x-task-id: 23
+      x-implementation-status: planned
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentSessionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/assessment/submit:
+    post:
+      tags:
+      - Assessment
+      operationId: submitAssessment
+      summary: Отправить ответы тестирования
+      description: Запланировано в задаче 23. До реализации этот маршрут вернёт 404.
+      x-task-id: 23
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessmentSubmitRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResultResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/assessment/me/result:
+    get:
+      tags:
+      - Assessment
+      operationId: getAssessmentResult
+      summary: Результат и рекомендации
+      description: Запланировано в задаче 24. До реализации этот маршрут вернёт 404.
+      x-task-id: 24
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResultResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/program/generate:
+    post:
+      tags:
+      - Programs
+      operationId: generateProgram
+      summary: Сформировать персональную программу
+      description: Запланировано в задаче 27. До реализации этот маршрут вернёт 404.
+      x-task-id: 27
+      x-implementation-status: planned
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/program/me:
+    get:
+      tags:
+      - Programs
+      operationId: getMyProgram
+      summary: Моя программа
+      description: Запланировано в задаче 27. До реализации этот маршрут вернёт 404.
+      x-task-id: 27
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/program/progress:
+    get:
+      tags:
+      - Programs
+      operationId: getProgramProgress
+      summary: Прогресс программы
+      description: Запланировано в задаче 27. До реализации этот маршрут вернёт 404.
+      x-task-id: 27
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgramResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/program/next:
+    get:
+      tags:
+      - Programs
+      operationId: getNextStep
+      summary: Следующий шаг
+      description: Запланировано в задаче 29. До реализации этот маршрут вернёт 404.
+      x-task-id: 29
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NextStepResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/quiz/{id}/start:
+    post:
+      tags:
+      - Quizzes
+      operationId: startQuiz
+      summary: Начать квиз
+      description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
+      x-task-id: 31
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttemptResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/quiz/{id}/submit:
+    post:
+      tags:
+      - Quizzes
+      operationId: submitQuiz
+      summary: Отправить ответы квиза
+      description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
+      x-task-id: 31
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizResultResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/quiz/{id}/hint:
+    post:
+      tags:
+      - Quizzes
+      operationId: requestQuizHint
+      summary: Получить подсказку
+      description: Запланировано в задаче 32. До реализации этот маршрут вернёт 404.
+      x-task-id: 32
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      - name: questionId
+        in: query
+        required: true
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizCardListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/quiz/daily:
+    get:
+      tags:
+      - Quizzes
+      operationId: getDailyQuiz
+      summary: Ежедневный квиз
+      description: Запланировано в задаче 33. До реализации этот маршрут вернёт 404.
+      x-task-id: 33
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizAttemptResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/quiz/daily/submit:
+    post:
+      tags:
+      - Quizzes
+      operationId: submitDailyQuiz
+      summary: Отправить ежедневный квиз
+      description: Запланировано в задаче 33. До реализации этот маршрут вернёт 404.
+      x-task-id: 33
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmitRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuizResultResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/competition:
+    post:
+      tags:
+      - Competitions
+      operationId: createCompetition
+      summary: Создать соревнование
+      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      x-task-id: 34
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompetitionCreateRequest'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/competition/{id}:
+    get:
+      tags:
+      - Competitions
+      operationId: getCompetition
+      summary: Детали соревнования
+      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      x-task-id: 34
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/competition/{id}/participants:
+    post:
+      tags:
+      - Competitions
+      operationId: addCompetitionParticipant
+      summary: Добавить участника
+      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      x-task-id: 34
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequestCreate'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetitionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/competition/{id}/invitations:
+    post:
+      tags:
+      - Competitions
+      operationId: inviteToCompetition
+      summary: Пригласить друга
+      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      x-task-id: 34
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FriendRequestCreate'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/competition/{id}/leaderboard:
+    get:
+      tags:
+      - Competitions
+      operationId: getCompetitionLeaderboard
+      summary: Таблица результатов
+      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      x-task-id: 34
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      - *id002
+      - *id003
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/rating:
+    get:
+      tags:
+      - Ratings
+      operationId: getRating
+      summary: Общий рейтинг
+      description: Запланировано в задаче 36. До реализации этот маршрут вернёт 404.
+      x-task-id: 36
+      x-implementation-status: planned
+      parameters:
+      - *id002
+      - *id003
+      - name: categoryId
+        in: query
+        required: false
+        schema: *id001
+      - name: period
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - DAY
+          - WEEK
+          - MONTH
+          - ALL_TIME
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/rating/me:
+    get:
+      tags:
+      - Ratings
+      operationId: getMyRating
+      summary: Моя позиция
+      description: Запланировано в задаче 36. До реализации этот маршрут вернёт 404.
+      x-task-id: 36
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/rating/friends:
+    get:
+      tags:
+      - Ratings
+      operationId: getFriendsRating
+      summary: Рейтинг друзей
+      description: Запланировано в задаче 36. До реализации этот маршрут вернёт 404.
+      x-task-id: 36
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/subscriptions:
+    post:
+      tags:
+      - Subscriptions
+      operationId: createSubscription
+      summary: Оформить подписку
+      description: Запланировано в задаче 41. До реализации этот маршрут вернёт 404.
+      x-task-id: 41
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionCreateRequest'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/subscriptions/me:
+    get:
+      tags:
+      - Subscriptions
+      operationId: getMySubscription
+      summary: Статус подписки
+      description: Запланировано в задаче 43. До реализации этот маршрут вернёт 404.
+      x-task-id: 43
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/subscriptions/{id}/cancel:
+    post:
+      tags:
+      - Subscriptions
+      operationId: cancelSubscription
+      summary: Отменить подписку
+      description: Запланировано в задаче 42. До реализации этот маршрут вернёт 404.
+      x-task-id: 42
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/subscriptions/payments:
+    get:
+      tags:
+      - Payments
+      operationId: listPayments
+      summary: История платежей
+      description: Запланировано в задаче 44. До реализации этот маршрут вернёт 404.
+      x-task-id: 44
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/subscriptions/mobile/verify:
+    post:
+      tags:
+      - Payments
+      operationId: verifyMobileReceipt
+      summary: Подтвердить покупку в магазине
+      description: Запланировано в задаче 45. До реализации этот маршрут вернёт 404.
+      x-task-id: 45
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileReceiptRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/payments/webhooks/{provider}:
+    post:
+      tags:
+      - Payments
+      operationId: paymentWebhook
+      summary: Вебхук платёжного провайдера
+      description: Запланировано в задаче 42. До реализации этот маршрут вернёт 404.
+      x-task-id: 42
+      x-implementation-status: planned
+      security: []
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: X-Signature
+        in: header
+        required: true
+        description: Подпись провайдера
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/notifications/preferences:
+    get:
+      tags:
+      - Notifications
+      operationId: getNotificationPreferences
+      summary: Настройки уведомлений
+      description: Запланировано в задаче 46. До реализации этот маршрут вернёт 404.
+      x-task-id: 46
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferencesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Notifications
+      operationId: updateNotificationPreferences
+      summary: Изменить настройки уведомлений
+      description: Запланировано в задаче 46. До реализации этот маршрут вернёт 404.
+      x-task-id: 46
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationPreferences'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPreferencesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/notifications:
+    get:
+      tags:
+      - Notifications
+      operationId: listNotifications
+      summary: История уведомлений
+      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      x-task-id: 51
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/notifications/{id}/read:
+    post:
+      tags:
+      - Notifications
+      operationId: markNotificationRead
+      summary: Отметить уведомление прочитанным
+      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      x-task-id: 51
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/notifications/read-all:
+    post:
+      tags:
+      - Notifications
+      operationId: markAllNotificationsRead
+      summary: Прочитать все уведомления
+      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      x-task-id: 51
+      x-implementation-status: planned
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/notifications/unread-count:
+    get:
+      tags:
+      - Notifications
+      operationId: getUnreadCount
+      summary: Число непрочитанных
+      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      x-task-id: 51
+      x-implementation-status: planned
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/notifications/templates:
+    get:
+      tags:
+      - NotificationAdmin
+      operationId: listNotificationTemplates
+      summary: Шаблоны уведомлений
+      description: Запланировано в задаче 47. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 47
+      x-implementation-status: planned
+      parameters: *id004
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+    post:
+      tags:
+      - NotificationAdmin
+      operationId: createNotificationTemplate
+      summary: Создать шаблон
+      description: Запланировано в задаче 47. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 47
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplate'
+      responses:
+        '201':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/notifications/templates/{id}:
+    put:
+      tags:
+      - NotificationAdmin
+      operationId: updateNotificationTemplate
+      summary: Изменить шаблон
+      description: Запланировано в задаче 47. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 47
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationTemplate'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTemplateResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/events:
+    post:
+      tags:
+      - Events
+      operationId: ingestEvent
+      summary: Принять событие
+      description: Запланировано в задаче 53. До реализации этот маршрут вернёт 404.
+      x-task-id: 53
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventRequest'
+      responses:
+        '202':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventReceiptResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/events/batch:
+    post:
+      tags:
+      - Events
+      operationId: ingestEventBatch
+      summary: Принять пакет событий
+      description: Запланировано в задаче 53. До реализации этот маршрут вернёт 404.
+      x-task-id: 53
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventsBatchRequest'
+      responses:
+        '202':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventReceiptListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/active-users:
+    get:
+      tags:
+      - Analytics
+      operationId: getActiveUsers
+      summary: DAU, WAU и MAU
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: &id006
+      - name: from
+        in: query
+        required: false
+        schema: &id005
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        required: false
+        schema: *id005
+      - name: granularity
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - DAY
+          - WEEK
+          - MONTH
+          default: DAY
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/sessions:
+    get:
+      tags:
+      - Analytics
+      operationId: getSessionMetrics
+      summary: Сессии
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: *id006
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/engagement:
+    get:
+      tags:
+      - Analytics
+      operationId: getEngagementMetrics
+      summary: Вовлечённость
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: *id006
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/learning:
+    get:
+      tags:
+      - Analytics
+      operationId: getLearningMetrics
+      summary: Обучение
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: *id006
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/funnels:
+    get:
+      tags:
+      - Analytics
+      operationId: getFunnelMetrics
+      summary: Воронки
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: *id006
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/monetization:
+    get:
+      tags:
+      - Analytics
+      operationId: getMonetizationMetrics
+      summary: Монетизация
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: *id006
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/analytics/notifications:
+    get:
+      tags:
+      - Analytics
+      operationId: getNotificationMetrics
+      summary: Эффективность уведомлений
+      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      x-task-id: 56
+      x-implementation-status: planned
+      parameters: *id006
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricSeriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/users:
+    get:
+      tags:
+      - Admin
+      operationId: listAdminUsers
+      summary: Пользователи
+      description: Запланировано в задаче 57. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 57
+      x-implementation-status: planned
+      parameters:
+      - *id002
+      - *id003
+      - name: query
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/admin/users/{id}/block:
+    post:
+      tags:
+      - Admin
+      operationId: blockUser
+      summary: Заблокировать пользователя
+      description: Запланировано в задаче 57. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 57
+      x-implementation-status: planned
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор ресурса
+        schema: *id001
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+  /api/v1/admin/notifications/send-many:
+    post:
+      tags:
+      - Admin
+      operationId: sendManyNotifications
+      summary: Массовое уведомление
+      description: Запланировано в задаче 57. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      x-task-id: 57
+      x-implementation-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationSendManyRequest'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      x-required-role: ADMIN
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    HelloResponse:
+      type: object
+      properties:
+        data:
+          type: string
+          example: Hello, World!
+      required:
+      - data
+    ContentReportRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          example: В материале есть фактическая ошибка
+      required:
+      - reason
+    ReportCreatedResponse:
+      type: object
+      properties:
+        data: *id001
+      required:
+      - data
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - code
+      - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ApiError'
+      required:
+      - error
+    PageMetadata:
+      type: object
+      properties:
+        page: &id007
+          type: integer
+          format: int32
+        size: *id007
+        totalElements:
+          type: integer
+          format: int64
+        totalPages: *id007
+      required:
+      - page
+      - size
+      - totalElements
+      - totalPages
+    UserProfile:
+      type: object
+      properties:
+        id: *id001
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        registeredAt: *id005
+        status:
+          type: string
+      required:
+      - id
+      - email
+      - name
+    UserSettings:
+      type: object
+      properties:
+        language:
+          type: string
+        timeZone:
+          type: string
+        favoriteCategories:
+          type: array
+          items: *id001
+        dailyGoalMinutes: *id007
+        visibleInSearch: *id008
+        visibleInRating: *id008
+        analyticsConsent: *id008
+    ContentItem:
+      type: object
+      properties:
+        id: *id001
+        categoryId: *id001
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        mediaUrl:
+          type: string
+        difficulty:
+          type: string
+        estimatedMinutes: *id007
+        authorId:
+          type: string
+        status:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        premiumLocked: *id008
+      required:
+      - id
+      - type
+      - title
+      - status
+    Category:
+      type: object
+      properties:
+        id: *id001
+        name:
+          type: string
+      required:
+      - id
+      - name
+    FormatList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: string
+      required:
+      - data
+    ContentReportItem:
+      type: object
+      properties:
+        id: *id001
+        contentId: *id001
+        reason:
+          type: string
+        status:
+          type: string
+        createdAt: *id005
+      required:
+      - id
+      - contentId
+      - status
+    QuizCard:
+      type: object
+      properties:
+        id: *id001
+        question:
+          type: string
+        answers:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - question
+    ContentProgress:
+      type: object
+      properties:
+        contentId: *id001
+        status:
+          type: string
+        viewedAt: *id005
+        completedAt: *id005
+      required:
+      - contentId
+      - status
+    AssessmentSession:
+      type: object
+      properties:
+        id: *id001
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizCard'
+      required:
+      - id
+      - questions
+    AssessmentResult:
+      type: object
+      properties:
+        id: *id001
+        erScore: &id009
+          type: number
+          format: double
+        grade:
+          type: string
+        feedback:
+          type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+      required:
+      - id
+      - erScore
+    Program:
+      type: object
+      properties:
+        id: *id001
+        modules:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              lessons:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    contentId: *id001
+                    quizId: *id001
+        progressPercent: *id009
+      required:
+      - id
+    NextStep:
+      type: object
+      properties:
+        contentId: *id001
+        quizId: *id001
+        reason:
+          type: string
+        streakDays: *id007
+        dailyGoalProgress: *id009
+    QuizAttempt:
+      type: object
+      properties:
+        id: *id001
+        quizId: *id001
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizCard'
+      required:
+      - id
+      - quizId
+    QuizResult:
+      type: object
+      properties:
+        attemptId: *id001
+        correctAnswers: *id007
+        score: *id007
+        experience: *id007
+      required:
+      - attemptId
+      - score
+    Competition:
+      type: object
+      properties:
+        id: *id001
+        title:
+          type: string
+        status:
+          type: string
+        participantIds:
+          type: array
+          items: *id001
+      required:
+      - id
+      - title
+    RatingEntry:
+      type: object
+      properties:
+        userId: *id001
+        score: *id009
+        rank: *id007
+        grade:
+          type: string
+      required:
+      - userId
+      - rank
+    Friend:
+      type: object
+      properties:
+        id: *id001
+        name:
+          type: string
+        status:
+          type: string
+      required:
+      - id
+      - name
+    Subscription:
+      type: object
+      properties:
+        id: *id001
+        plan:
+          type: string
+        status:
+          type: string
+        expiresAt: *id005
+      required:
+      - id
+      - status
+    Payment:
+      type: object
+      properties:
+        id: *id001
+        amount: *id009
+        currency:
+          type: string
+        status:
+          type: string
+        paidAt: *id005
+      required:
+      - id
+      - status
+    Notification:
+      type: object
+      properties:
+        id: *id001
+        title:
+          type: string
+        body:
+          type: string
+        read: *id008
+        createdAt: *id005
+      required:
+      - id
+      - title
+      - read
+    NotificationPreferences:
+      type: object
+      properties:
+        channels:
+          type: array
+          items:
+            type: string
+        types:
+          type: array
+          items:
+            type: string
+        quietHoursStart:
+          type: string
+        quietHoursEnd:
+          type: string
+    NotificationTemplate:
+      type: object
+      properties:
+        id: *id001
+        type:
+          type: string
+        channel:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+      required:
+      - type
+      - channel
+      - body
+    EventReceipt:
+      type: object
+      properties:
+        eventId: *id001
+        accepted: *id008
+      required:
+      - eventId
+      - accepted
+    MetricPoint:
+      type: object
+      properties:
+        time: *id005
+        value: *id009
+      required:
+      - time
+      - value
+    MetricSeries:
+      type: object
+      properties:
+        metric:
+          type: string
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetricPoint'
+      required:
+      - metric
+      - points
+    Count:
+      type: object
+      properties:
+        count:
+          type: integer
+          format: int64
+      required:
+      - count
+    MediaFile:
+      type: object
+      properties:
+        id: *id001
+        url:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+          format: int64
+      required:
+      - id
+      - url
+    TokenPair:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn: *id007
+      required:
+      - accessToken
+      - refreshToken
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        name:
+          type: string
+      required:
+      - email
+      - password
+      - name
+    VerifyEmailRequest:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+      required:
+      - email
+      - password
+    RefreshRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      required:
+      - refreshToken
+    ResetRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    ResetPasswordRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        newPassword:
+          type: string
+          format: password
+      required:
+      - token
+      - newPassword
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarId: *id001
+    PushTokenRequest:
+      type: object
+      properties:
+        token:
+          type: string
+        platform:
+          type: string
+      required:
+      - token
+      - platform
+    ContentUpsertRequest:
+      type: object
+      properties:
+        categoryId: *id001
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        body:
+          type: string
+        mediaUrl:
+          type: string
+        difficulty:
+          type: string
+        estimatedMinutes: *id007
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+      - categoryId
+      - type
+      - title
+    AssessmentSubmitRequest:
+      type: object
+      properties:
+        assessmentId: *id001
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId: *id001
+              answerId: *id001
+            required:
+            - questionId
+            - answerId
+      required:
+      - assessmentId
+      - answers
+    QuizSubmitRequest:
+      type: object
+      properties:
+        attemptId: *id001
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              questionId: *id001
+              answerId: *id001
+            required:
+            - questionId
+            - answerId
+      required:
+      - attemptId
+      - answers
+    CompetitionCreateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        quizId: *id001
+        startsAt: *id005
+      required:
+      - title
+      - quizId
+    FriendRequestCreate:
+      type: object
+      properties:
+        userId: *id001
+      required:
+      - userId
+    SubscriptionCreateRequest:
+      type: object
+      properties:
+        plan:
+          type: string
+        paymentMethodId:
+          type: string
+      required:
+      - plan
+      - paymentMethodId
+    MobileReceiptRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum:
+          - APP_STORE
+          - GOOGLE_PLAY
+        receipt:
+          type: string
+      required:
+      - provider
+      - receipt
+    EventRequest:
+      type: object
+      properties:
+        eventId: *id001
+        userId: *id001
+        sessionId:
+          type: string
+        eventType:
+          type: string
+        timestamp: *id005
+        payload:
+          type: object
+          additionalProperties: true
+      required:
+      - eventId
+      - sessionId
+      - eventType
+      - timestamp
+    EventsBatchRequest:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventRequest'
+      required:
+      - events
+    NotificationSendManyRequest:
+      type: object
+      properties:
+        userIds:
+          type: array
+          items: *id001
+        templateId: *id001
+        parameters:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - userIds
+      - templateId
+    ReportResolutionRequest:
+      type: object
+      properties:
+        decision:
+          type: string
+          enum:
+          - ACCEPT
+          - REJECT
+        comment:
+          type: string
+      required:
+      - decision
+    UserProfileResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserProfile'
+      required:
+      - data
+    UserSettingsResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserSettings'
+      required:
+      - data
+    ContentItemResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ContentItem'
+      required:
+      - data
+    ContentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentItem'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    CategoryListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    QuizCardListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizCard'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    ContentProgressResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/ContentProgress'
+      required:
+      - data
+    AssessmentSessionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AssessmentSession'
+      required:
+      - data
+    AssessmentResultResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/AssessmentResult'
+      required:
+      - data
+    ProgramResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Program'
+      required:
+      - data
+    NextStepResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/NextStep'
+      required:
+      - data
+    QuizAttemptResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/QuizAttempt'
+      required:
+      - data
+    QuizResultResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/QuizResult'
+      required:
+      - data
+    CompetitionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Competition'
+      required:
+      - data
+    RatingListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingEntry'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    RatingEntryResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/RatingEntry'
+      required:
+      - data
+    FriendListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Friend'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    FriendRequestListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Friend'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    SubscriptionResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Subscription'
+      required:
+      - data
+    PaymentListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    NotificationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    NotificationPreferencesResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/NotificationPreferences'
+      required:
+      - data
+    NotificationTemplateResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/NotificationTemplate'
+      required:
+      - data
+    NotificationTemplateListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationTemplate'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    EventReceiptResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/EventReceipt'
+      required:
+      - data
+    EventReceiptListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventReceipt'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    MetricSeriesResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/MetricSeries'
+      required:
+      - data
+    CountResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Count'
+      required:
+      - data
+    MediaFileResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/MediaFile'
+      required:
+      - data
+    TokenPairResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/TokenPair'
+      required:
+      - data
+    AdminUserListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProfile'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+    ContentReportListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ContentReportItem'
+        pagination:
+          $ref: '#/components/schemas/PageMetadata'
+      required:
+      - data
+security:
+- bearerAuth: []
