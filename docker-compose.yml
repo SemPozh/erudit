@@ -13,8 +13,13 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-erudit}
       DB_USERNAME: ${POSTGRES_USER:-erudit}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-erudit}
+      CLICKHOUSE_URL: jdbc:clickhouse:http://clickhouse:8123/${CLICKHOUSE_DB:-erudit}
+      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USER:-erudit}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-erudit}
     depends_on:
       postgres:
+        condition: service_healthy
+      clickhouse:
         condition: service_healthy
     restart: unless-stopped
 
@@ -33,5 +38,25 @@ services:
       retries: 10
     restart: unless-stopped
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    environment:
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-erudit}
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-erudit}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-erudit}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ports:
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./src/main/resources/clickhouse/events.sql:/docker-entrypoint-initdb.d/001_events.sql:ro
+    healthcheck:
+      test: ["CMD", "clickhouse-client", "--user", "${CLICKHOUSE_USER:-erudit}", "--password", "${CLICKHOUSE_PASSWORD:-erudit}", "--query", "SELECT 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  clickhouse_data:

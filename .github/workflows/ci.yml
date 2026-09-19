@@ -11,6 +11,25 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      clickhouse:
+        image: clickhouse/clickhouse-server:25.8
+        env:
+          CLICKHOUSE_DB: erudit
+          CLICKHOUSE_USER: erudit
+          CLICKHOUSE_PASSWORD: erudit
+          CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1'
+        ports:
+          - 8123:8123
+        options: >-
+          --health-cmd "clickhouse-client --user erudit --password erudit --query 'SELECT 1'"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      CLICKHOUSE_TEST_URL: jdbc:clickhouse:http://localhost:8123/erudit
+      CLICKHOUSE_TEST_USERNAME: erudit
+      CLICKHOUSE_TEST_PASSWORD: erudit
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
