@@ -726,9 +726,9 @@ paths:
       - Content
       operationId: createContent
       summary: Создать контент
-      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Реализовано в задаче 15. Требуется роль ADMIN.
       x-task-id: 15
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -824,9 +824,9 @@ paths:
       - Content
       operationId: getContent
       summary: Получить контент
-      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 15. Неопубликованный контент доступен только ADMIN.
       x-task-id: 15
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       parameters:
       - name: id
@@ -852,9 +852,9 @@ paths:
       - Content
       operationId: updateContent
       summary: Обновить контент
-      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Реализовано в задаче 15. Требуется роль ADMIN.
       x-task-id: 15
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -886,9 +886,9 @@ paths:
       - Content
       operationId: archiveContent
       summary: Архивировать контент
-      description: Запланировано в задаче 15. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Реализовано в задаче 15. Выполняет мягкое удаление со статусом ARCHIVED. Требуется роль ADMIN.
       x-task-id: 15
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -2653,10 +2653,14 @@ components:
         categoryId: *id001
         type:
           type: string
+          enum: [ARTICLE, FACT_CARD, AUDIO, VIDEO, COMBINED, QUIZ_BLOCK]
         title:
           type: string
+          minLength: 1
+          maxLength: 250
         description:
           type: string
+          maxLength: 2000
         body:
           type: string
         mediaUrl:
@@ -3067,6 +3071,7 @@ components:
         categoryId: *id001
         type:
           type: string
+          enum: [ARTICLE, FACT_CARD, AUDIO, VIDEO, COMBINED, QUIZ_BLOCK]
         title:
           type: string
         description:
@@ -3075,13 +3080,21 @@ components:
           type: string
         mediaUrl:
           type: string
+          maxLength: 1000
         difficulty:
           type: string
-        estimatedMinutes: *id007
+          enum: [BEGINNER, INTERMEDIATE, ADVANCED]
+        estimatedMinutes:
+          type: integer
+          format: int32
+          minimum: 1
         tags:
           type: array
+          uniqueItems: true
           items:
             type: string
+            minLength: 1
+            maxLength: 100
       required:
       - categoryId
       - type
