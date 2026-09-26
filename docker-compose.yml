@@ -16,6 +16,9 @@ services:
       CLICKHOUSE_URL: jdbc:clickhouse:http://clickhouse:8123/${CLICKHOUSE_DB:-erudit}
       CLICKHOUSE_USERNAME: ${CLICKHOUSE_USER:-erudit}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-erudit}
+      TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY:-1.0}
+      ZIPKIN_ENABLED: ${ZIPKIN_ENABLED:-false}
+      ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT:-http://host.docker.internal:9411/api/v2/spans}
     depends_on:
       postgres:
         condition: service_healthy

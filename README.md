@@ -47,3 +47,18 @@ Java-интерфейсы API и модели ответов в `build/generated
 **Try it out**. `/hello` работает сразу. Для успешной жалобы сначала нужна
 запись контента в PostgreSQL; иначе `/api/v1/content/{id}/report` вернёт 404.
 Остальные маршруты появятся по мере реализации соответствующих задач.
+
+## Наблюдаемость
+
+Приложение пишет структурированные JSON-логи. Каждый HTTP-ответ содержит
+`X-Request-ID`; безопасное входящее значение сохраняется, иначе приложение
+создаёт UUID. В логах запросов доступны `requestId`, `traceId` и `spanId`.
+
+- `GET /actuator/health` — состояние приложения;
+- `GET /actuator/health/liveness` и `/actuator/health/readiness` — probes;
+- `GET /actuator/metrics` — перечень метрик;
+- `GET /actuator/prometheus` — метрики в формате Prometheus.
+
+По умолчанию локальный экспорт трейсов выключен. Для отправки в Zipkin задайте
+`ZIPKIN_ENABLED=true` и `ZIPKIN_ENDPOINT`; доля семплирования задаётся через
+`TRACING_SAMPLING_PROBABILITY` (по умолчанию `1.0`).
