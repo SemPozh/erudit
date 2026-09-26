@@ -16,6 +16,10 @@ RUN ./gradlew bootJar --no-daemon
 FROM eclipse-temurin:25-jre AS runtime
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN useradd --system --uid 10001 appuser
 
 COPY --from=build /app/build/libs/*.jar app.jar
