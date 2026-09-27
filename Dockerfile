@@ -25,17 +25,11 @@ FROM eclipse-temurin:25-jre AS runtime
 
 WORKDIR /app
 
-# Install curl for the Docker health check
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+    && apt-get install --yes --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root application user
-RUN useradd \
-    --system \
-    --uid 10001 \
-    --no-create-home \
-    appuser
+RUN useradd --system --uid 10001 appuser
 
 # Copy the generated JAR
 COPY --from=build /app/build/libs/*.jar /app/app.jar

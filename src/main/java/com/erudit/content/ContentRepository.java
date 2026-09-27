@@ -40,6 +40,25 @@ public class ContentRepository {
         }
     }
 
+    public void update(Content content) {
+        jdbc.update("""
+                UPDATE content
+                SET category_id = ?, type = ?, title = ?, description = ?, body = ?,
+                    media_url = ?, difficulty = ?, estimated_minutes = ?
+                WHERE id = ?
+                """, content.categoryId(), content.type().name(), content.title(),
+                content.description(), content.body(), content.mediaUrl(), content.difficulty().name(),
+                content.estimatedMinutes(), content.id());
+        jdbc.update("DELETE FROM content_tags WHERE content_id = ?", content.id());
+        for (String tag : content.tags()) {
+            jdbc.update("INSERT INTO content_tags (content_id, tag) VALUES (?, ?)", content.id(), tag);
+        }
+    }
+
+    public void updateStatus(UUID id, ContentStatus status) {
+        jdbc.update("UPDATE content SET status = ? WHERE id = ?", status.name(), id);
+    }
+
     public Optional<Content> findById(UUID id) {
         List<Content> rows = jdbc.query("SELECT * FROM content WHERE id = ?", (rs, row) -> new Content(
                 rs.getObject("id", UUID.class),
