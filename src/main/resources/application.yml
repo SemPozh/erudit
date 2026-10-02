@@ -7,6 +7,10 @@ spring:
     password: ${DB_PASSWORD:erudit}
   flyway:
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: ${MEDIA_MAX_FILE_SIZE:50MB}
+      max-request-size: ${MEDIA_MAX_FILE_SIZE:50MB}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -41,6 +45,10 @@ clickhouse:
   url: ${CLICKHOUSE_URL:jdbc:clickhouse:http://localhost:8123/erudit}
   username: ${CLICKHOUSE_USERNAME:erudit}
   password: ${CLICKHOUSE_PASSWORD:erudit}
+
+media:
+  storage-path: ${MEDIA_STORAGE_PATH:./data/media}
+  max-size-bytes: ${MEDIA_MAX_SIZE_BYTES:52428800}
 
 springdoc:
   swagger-ui:
