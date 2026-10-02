@@ -14,9 +14,11 @@ import java.util.UUID;
 @Service
 public class ContentService {
     private final ContentRepository repository;
+    private final QuizCardService quizCardService;
 
-    public ContentService(ContentRepository repository) {
+    public ContentService(ContentRepository repository, QuizCardService quizCardService) {
         this.repository = repository;
+        this.quizCardService = quizCardService;
     }
 
     @Transactional
@@ -25,7 +27,9 @@ public class ContentService {
         Content content = fromRequest(UUID.randomUUID(), request, authorId,
                 ContentStatus.DRAFT, Instant.now());
         repository.save(content);
-        return find(content.id());
+        Content saved = find(content.id());
+        quizCardService.regenerate(saved);
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -43,7 +47,9 @@ public class ContentService {
         requireCategory(request.getCategoryId());
         Content updated = fromRequest(id, request, current.authorId(), current.status(), current.createdAt());
         repository.update(updated);
-        return find(id);
+        Content saved = find(id);
+        quizCardService.regenerate(saved);
+        return saved;
     }
 
     @Transactional
