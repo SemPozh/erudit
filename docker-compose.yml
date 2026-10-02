@@ -19,6 +19,11 @@ services:
       TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY:-1.0}
       ZIPKIN_ENABLED: ${ZIPKIN_ENABLED:-false}
       ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT:-http://host.docker.internal:9411/api/v2/spans}
+      MEDIA_STORAGE_PATH: /app/data/media
+      MEDIA_MAX_SIZE_BYTES: ${MEDIA_MAX_SIZE_BYTES:-52428800}
+      MEDIA_MAX_FILE_SIZE: ${MEDIA_MAX_FILE_SIZE:-50MB}
+    volumes:
+      - media_data:/app/data/media
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,3 +70,4 @@ services:
 volumes:
   postgres_data:
   clickhouse_data:
+  media_data:

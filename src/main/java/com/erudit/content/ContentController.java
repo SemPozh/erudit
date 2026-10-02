@@ -14,10 +14,13 @@ import java.util.UUID;
 @RestController
 public class ContentController implements ContentApi {
     private final ContentService service;
+    private final QuizCardService quizCardService;
     private final HttpServletRequest servletRequest;
 
-    public ContentController(ContentService service, HttpServletRequest servletRequest) {
+    public ContentController(ContentService service, QuizCardService quizCardService,
+                             HttpServletRequest servletRequest) {
         this.service = service;
+        this.quizCardService = quizCardService;
         this.servletRequest = servletRequest;
     }
 
@@ -71,7 +74,16 @@ public class ContentController implements ContentApi {
     @Override public ResponseEntity<ContentProgressResponse> completeContent(UUID id) { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<ContentListResponse> getContentFeed(Integer page, Integer size) { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<ContentProgressResponse> getContentProgress(UUID id) { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<QuizCardListResponse> getContentQuizCards(UUID id) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<QuizCardListResponse> getContentQuizCards(UUID id) {
+        if (servletRequest.getUserPrincipal() == null) {
+            throw new com.erudit.web.UnauthorizedException("Authentication is required");
+        }
+        java.util.List<com.erudit.openapi.model.QuizCard> cards = quizCardService.getForContent(id, isAdmin())
+                .stream().map(card -> new com.erudit.openapi.model.QuizCard(
+                        card.id(), card.fact(), card.question(), card.answers())).toList();
+        return ResponseEntity.ok(new QuizCardListResponse(cards));
+    }
     @Override public ResponseEntity<CategoryListResponse> listCategories() { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<ContentListResponse> listContent(Integer page, Integer size, @Nullable UUID categoryId,
             @Nullable String type, @Nullable String difficulty, @Nullable Boolean premium,

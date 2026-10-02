@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ContentControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private ContentService service;
+    @MockitoBean private QuizCardService quizCardService;
 
     @Test
     void adminCreatesUpdatesAndArchivesContent() throws Exception {
