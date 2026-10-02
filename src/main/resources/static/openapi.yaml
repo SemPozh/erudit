@@ -911,9 +911,9 @@ paths:
       - Content
       operationId: getContentQuizCards
       summary: Карточки вопросов по контенту
-      description: Запланировано в задаче 17. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 17. Для неопубликованного контента требуется роль ADMIN.
       x-task-id: 17
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -2718,6 +2718,9 @@ components:
       type: object
       properties:
         id: *id001
+        fact:
+          type: string
+          description: Факт из исходного материала, на котором основан вопрос
         question:
           type: string
         answers:
@@ -2726,7 +2729,9 @@ components:
             type: string
       required:
       - id
+      - fact
       - question
+      - answers
     ContentProgress:
       type: object
       properties:
