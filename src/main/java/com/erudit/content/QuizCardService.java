@@ -27,13 +27,18 @@ public class QuizCardService {
         return cards;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<QuizCard> getForContent(UUID contentId, boolean admin) {
         Content content = contentRepository.findById(contentId)
                 .orElseThrow(() -> new NotFoundException("Content not found"));
         if (!admin && content.status() != ContentStatus.PUBLISHED) {
             throw new NotFoundException("Content not found");
         }
-        return cardRepository.findByContentId(contentId);
+
+        List<QuizCard> existing = cardRepository.findByContentId(contentId);
+        if (!existing.isEmpty()) {
+            return existing;
+        }
+        return regenerate(content);
     }
 }

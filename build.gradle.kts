@@ -121,3 +121,13 @@ tasks.named("compileJava") {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStackTraces = true
+        showCauses = true
+    }
+}

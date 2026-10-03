@@ -16,6 +16,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerificationService;
 
 
     @Transactional
@@ -31,6 +32,8 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
+
+        emailVerificationService.issueFor(savedUser);
 
         return mapToProfileResponse(savedUser);
     }
