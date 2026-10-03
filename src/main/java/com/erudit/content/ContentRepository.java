@@ -29,12 +29,12 @@ public class ContentRepository {
     public void save(Content content) {
         jdbc.update("""
                 INSERT INTO content (id, category_id, type, title, description, body,
-                    media_url, difficulty, estimated_minutes, author_id, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    media_url, difficulty, estimated_minutes, author_id, status, created_at, premium_locked)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, content.id(), content.categoryId(), content.type().name(), content.title(),
                 content.description(), content.body(), content.mediaUrl(), content.difficulty().name(),
                 content.estimatedMinutes(), content.authorId(), content.status().name(),
-                Timestamp.from(content.createdAt()));
+                Timestamp.from(content.createdAt()), content.premiumLocked());
         for (String tag : content.tags()) {
             jdbc.update("INSERT INTO content_tags (content_id, tag) VALUES (?, ?)", content.id(), tag);
         }
@@ -44,11 +44,11 @@ public class ContentRepository {
         jdbc.update("""
                 UPDATE content
                 SET category_id = ?, type = ?, title = ?, description = ?, body = ?,
-                    media_url = ?, difficulty = ?, estimated_minutes = ?
+                    media_url = ?, difficulty = ?, estimated_minutes = ?, premium_locked = ?
                 WHERE id = ?
                 """, content.categoryId(), content.type().name(), content.title(),
                 content.description(), content.body(), content.mediaUrl(), content.difficulty().name(),
-                content.estimatedMinutes(), content.id());
+                content.estimatedMinutes(), content.premiumLocked(), content.id());
         jdbc.update("DELETE FROM content_tags WHERE content_id = ?", content.id());
         for (String tag : content.tags()) {
             jdbc.update("INSERT INTO content_tags (content_id, tag) VALUES (?, ?)", content.id(), tag);
@@ -73,7 +73,19 @@ public class ContentRepository {
                 rs.getString("author_id"),
                 ContentStatus.valueOf(rs.getString("status")),
                 rs.getTimestamp("created_at").toInstant(),
-                jdbc.queryForList("SELECT tag FROM content_tags WHERE content_id = ? ORDER BY tag", String.class, id)), id);
+                jdbc.queryForList("SELECT tag FROM content_tags WHERE content_id = ? ORDER BY tag", String.class, id),
+                rs.getBoolean("premium_locked")), id);
         return rows.stream().findFirst();
+    }
+
+    public List<Category> findCategories(int page, int size) {
+        return jdbc.query("SELECT id, name FROM categories ORDER BY name LIMIT ? OFFSET ?",
+                (rs, row) -> new Category(rs.getObject("id", UUID.class), rs.getString("name")),
+                size, page * size);
+    }
+
+    public long countCategories() {
+        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM categories", Long.class);
+        return count == null ? 0 : count;
     }
 }

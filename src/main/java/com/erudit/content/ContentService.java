@@ -25,7 +25,7 @@ public class ContentService {
     public Content create(ContentUpsertRequest request, String authorId) {
         requireCategory(request.getCategoryId());
         Content content = fromRequest(UUID.randomUUID(), request, authorId,
-                ContentStatus.DRAFT, Instant.now());
+                ContentStatus.DRAFT, Instant.now(), Boolean.TRUE.equals(request.getPremiumLocked()));
         repository.save(content);
         Content saved = find(content.id());
         quizCardService.regenerate(saved);
@@ -45,7 +45,8 @@ public class ContentService {
     public Content update(UUID id, ContentUpsertRequest request) {
         Content current = find(id);
         requireCategory(request.getCategoryId());
-        Content updated = fromRequest(id, request, current.authorId(), current.status(), current.createdAt());
+        boolean premium = request.getPremiumLocked() == null ? current.premiumLocked() : request.getPremiumLocked();
+        Content updated = fromRequest(id, request, current.authorId(), current.status(), current.createdAt(), premium);
         repository.update(updated);
         Content saved = find(id);
         quizCardService.regenerate(saved);
@@ -69,7 +70,7 @@ public class ContentService {
     }
 
     private Content fromRequest(UUID id, ContentUpsertRequest request, String authorId,
-                                ContentStatus status, Instant createdAt) {
+                                ContentStatus status, Instant createdAt, boolean premiumLocked) {
         if (request.getTitle().isBlank()) {
             throw new ValidationException("title must not be blank");
         }
@@ -85,7 +86,8 @@ public class ContentService {
                 .map(String::trim).filter(tag -> !tag.isEmpty()).distinct().sorted().toList();
         return new Content(id, request.getCategoryId(), type, request.getTitle().trim(),
                 valueOrEmpty(request.getDescription()), valueOrEmpty(request.getBody()),
-                request.getMediaUrl(), difficulty, estimatedMinutes, authorId, status, createdAt, tags);
+                request.getMediaUrl(), difficulty, estimatedMinutes, authorId, status, createdAt,
+                tags, premiumLocked);
     }
 
     private static String valueOrEmpty(String value) {

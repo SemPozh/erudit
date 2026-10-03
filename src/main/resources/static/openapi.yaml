@@ -504,7 +504,7 @@ paths:
         schema:
           type: integer
           minimum: 1
-          maximum: 100
+          maximum: 50
           default: 20
       responses:
         '200':
@@ -672,9 +672,9 @@ paths:
       - Content
       operationId: listContent
       summary: Каталог контента
-      description: Запланировано в задаче 18. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 18. Возвращает только опубликованный контент; размер страницы не больше 50.
       x-task-id: 18
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       parameters:
       - *id002
@@ -711,6 +711,12 @@ paths:
       responses:
         '200':
           description: Успешный ответ
+          headers:
+            X-Total-Count:
+              description: Общее количество элементов с учётом фильтров
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -755,13 +761,20 @@ paths:
       - Content
       operationId: listCategories
       summary: Категории
-      description: Запланировано в задаче 18. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 18. Размер страницы не больше 50.
       x-task-id: 18
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
+      parameters: *id004
       responses:
         '200':
           description: Успешный ответ
+          headers:
+            X-Total-Count:
+              description: Общее количество категорий
+              schema:
+                type: integer
+                format: int64
           content:
             application/json:
               schema:
@@ -778,9 +791,9 @@ paths:
       - Content
       operationId: listFormats
       summary: Форматы контента
-      description: Запланировано в задаче 18. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 18. Справочник ограничен enum ContentType.
       x-task-id: 18
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       responses:
         '200':
@@ -2514,7 +2527,7 @@ paths:
         schema:
           type: integer
           minimum: 1
-          maximum: 100
+          maximum: 50
           default: 20
       - name: actorId
         in: query
@@ -3095,6 +3108,9 @@ components:
           type: integer
           format: int32
           minimum: 1
+        premiumLocked:
+          type: boolean
+          default: false
         tags:
           type: array
           uniqueItems: true

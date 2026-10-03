@@ -17,5 +17,6 @@ public record Content(
         String authorId,
         ContentStatus status,
         Instant createdAt,
-        List<String> tags) {
+        List<String> tags,
+        boolean premiumLocked) {
 }

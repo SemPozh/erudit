@@ -2,6 +2,7 @@ package com.erudit.user.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,6 +22,15 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/content",
+                                "/api/v1/content/categories",
+                                "/api/v1/content/formats"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/api/v1/media/**",
+                                "/api/v1/content/*/quiz-cards"
+                        ).permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/register",
                                 "/hello",

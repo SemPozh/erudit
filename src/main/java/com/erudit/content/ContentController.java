@@ -15,12 +15,15 @@ import java.util.UUID;
 public class ContentController implements ContentApi {
     private final ContentService service;
     private final QuizCardService quizCardService;
+    private final ContentCatalogService catalogService;
     private final HttpServletRequest servletRequest;
 
     public ContentController(ContentService service, QuizCardService quizCardService,
+                             ContentCatalogService catalogService,
                              HttpServletRequest servletRequest) {
         this.service = service;
         this.quizCardService = quizCardService;
+        this.catalogService = catalogService;
         this.servletRequest = servletRequest;
     }
 
@@ -61,13 +64,16 @@ public class ContentController implements ContentApi {
     }
 
     private static ContentItemResponse response(Content content) {
-        ContentItem item = new ContentItem(content.id(), ContentItem.TypeEnum.fromValue(content.type().name()),
+        return new ContentItemResponse(item(content));
+    }
+
+    private static ContentItem item(Content content) {
+        return new ContentItem(content.id(), ContentItem.TypeEnum.fromValue(content.type().name()),
                 content.title(), content.status().name())
                 .categoryId(content.categoryId()).description(content.description()).body(content.body())
                 .mediaUrl(content.mediaUrl()).difficulty(content.difficulty().name())
                 .estimatedMinutes(content.estimatedMinutes()).authorId(content.authorId())
-                .tags(content.tags()).premiumLocked(false);
-        return new ContentItemResponse(item);
+                .tags(content.tags()).premiumLocked(content.premiumLocked());
     }
 
     // Routes below belong to later tasks sharing the Content tag.
@@ -84,10 +90,33 @@ public class ContentController implements ContentApi {
                         card.id(), card.fact(), card.question(), card.answers())).toList();
         return ResponseEntity.ok(new QuizCardListResponse(cards));
     }
-    @Override public ResponseEntity<CategoryListResponse> listCategories() { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<ContentListResponse> listContent(Integer page, Integer size, @Nullable UUID categoryId,
+    @Override
+    public ResponseEntity<CategoryListResponse> listCategories(Integer page, Integer size) {
+        CategoryPage result = catalogService.categories(page, size);
+        var data = result.items().stream().map(category ->
+                new com.erudit.openapi.model.Category(category.id(), category.name())).toList();
+        var pagination = new com.erudit.openapi.model.PageMetadata(
+                result.page(), result.size(), result.total(), result.totalPages());
+        return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
+                .body(new CategoryListResponse(data).pagination(pagination));
+    }
+
+    @Override
+    public ResponseEntity<ContentListResponse> listContent(Integer page, Integer size, @Nullable UUID categoryId,
             @Nullable String type, @Nullable String difficulty, @Nullable Boolean premium,
-            @Nullable String query, @Nullable String sort) { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<FormatList> listFormats() { return ResponseEntity.notFound().build(); }
+            @Nullable String query, @Nullable String sort) {
+        ContentPage result = catalogService.find(page, size, categoryId, type, difficulty, premium, query, sort);
+        var pagination = new com.erudit.openapi.model.PageMetadata(
+                result.page(), result.size(), result.total(), result.totalPages());
+        return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
+                .body(new ContentListResponse(result.items().stream().map(ContentController::item).toList())
+                        .pagination(pagination));
+    }
+
+    @Override
+    public ResponseEntity<FormatList> listFormats() {
+        return ResponseEntity.ok(new FormatList(java.util.Arrays.stream(ContentType.values())
+                .map(Enum::name).toList()));
+    }
     @Override public ResponseEntity<ContentProgressResponse> markContentViewed(UUID id) { return ResponseEntity.notFound().build(); }
 }
