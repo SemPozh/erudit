@@ -25,7 +25,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/content",
                                 "/api/v1/content/categories",
-                                "/api/v1/content/formats"
+                                "/api/v1/content/formats",
+                                "/api/v1/subscriptions/plans"
                         ).permitAll()
                         .requestMatchers(
                                 "/api/v1/media/**",

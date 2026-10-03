@@ -2486,9 +2486,9 @@ paths:
       - Subscriptions
       operationId: listSubscriptionPlans
       summary: Доступные тарифы
-      description: Запланировано в задаче 66. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 66. Возвращает только доступные для оформления тарифы в стабильном порядке.
       x-task-id: 66
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       responses:
         '200':
