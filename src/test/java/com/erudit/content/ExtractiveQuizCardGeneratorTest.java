@@ -16,7 +16,7 @@ class ExtractiveQuizCardGeneratorTest {
         Content content = new Content(UUID.randomUUID(), UUID.randomUUID(), ContentType.ARTICLE,
                 "Планеты", "", "Земля вращается вокруг Солнца. Марс называют красной планетой!",
                 null, Difficulty.BEGINNER, 3, "author", ContentStatus.PUBLISHED,
-                Instant.now(), List.of());
+                Instant.now(), List.of(), false);
 
         List<QuizCard> cards = generator.generate(content);
 
@@ -32,7 +32,7 @@ class ExtractiveQuizCardGeneratorTest {
     void fallsBackToTitleWhenFormatHasNoText() {
         Content content = new Content(UUID.randomUUID(), UUID.randomUUID(), ContentType.VIDEO,
                 "Короткое видео", "", "", "media-id", Difficulty.BEGINNER, 1,
-                "author", ContentStatus.DRAFT, Instant.now(), List.of());
+                "author", ContentStatus.DRAFT, Instant.now(), List.of(), false);
 
         assertThat(generator.generate(content)).singleElement()
                 .satisfies(card -> assertThat(card.correctAnswer()).isEqualTo("Короткое видео"));

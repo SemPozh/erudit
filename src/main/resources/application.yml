@@ -49,6 +49,11 @@ clickhouse:
   username: ${CLICKHOUSE_USERNAME:erudit}
   password: ${CLICKHOUSE_PASSWORD:erudit}
 
+events:
+  publisher:
+    workers: ${EVENT_PUBLISHER_WORKERS:2}
+    queue-capacity: ${EVENT_PUBLISHER_QUEUE_CAPACITY:1000}
+
 media:
   storage-path: ${MEDIA_STORAGE_PATH:./data/media}
   max-size-bytes: ${MEDIA_MAX_SIZE_BYTES:52428800}

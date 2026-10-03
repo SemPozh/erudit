@@ -25,6 +25,7 @@ class ContentControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private ContentService service;
     @MockitoBean private QuizCardService quizCardService;
+    @MockitoBean private ContentCatalogService catalogService;
 
     @Test
     void adminCreatesUpdatesAndArchivesContent() throws Exception {
@@ -91,6 +92,6 @@ class ContentControllerTest {
 
     private static Content content(UUID id, UUID categoryId, ContentStatus status, String title) {
         return new Content(id, categoryId, ContentType.ARTICLE, title, "Description", "Body", null,
-                Difficulty.BEGINNER, 5, "admin-1", status, Instant.now(), List.of("science"));
+                Difficulty.BEGINNER, 5, "admin-1", status, Instant.now(), List.of("science"), false);
     }
 }

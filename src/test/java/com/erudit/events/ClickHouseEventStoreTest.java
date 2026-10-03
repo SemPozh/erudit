@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.time.Instant;
+import java.time.Clock;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,10 +21,16 @@ class ClickHouseEventStoreTest {
                 System.getenv("CLICKHOUSE_TEST_PASSWORD"));
         store.initializeSchema();
 
-        UUID eventId = UUID.randomUUID();
-        store.write(new AnalyticsEvent(eventId, "user-1", "session-1", "screen_opened",
-                Instant.parse("2026-09-19T10:00:00Z"), "{\"screen\":\"home\"}"));
+        var publisher = new QueuedAnalyticsEventPublisher(store, Runnable::run,
+                Clock.fixed(Instant.parse("2026-09-19T10:00:00Z"), ZoneOffset.UTC));
+        UUID publishedId = publisher.publish(new EventPublication(
+                EventType.SCREEN_OPENED, "user-1", "session-1", "{\"screen\":\"home\"}"))
+                .join();
 
-        assertThat(store.countByEventId(eventId)).isEqualTo(1);
+        assertThat(publishedId).isNotNull();
+        assertThat(store.countByEventId(publishedId)).isEqualTo(1);
+        assertThat(store.countByGroup(EventGroup.NAVIGATION,
+                Instant.parse("2026-09-19T00:00:00Z"), Instant.parse("2026-09-20T00:00:00Z")))
+                .isGreaterThanOrEqualTo(1);
     }
 }
