@@ -28,6 +28,9 @@ Compose также запускает ClickHouse. Скрипт
 подключение к ClickHouse; smoke-тест записи и чтения запускается в CI на
 отдельном сервисе ClickHouse.
 
+Канонические типы аналитических событий перечислены в
+[`docs/event-types.md`](docs/event-types.md).
+
 При запуске приложения вне Docker задайте `DB_URL`, `DB_USERNAME` и `DB_PASSWORD`.
 Быстрые тесты используют профиль `test` и H2; совместимость SQL и миграций
 дополнительно проверяется PostgreSQL через Testcontainers, когда доступен Docker:

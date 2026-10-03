@@ -24,5 +24,8 @@ class ClickHouseEventStoreTest {
                 Instant.parse("2026-09-19T10:00:00Z"), "{\"screen\":\"home\"}"));
 
         assertThat(store.countByEventId(eventId)).isEqualTo(1);
+        assertThat(store.countByGroup(EventGroup.NAVIGATION,
+                Instant.parse("2026-09-19T00:00:00Z"), Instant.parse("2026-09-20T00:00:00Z")))
+                .isGreaterThanOrEqualTo(1);
     }
 }
