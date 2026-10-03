@@ -32,7 +32,7 @@ class ContentPersistenceTest {
         UUID contentId = UUID.randomUUID();
         Content content = new Content(contentId, categoryId, ContentType.ARTICLE,
                 "Test article", "Short description", "Body", null, Difficulty.BEGINNER,
-                5, "author-1", ContentStatus.DRAFT, Instant.now(), List.of("history", "science"));
+                5, "author-1", ContentStatus.DRAFT, Instant.now(), List.of("history", "science"), false);
         contentRepository.save(content);
 
         assertThat(contentRepository.findCategory(categoryId)).contains(new Category(categoryId, "Science " + categoryId));
