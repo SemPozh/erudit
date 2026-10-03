@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -32,7 +33,8 @@ class MediaControllerIntegrationTest {
             (byte) 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3, 4
     };
 
-    @Autowired private MockMvc mvc;
+    @Autowired
+    private MockMvc mvc;
 
     @DynamicPropertySource
     static void mediaProperties(DynamicPropertyRegistry registry) {
@@ -65,15 +67,15 @@ class MediaControllerIntegrationTest {
     @Test
     void rejectsUnsupportedSpoofedAndOversizedFiles() throws Exception {
         mvc.perform(multipart("/api/v1/media").file(
-                        new MockMultipartFile("file", "payload.exe", "application/octet-stream", new byte[] {1}))
+                                new MockMultipartFile("file", "payload.exe", "application/octet-stream", new byte[] {1}))
                         .with(user("user-1")))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
         mvc.perform(multipart("/api/v1/media").file(
-                        new MockMultipartFile("file", "fake.png", "image/png", "not png".getBytes()))
+                                new MockMultipartFile("file", "fake.png", "image/png", "not png".getBytes()))
                         .with(user("user-1")))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
         mvc.perform(multipart("/api/v1/media").file(
-                        new MockMultipartFile("file", "large.png", "image/png", new byte[65]))
+                                new MockMultipartFile("file", "large.png", "image/png", new byte[65]))
                         .with(user("user-1")))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
     }

@@ -4,7 +4,7 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     name          VARCHAR(255) NOT NULL,
     avatar        VARCHAR(255),
-    created_at    TIMESTAMP    NOT NULL,
+    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status        VARCHAR(30)  NOT NULL,
 
     CONSTRAINT uq_users_email UNIQUE (email)
