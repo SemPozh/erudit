@@ -20,7 +20,7 @@ import java.util.UUID;
 
 @Component
 @ConditionalOnProperty(name = "clickhouse.enabled", havingValue = "true", matchIfMissing = true)
-public class ClickHouseEventStore {
+public class ClickHouseEventStore implements AnalyticsEventSink {
     private final String url;
     private final String username;
     private final String password;
@@ -47,6 +47,7 @@ public class ClickHouseEventStore {
         }
     }
 
+    @Override
     public void write(AnalyticsEvent event) throws SQLException {
         String sql = "INSERT INTO events (event_id, user_id, session_id, event_type, event_group, occurred_at, payload) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
