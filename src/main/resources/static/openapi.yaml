@@ -952,9 +952,9 @@ paths:
       - Content
       operationId: getContentProgress
       summary: Прогресс по контенту
-      description: Запланировано в задаче 22. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 22. Возвращает прогресс текущего пользователя.
       x-task-id: 22
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -980,9 +980,9 @@ paths:
       - Content
       operationId: markContentViewed
       summary: Отметить просмотр
-      description: Запланировано в задаче 22. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 22. Идемпотентно отмечает первый просмотр.
       x-task-id: 22
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1008,9 +1008,9 @@ paths:
       - Content
       operationId: completeContent
       summary: Завершить изучение
-      description: Запланировано в задаче 22. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 22. Идемпотентно завершает изучение контента.
       x-task-id: 22
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
