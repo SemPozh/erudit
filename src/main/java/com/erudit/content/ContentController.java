@@ -16,14 +16,16 @@ public class ContentController implements ContentApi {
     private final ContentService service;
     private final QuizCardService quizCardService;
     private final ContentCatalogService catalogService;
+    private final ContentProgressService progressService;
     private final HttpServletRequest servletRequest;
 
     public ContentController(ContentService service, QuizCardService quizCardService,
-                             ContentCatalogService catalogService,
+                             ContentCatalogService catalogService, ContentProgressService progressService,
                              HttpServletRequest servletRequest) {
         this.service = service;
         this.quizCardService = quizCardService;
         this.catalogService = catalogService;
+        this.progressService = progressService;
         this.servletRequest = servletRequest;
     }
 
@@ -77,9 +79,15 @@ public class ContentController implements ContentApi {
     }
 
     // Routes below belong to later tasks sharing the Content tag.
-    @Override public ResponseEntity<ContentProgressResponse> completeContent(UUID id) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<ContentProgressResponse> completeContent(UUID id) {
+        return ResponseEntity.ok(progressResponse(progressService.complete(currentUser(), sessionId(), id)));
+    }
     @Override public ResponseEntity<ContentListResponse> getContentFeed(Integer page, Integer size) { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<ContentProgressResponse> getContentProgress(UUID id) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<ContentProgressResponse> getContentProgress(UUID id) {
+        return ResponseEntity.ok(progressResponse(progressService.get(currentUser(), id)));
+    }
     @Override
     public ResponseEntity<QuizCardListResponse> getContentQuizCards(UUID id) {
         if (servletRequest.getUserPrincipal() == null) {
@@ -118,5 +126,29 @@ public class ContentController implements ContentApi {
         return ResponseEntity.ok(new FormatList(java.util.Arrays.stream(ContentType.values())
                 .map(Enum::name).toList()));
     }
-    @Override public ResponseEntity<ContentProgressResponse> markContentViewed(UUID id) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<ContentProgressResponse> markContentViewed(UUID id) {
+        return ResponseEntity.ok(progressResponse(progressService.markViewed(currentUser(), sessionId(), id)));
+    }
+
+    private String currentUser() {
+        if (servletRequest.getUserPrincipal() == null) {
+            throw new com.erudit.web.UnauthorizedException("Authentication is required");
+        }
+        return servletRequest.getUserPrincipal().getName();
+    }
+
+    private String sessionId() {
+        String header = servletRequest.getHeader("X-Session-Id");
+        return header == null || header.isBlank() ? "api:" + currentUser() : header;
+    }
+
+    private static ContentProgressResponse progressResponse(ContentProgress progress) {
+        var data = new com.erudit.openapi.model.ContentProgress(progress.contentId(), progress.status().name())
+                .viewedAt(progress.viewedAt().atOffset(java.time.ZoneOffset.UTC));
+        if (progress.completedAt() != null) {
+            data.completedAt(progress.completedAt().atOffset(java.time.ZoneOffset.UTC));
+        }
+        return new ContentProgressResponse(data);
+    }
 }

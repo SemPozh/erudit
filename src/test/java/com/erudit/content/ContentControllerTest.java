@@ -26,6 +26,7 @@ class ContentControllerTest {
     @MockitoBean private ContentService service;
     @MockitoBean private QuizCardService quizCardService;
     @MockitoBean private ContentCatalogService catalogService;
+    @MockitoBean private ContentProgressService progressService;
 
     @Test
     void adminCreatesUpdatesAndArchivesContent() throws Exception {
