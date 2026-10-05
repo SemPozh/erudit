@@ -27,6 +27,7 @@ class AssessmentIntegrationTest {
     @Autowired private MockMvc mvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired private JdbcTemplate jdbc;
+    @Autowired private GradeService gradeService;
 
     @Test
     void startsAllTopicsCalculatesScoresAndReturnsLatestResult() throws Exception {
@@ -55,6 +56,7 @@ class AssessmentIntegrationTest {
                 .andExpect(jsonPath("$.data.totalAnswers").value(4))
                 .andExpect(jsonPath("$.data.erScore").value(1500))
                 .andExpect(jsonPath("$.data.topicScores.length()").value(4))
+                .andExpect(jsonPath("$.data.grade").value("Магистр II"))
                 .andReturn().getResponse().getContentAsString();
         UUID resultId = UUID.fromString(objectMapper.readTree(submitted).at("/data/id").asText());
         assertThat(jdbc.queryForObject("SELECT correct_answers FROM assessment_results WHERE id = ?",
@@ -66,6 +68,7 @@ class AssessmentIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(resultId.toString()))
                 .andExpect(jsonPath("$.data.erScore").value(1500))
+                .andExpect(jsonPath("$.data.grade").value("Магистр II"))
                 .andExpect(jsonPath("$.data.topicScores[?(@.topic == 'CULTURE')].erScore").value(0.0))
                 .andExpect(jsonPath("$.data.topicScores[?(@.topic == 'SCIENCE')].erScore").value(2000.0));
 
@@ -73,6 +76,27 @@ class AssessmentIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(request))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("BAD_REQUEST"));
+
+        String restarted = mvc.perform(post("/api/v1/assessment/start").with(user("student-1")))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        String restartedId = objectMapper.readTree(restarted).at("/data/id").asText();
+        String allWrong = """
+                {"assessmentId":"%s","answers":[
+                  {"questionId":"10000000-0000-0000-0000-000000000001","answerId":"20000000-0000-0000-0000-000000000002"},
+                  {"questionId":"10000000-0000-0000-0000-000000000002","answerId":"20000000-0000-0000-0000-000000000004"},
+                  {"questionId":"10000000-0000-0000-0000-000000000003","answerId":"20000000-0000-0000-0000-000000000006"},
+                  {"questionId":"10000000-0000-0000-0000-000000000004","answerId":"20000000-0000-0000-0000-000000000008"}
+                ]}
+                """.formatted(restartedId);
+        mvc.perform(post("/api/v1/assessment/submit").with(user("student-1"))
+                        .contentType(MediaType.APPLICATION_JSON).content(allWrong))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.erScore").value(0))
+                .andExpect(jsonPath("$.data.grade").value("Новичок I"));
+        mvc.perform(get("/api/v1/assessment/me/result").with(user("student-1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.erScore").value(0))
+                .andExpect(jsonPath("$.data.grade").value("Новичок I"));
     }
 
     @Test
@@ -97,5 +121,17 @@ class AssessmentIntegrationTest {
                 .andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/assessment/me/result").with(user("student-without-result")))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void gradeThresholdsCoverLeagueBoundaries() {
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM assessment_grade_definitions", Integer.class))
+                .isEqualTo(15);
+        assertThat(gradeService.resolve(0).title()).isEqualTo("Новичок I");
+        assertThat(gradeService.resolve(149).title()).isEqualTo("Новичок I");
+        assertThat(gradeService.resolve(150).title()).isEqualTo("Новичок II");
+        assertThat(gradeService.resolve(899).title()).isEqualTo("Знаток III");
+        assertThat(gradeService.resolve(900).title()).isEqualTo("Эрудит I");
+        assertThat(gradeService.resolve(2000).title()).isEqualTo("Легенда III");
     }
 }

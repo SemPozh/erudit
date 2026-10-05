@@ -74,10 +74,10 @@ public class AssessmentRepository {
                 Timestamp.from(submittedAt), assessmentId);
         jdbc.update("""
                 INSERT INTO assessment_results
-                    (id, assessment_id, user_id, correct_answers, total_answers, er_score, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (id, assessment_id, user_id, correct_answers, total_answers, er_score, grade_code, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """, result.id(), assessmentId, userId, result.correctAnswers(), result.totalAnswers(), result.erScore(),
-                Timestamp.from(submittedAt));
+                result.grade().code(), Timestamp.from(submittedAt));
         for (TopicAssessmentScore topic : result.topicScores()) {
             jdbc.update("""
                     INSERT INTO assessment_result_topics
@@ -87,25 +87,29 @@ public class AssessmentRepository {
         }
         int updated = jdbc.update("""
                 UPDATE assessment_profiles
-                SET latest_result_id = ?, er_score = ?, updated_at = ?
+                SET latest_result_id = ?, er_score = ?, grade_code = ?, updated_at = ?
                 WHERE user_id = ?
-                """, result.id(), result.erScore(), Timestamp.from(submittedAt), userId);
+                """, result.id(), result.erScore(), result.grade().code(), Timestamp.from(submittedAt), userId);
         if (updated == 0) {
             jdbc.update("""
-                    INSERT INTO assessment_profiles (user_id, latest_result_id, er_score, updated_at)
-                    VALUES (?, ?, ?, ?)
-                    """, userId, result.id(), result.erScore(), Timestamp.from(submittedAt));
+                    INSERT INTO assessment_profiles (user_id, latest_result_id, er_score, grade_code, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                    """, userId, result.id(), result.erScore(), result.grade().code(), Timestamp.from(submittedAt));
         }
     }
 
     public Optional<AssessmentSubmission> findLatestResult(String userId) {
         List<ResultRow> results = jdbc.query("""
-                SELECT r.id, r.correct_answers, r.total_answers, r.er_score
+                SELECT r.id, r.correct_answers, r.total_answers, r.er_score,
+                       g.code grade_code, g.title grade_title, g.min_score, g.max_score
                 FROM assessment_profiles p
                 JOIN assessment_results r ON r.id = p.latest_result_id
+                JOIN assessment_grade_definitions g ON g.code = p.grade_code
                 WHERE p.user_id = ?
                 """, (rs, row) -> new ResultRow(rs.getObject("id", UUID.class),
-                rs.getInt("correct_answers"), rs.getInt("total_answers"), rs.getInt("er_score")), userId);
+                rs.getInt("correct_answers"), rs.getInt("total_answers"), rs.getInt("er_score"),
+                new Grade(rs.getString("grade_code"), rs.getString("grade_title"),
+                        rs.getInt("min_score"), rs.getInt("max_score"))), userId);
         if (results.isEmpty()) return Optional.empty();
         ResultRow result = results.getFirst();
         List<TopicAssessmentScore> topics = jdbc.query("""
@@ -114,7 +118,7 @@ public class AssessmentRepository {
                 """, (rs, row) -> new TopicAssessmentScore(rs.getString("topic"), rs.getInt("correct_answers"),
                 rs.getInt("total_answers"), rs.getInt("er_score")), result.id());
         return Optional.of(new AssessmentSubmission(result.id(), result.correctAnswers(), result.totalAnswers(),
-                result.erScore(), topics));
+                result.erScore(), topics, result.grade()));
     }
 
     private List<AssessmentQuestion> questions(String sql, Object... args) {
@@ -133,7 +137,7 @@ public class AssessmentRepository {
 
     public record SessionState(String userId, String status) {}
 
-    private record ResultRow(UUID id, int correctAnswers, int totalAnswers, int erScore) {}
+    private record ResultRow(UUID id, int correctAnswers, int totalAnswers, int erScore, Grade grade) {}
 
     private static final class QuestionBuilder {
         private final UUID id;
