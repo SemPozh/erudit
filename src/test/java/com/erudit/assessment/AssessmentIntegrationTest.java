@@ -57,6 +57,9 @@ class AssessmentIntegrationTest {
                 .andExpect(jsonPath("$.data.erScore").value(1500))
                 .andExpect(jsonPath("$.data.topicScores.length()").value(4))
                 .andExpect(jsonPath("$.data.grade").value("Магистр II"))
+                .andExpect(jsonPath("$.data.feedback").value(org.hamcrest.Matchers.containsString("культура")))
+                .andExpect(jsonPath("$.data.recommendations[0]").value(
+                        "Изучите дополнительные материалы по теме «культура»."))
                 .andReturn().getResponse().getContentAsString();
         UUID resultId = UUID.fromString(objectMapper.readTree(submitted).at("/data/id").asText());
         assertThat(jdbc.queryForObject("SELECT correct_answers FROM assessment_results WHERE id = ?",
@@ -69,6 +72,8 @@ class AssessmentIntegrationTest {
                 .andExpect(jsonPath("$.data.id").value(resultId.toString()))
                 .andExpect(jsonPath("$.data.erScore").value(1500))
                 .andExpect(jsonPath("$.data.grade").value("Магистр II"))
+                .andExpect(jsonPath("$.data.feedback").value(org.hamcrest.Matchers.containsString("культура")))
+                .andExpect(jsonPath("$.data.recommendations.length()").value(1))
                 .andExpect(jsonPath("$.data.topicScores[?(@.topic == 'CULTURE')].erScore").value(0.0))
                 .andExpect(jsonPath("$.data.topicScores[?(@.topic == 'SCIENCE')].erScore").value(2000.0));
 
@@ -92,7 +97,8 @@ class AssessmentIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON).content(allWrong))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.erScore").value(0))
-                .andExpect(jsonPath("$.data.grade").value("Новичок I"));
+                .andExpect(jsonPath("$.data.grade").value("Новичок I"))
+                .andExpect(jsonPath("$.data.recommendations.length()").value(4));
         mvc.perform(get("/api/v1/assessment/me/result").with(user("student-1")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.erScore").value(0))

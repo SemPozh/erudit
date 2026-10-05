@@ -74,16 +74,22 @@ public class AssessmentRepository {
                 Timestamp.from(submittedAt), assessmentId);
         jdbc.update("""
                 INSERT INTO assessment_results
-                    (id, assessment_id, user_id, correct_answers, total_answers, er_score, grade_code, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    (id, assessment_id, user_id, correct_answers, total_answers, er_score, grade_code, feedback, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, result.id(), assessmentId, userId, result.correctAnswers(), result.totalAnswers(), result.erScore(),
-                result.grade().code(), Timestamp.from(submittedAt));
+                result.grade().code(), result.feedback().text(), Timestamp.from(submittedAt));
         for (TopicAssessmentScore topic : result.topicScores()) {
             jdbc.update("""
                     INSERT INTO assessment_result_topics
                         (result_id, topic, correct_answers, total_answers, er_score)
                     VALUES (?, ?, ?, ?, ?)
                     """, result.id(), topic.topic(), topic.correctAnswers(), topic.totalAnswers(), topic.erScore());
+        }
+        for (int position = 0; position < result.feedback().recommendations().size(); position++) {
+            jdbc.update("""
+                    INSERT INTO assessment_result_recommendations (result_id, position, text)
+                    VALUES (?, ?, ?)
+                    """, result.id(), position, result.feedback().recommendations().get(position));
         }
         int updated = jdbc.update("""
                 UPDATE assessment_profiles
@@ -100,7 +106,7 @@ public class AssessmentRepository {
 
     public Optional<AssessmentSubmission> findLatestResult(String userId) {
         List<ResultRow> results = jdbc.query("""
-                SELECT r.id, r.correct_answers, r.total_answers, r.er_score,
+                SELECT r.id, r.correct_answers, r.total_answers, r.er_score, r.feedback,
                        g.code grade_code, g.title grade_title, g.min_score, g.max_score
                 FROM assessment_profiles p
                 JOIN assessment_results r ON r.id = p.latest_result_id
@@ -109,7 +115,7 @@ public class AssessmentRepository {
                 """, (rs, row) -> new ResultRow(rs.getObject("id", UUID.class),
                 rs.getInt("correct_answers"), rs.getInt("total_answers"), rs.getInt("er_score"),
                 new Grade(rs.getString("grade_code"), rs.getString("grade_title"),
-                        rs.getInt("min_score"), rs.getInt("max_score"))), userId);
+                        rs.getInt("min_score"), rs.getInt("max_score")), rs.getString("feedback")), userId);
         if (results.isEmpty()) return Optional.empty();
         ResultRow result = results.getFirst();
         List<TopicAssessmentScore> topics = jdbc.query("""
@@ -117,8 +123,12 @@ public class AssessmentRepository {
                 FROM assessment_result_topics WHERE result_id = ? ORDER BY topic
                 """, (rs, row) -> new TopicAssessmentScore(rs.getString("topic"), rs.getInt("correct_answers"),
                 rs.getInt("total_answers"), rs.getInt("er_score")), result.id());
+        List<String> recommendations = jdbc.query("""
+                SELECT text FROM assessment_result_recommendations
+                WHERE result_id = ? ORDER BY position
+                """, (rs, row) -> rs.getString("text"), result.id());
         return Optional.of(new AssessmentSubmission(result.id(), result.correctAnswers(), result.totalAnswers(),
-                result.erScore(), topics, result.grade()));
+                result.erScore(), topics, result.grade(), new AssessmentFeedback(result.feedback(), recommendations)));
     }
 
     private List<AssessmentQuestion> questions(String sql, Object... args) {
@@ -137,7 +147,8 @@ public class AssessmentRepository {
 
     public record SessionState(String userId, String status) {}
 
-    private record ResultRow(UUID id, int correctAnswers, int totalAnswers, int erScore, Grade grade) {}
+    private record ResultRow(UUID id, int correctAnswers, int totalAnswers, int erScore, Grade grade,
+                             String feedback) {}
 
     private static final class QuestionBuilder {
         private final UUID id;

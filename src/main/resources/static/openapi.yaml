@@ -2806,10 +2806,12 @@ components:
           example: Магистр II
         feedback:
           type: string
+          minLength: 1
         recommendations:
           type: array
           items:
             type: string
+            minLength: 1
         correctAnswers:
           type: integer
           format: int32
@@ -2821,6 +2823,8 @@ components:
       - erScore
       - topicScores
       - grade
+      - feedback
+      - recommendations
       - correctAnswers
       - totalAnswers
     AssessmentTopicScore:
