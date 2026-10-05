@@ -2802,6 +2802,8 @@ components:
             $ref: '#/components/schemas/AssessmentTopicScore'
         grade:
           type: string
+          description: Текущая лига и подуровень, рассчитанные по ER-score.
+          example: Магистр II
         feedback:
           type: string
         recommendations:
@@ -2818,6 +2820,7 @@ components:
       - id
       - erScore
       - topicScores
+      - grade
       - correctAnswers
       - totalAnswers
     AssessmentTopicScore:

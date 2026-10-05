@@ -17,10 +17,13 @@ import java.util.stream.Collectors;
 public class AssessmentService {
     private final AssessmentRepository repository;
     private final ErScoreCalculator scoreCalculator;
+    private final GradeService gradeService;
 
-    public AssessmentService(AssessmentRepository repository, ErScoreCalculator scoreCalculator) {
+    public AssessmentService(AssessmentRepository repository, ErScoreCalculator scoreCalculator,
+                             GradeService gradeService) {
         this.repository = repository;
         this.scoreCalculator = scoreCalculator;
+        this.gradeService = gradeService;
     }
 
     @Transactional
@@ -63,8 +66,9 @@ public class AssessmentService {
                 questionsById.get(answer.questionId()).topic(), options.get(answer.answerId()).correct())).toList();
         int correct = (int) outcomes.stream().filter(AnswerOutcome::correct).count();
         AssessmentScore score = scoreCalculator.calculate(outcomes);
+        Grade grade = gradeService.resolve(score.erScore());
         AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), correct, questions.size(),
-                score.erScore(), score.topics());
+                score.erScore(), score.topics(), grade);
         repository.submit(assessmentId, userId, answers, options, Instant.now(), result);
         return result;
     }

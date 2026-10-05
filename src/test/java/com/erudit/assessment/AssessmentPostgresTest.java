@@ -31,7 +31,8 @@ class AssessmentPostgresTest {
         UUID assessmentId = UUID.randomUUID();
         repository.createSession(assessmentId, "postgres-student", Instant.now(), List.of(question));
         AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), 1, 1, 2000,
-                List.of(new TopicAssessmentScore(question.topic(), 1, 1, 2000)));
+                List.of(new TopicAssessmentScore(question.topic(), 1, 1, 2000)),
+                new Grade("LEGEND_III", "Легенда III", 2000, 2000));
 
         repository.submit(assessmentId, "postgres-student",
                 List.of(new SubmittedAnswer(question.id(), correct.id())), Map.of(correct.id(), correct),
