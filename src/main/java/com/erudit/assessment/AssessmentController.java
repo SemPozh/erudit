@@ -51,6 +51,7 @@ public class AssessmentController implements AssessmentApi {
                         topic.totalAnswers(), (double) topic.erScore())).toList();
         var response = new com.erudit.openapi.model.AssessmentResult(
                 result.id(), (double) result.erScore(), topics, result.grade().title(),
+                result.feedback().text(), result.feedback().recommendations(),
                 result.correctAnswers(), result.totalAnswers());
         return new AssessmentResultResponse(response);
     }

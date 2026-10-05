@@ -18,12 +18,14 @@ public class AssessmentService {
     private final AssessmentRepository repository;
     private final ErScoreCalculator scoreCalculator;
     private final GradeService gradeService;
+    private final AssessmentFeedbackProvider feedbackProvider;
 
     public AssessmentService(AssessmentRepository repository, ErScoreCalculator scoreCalculator,
-                             GradeService gradeService) {
+                             GradeService gradeService, AssessmentFeedbackProvider feedbackProvider) {
         this.repository = repository;
         this.scoreCalculator = scoreCalculator;
         this.gradeService = gradeService;
+        this.feedbackProvider = feedbackProvider;
     }
 
     @Transactional
@@ -67,8 +69,10 @@ public class AssessmentService {
         int correct = (int) outcomes.stream().filter(AnswerOutcome::correct).count();
         AssessmentScore score = scoreCalculator.calculate(outcomes);
         Grade grade = gradeService.resolve(score.erScore());
+        AssessmentFeedback feedback = feedbackProvider.generate(
+                new AssessmentFeedbackContext(score.erScore(), score.topics()));
         AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), correct, questions.size(),
-                score.erScore(), score.topics(), grade);
+                score.erScore(), score.topics(), grade, feedback);
         repository.submit(assessmentId, userId, answers, options, Instant.now(), result);
         return result;
     }
