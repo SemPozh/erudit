@@ -1258,7 +1258,7 @@ paths:
       - Assessment
       operationId: submitAssessment
       summary: Отправить ответы тестирования
-      description: Реализовано в задаче 23. Сохраняет ответы и сырой результат для последующей оценки.
+      description: Сохраняет ответы и возвращает рассчитанный ER-score, включая оценки по темам.
       x-task-id: 23
       x-implementation-status: implemented
       requestBody:
@@ -1286,9 +1286,9 @@ paths:
       - Assessment
       operationId: getAssessmentResult
       summary: Результат и рекомендации
-      description: Запланировано в задаче 24. До реализации этот маршрут вернёт 404.
+      description: Возвращает последний результат входного тестирования текущего пользователя.
       x-task-id: 24
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -2794,6 +2794,12 @@ components:
         erScore: &id009
           type: number
           format: double
+          minimum: 0
+          maximum: 2000
+        topicScores:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssessmentTopicScore'
         grade:
           type: string
         feedback:
@@ -2810,8 +2816,31 @@ components:
           format: int32
       required:
       - id
+      - erScore
+      - topicScores
       - correctAnswers
       - totalAnswers
+    AssessmentTopicScore:
+      type: object
+      properties:
+        topic:
+          type: string
+        correctAnswers:
+          type: integer
+          format: int32
+        totalAnswers:
+          type: integer
+          format: int32
+        erScore:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 2000
+      required:
+      - topic
+      - correctAnswers
+      - totalAnswers
+      - erScore
     Program:
       type: object
       properties:
