@@ -37,14 +37,21 @@ public class AssessmentController implements AssessmentApi {
         var answers = body.getAnswers().stream()
                 .map(answer -> new SubmittedAnswer(answer.getQuestionId(), answer.getAnswerId())).toList();
         AssessmentSubmission result = service.submit(currentUser(), body.getAssessmentId(), answers);
-        var response = new com.erudit.openapi.model.AssessmentResult(
-                result.id(), result.correctAnswers(), result.totalAnswers());
-        return ResponseEntity.ok(new AssessmentResultResponse(response));
+        return ResponseEntity.ok(response(result));
     }
 
     @Override
     public ResponseEntity<AssessmentResultResponse> getAssessmentResult() {
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(response(service.latestResult(currentUser())));
+    }
+
+    private AssessmentResultResponse response(AssessmentSubmission result) {
+        var topics = result.topicScores().stream().map(topic ->
+                new com.erudit.openapi.model.AssessmentTopicScore(topic.topic(), topic.correctAnswers(),
+                        topic.totalAnswers(), (double) topic.erScore())).toList();
+        var response = new com.erudit.openapi.model.AssessmentResult(
+                result.id(), (double) result.erScore(), topics, result.correctAnswers(), result.totalAnswers());
+        return new AssessmentResultResponse(response);
     }
 
     private String currentUser() {

@@ -74,10 +74,47 @@ public class AssessmentRepository {
                 Timestamp.from(submittedAt), assessmentId);
         jdbc.update("""
                 INSERT INTO assessment_results
-                    (id, assessment_id, user_id, correct_answers, total_answers, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-                """, result.id(), assessmentId, userId, result.correctAnswers(), result.totalAnswers(),
+                    (id, assessment_id, user_id, correct_answers, total_answers, er_score, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, result.id(), assessmentId, userId, result.correctAnswers(), result.totalAnswers(), result.erScore(),
                 Timestamp.from(submittedAt));
+        for (TopicAssessmentScore topic : result.topicScores()) {
+            jdbc.update("""
+                    INSERT INTO assessment_result_topics
+                        (result_id, topic, correct_answers, total_answers, er_score)
+                    VALUES (?, ?, ?, ?, ?)
+                    """, result.id(), topic.topic(), topic.correctAnswers(), topic.totalAnswers(), topic.erScore());
+        }
+        int updated = jdbc.update("""
+                UPDATE assessment_profiles
+                SET latest_result_id = ?, er_score = ?, updated_at = ?
+                WHERE user_id = ?
+                """, result.id(), result.erScore(), Timestamp.from(submittedAt), userId);
+        if (updated == 0) {
+            jdbc.update("""
+                    INSERT INTO assessment_profiles (user_id, latest_result_id, er_score, updated_at)
+                    VALUES (?, ?, ?, ?)
+                    """, userId, result.id(), result.erScore(), Timestamp.from(submittedAt));
+        }
+    }
+
+    public Optional<AssessmentSubmission> findLatestResult(String userId) {
+        List<ResultRow> results = jdbc.query("""
+                SELECT r.id, r.correct_answers, r.total_answers, r.er_score
+                FROM assessment_profiles p
+                JOIN assessment_results r ON r.id = p.latest_result_id
+                WHERE p.user_id = ?
+                """, (rs, row) -> new ResultRow(rs.getObject("id", UUID.class),
+                rs.getInt("correct_answers"), rs.getInt("total_answers"), rs.getInt("er_score")), userId);
+        if (results.isEmpty()) return Optional.empty();
+        ResultRow result = results.getFirst();
+        List<TopicAssessmentScore> topics = jdbc.query("""
+                SELECT topic, correct_answers, total_answers, er_score
+                FROM assessment_result_topics WHERE result_id = ? ORDER BY topic
+                """, (rs, row) -> new TopicAssessmentScore(rs.getString("topic"), rs.getInt("correct_answers"),
+                rs.getInt("total_answers"), rs.getInt("er_score")), result.id());
+        return Optional.of(new AssessmentSubmission(result.id(), result.correctAnswers(), result.totalAnswers(),
+                result.erScore(), topics));
     }
 
     private List<AssessmentQuestion> questions(String sql, Object... args) {
@@ -95,6 +132,8 @@ public class AssessmentRepository {
     }
 
     public record SessionState(String userId, String status) {}
+
+    private record ResultRow(UUID id, int correctAnswers, int totalAnswers, int erScore) {}
 
     private static final class QuestionBuilder {
         private final UUID id;

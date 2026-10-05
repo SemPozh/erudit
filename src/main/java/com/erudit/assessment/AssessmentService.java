@@ -16,9 +16,11 @@ import java.util.stream.Collectors;
 @Service
 public class AssessmentService {
     private final AssessmentRepository repository;
+    private final ErScoreCalculator scoreCalculator;
 
-    public AssessmentService(AssessmentRepository repository) {
+    public AssessmentService(AssessmentRepository repository, ErScoreCalculator scoreCalculator) {
         this.repository = repository;
+        this.scoreCalculator = scoreCalculator;
     }
 
     @Transactional
@@ -55,9 +57,20 @@ public class AssessmentService {
                 throw new ValidationException("answerId does not belong to questionId");
             }
         }
-        int correct = (int) answers.stream().filter(answer -> options.get(answer.answerId()).correct()).count();
-        AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), correct, questions.size());
+        Map<UUID, AssessmentQuestion> questionsById = questions.stream()
+                .collect(Collectors.toMap(AssessmentQuestion::id, Function.identity()));
+        List<AnswerOutcome> outcomes = answers.stream().map(answer -> new AnswerOutcome(
+                questionsById.get(answer.questionId()).topic(), options.get(answer.answerId()).correct())).toList();
+        int correct = (int) outcomes.stream().filter(AnswerOutcome::correct).count();
+        AssessmentScore score = scoreCalculator.calculate(outcomes);
+        AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), correct, questions.size(),
+                score.erScore(), score.topics());
         repository.submit(assessmentId, userId, answers, options, Instant.now(), result);
         return result;
+    }
+
+    public AssessmentSubmission latestResult(String userId) {
+        return repository.findLatestResult(userId)
+                .orElseThrow(() -> new NotFoundException("Assessment result not found"));
     }
 }

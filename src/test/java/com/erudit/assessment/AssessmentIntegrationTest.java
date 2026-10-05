@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,7 +29,7 @@ class AssessmentIntegrationTest {
     @Autowired private JdbcTemplate jdbc;
 
     @Test
-    void startsAllTopicsAcceptsAnswersAndPersistsRawResult() throws Exception {
+    void startsAllTopicsCalculatesScoresAndReturnsLatestResult() throws Exception {
         String started = mvc.perform(post("/api/v1/assessment/start").with(user("student-1")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.questions.length()").value(4))
@@ -52,11 +53,21 @@ class AssessmentIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.correctAnswers").value(3))
                 .andExpect(jsonPath("$.data.totalAnswers").value(4))
-                .andExpect(jsonPath("$.data.erScore").doesNotExist())
+                .andExpect(jsonPath("$.data.erScore").value(1500))
+                .andExpect(jsonPath("$.data.topicScores.length()").value(4))
                 .andReturn().getResponse().getContentAsString();
         UUID resultId = UUID.fromString(objectMapper.readTree(submitted).at("/data/id").asText());
         assertThat(jdbc.queryForObject("SELECT correct_answers FROM assessment_results WHERE id = ?",
                 Integer.class, resultId)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("SELECT er_score FROM assessment_profiles WHERE user_id = ?",
+                Integer.class, "student-1")).isEqualTo(1500);
+
+        mvc.perform(get("/api/v1/assessment/me/result").with(user("student-1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value(resultId.toString()))
+                .andExpect(jsonPath("$.data.erScore").value(1500))
+                .andExpect(jsonPath("$.data.topicScores[?(@.topic == 'CULTURE')].erScore").value(0.0))
+                .andExpect(jsonPath("$.data.topicScores[?(@.topic == 'SCIENCE')].erScore").value(2000.0));
 
         mvc.perform(post("/api/v1/assessment/submit").with(user("student-1"))
                         .contentType(MediaType.APPLICATION_JSON).content(request))
@@ -81,5 +92,10 @@ class AssessmentIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.message").value(
                         "Exactly one answer is required for every assessment question"));
+
+        mvc.perform(get("/api/v1/assessment/me/result"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/assessment/me/result").with(user("student-without-result")))
+                .andExpect(status().isNotFound());
     }
 }
