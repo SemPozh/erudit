@@ -1,0 +1,16 @@
+package com.erudit.payment;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class PaymentConfiguration {
+    @Bean MobileReceiptVerifier appStoreReceiptVerifier() {
+        return new MockMobileReceiptVerifier("APP_STORE");
+    }
+
+    @Bean MobileReceiptVerifier googlePlayReceiptVerifier() {
+        return new MockMobileReceiptVerifier("GOOGLE_PLAY");
+    }
+}
+
