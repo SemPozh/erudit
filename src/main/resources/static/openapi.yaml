@@ -317,9 +317,9 @@ paths:
       - Users
       operationId: getMyProfile
       summary: Мой профиль
-      description: Запланировано в задаче 11. До реализации этот маршрут вернёт 404.
+      description: Возвращает полный профиль пользователя из access-токена.
       x-task-id: 11
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -338,9 +338,9 @@ paths:
       - Users
       operationId: updateMyProfile
       summary: Обновить профиль
-      description: Запланировано в задаче 11. До реализации этот маршрут вернёт 404.
+      description: Обновляет имя и/или связывает профиль с загруженным изображением.
       x-task-id: 11
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -3171,9 +3171,12 @@ components:
       - newPassword
     ProfileUpdateRequest:
       type: object
+      minProperties: 1
       properties:
         name:
           type: string
+          minLength: 2
+          maxLength: 100
         avatarId: *id001
     PushTokenRequest:
       type: object
