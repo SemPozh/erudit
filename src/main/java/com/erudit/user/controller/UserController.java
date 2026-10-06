@@ -1,4 +1,4 @@
-package com.erudit.user.web;
+package com.erudit.user.controller;
 
 import com.erudit.openapi.api.UsersApi;
 import com.erudit.openapi.model.AdminUserListResponse;
@@ -79,12 +79,14 @@ public class UserController implements UsersApi {
         UserSettings data = new UserSettings()
                 .language(value.language())
                 .timeZone(value.timeZone())
-                .favoriteCategories(new java.util.LinkedHashSet<>(
-                        value.favoriteCategories().stream().sorted().toList()))
+                .favoriteCategories(
+                        value.favoriteCategories().stream().sorted().toList()
+                )
                 .dailyGoalMinutes(value.dailyGoalMinutes())
                 .visibleInSearch(value.visibleInSearch())
                 .visibleInRating(value.visibleInRating())
                 .analyticsConsent(value.analyticsConsent());
+
         return new UserSettingsResponse(data);
     }
 }
