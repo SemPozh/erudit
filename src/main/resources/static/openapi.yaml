@@ -1099,9 +1099,9 @@ paths:
       - ContentModeration
       operationId: listModerationQueue
       summary: Очередь модерации
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Возвращает ожидающий решения контент. Требуется роль ADMIN.
       x-task-id: 20
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1123,9 +1123,9 @@ paths:
       - ContentModeration
       operationId: approveContent
       summary: Одобрить контент
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Публикует контент из очереди модерации. Требуется роль ADMIN.
       x-task-id: 20
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1152,9 +1152,9 @@ paths:
       - ContentModeration
       operationId: rejectContent
       summary: Отклонить контент
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Отклоняет контент из очереди модерации. Требуется роль ADMIN.
       x-task-id: 20
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
