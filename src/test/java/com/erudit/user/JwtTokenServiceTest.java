@@ -3,6 +3,8 @@ package com.erudit.user;
 import com.erudit.user.config.AuthProperties;
 import com.erudit.user.domain.User;
 import com.erudit.user.service.JwtTokenService;
+import com.erudit.user.service.InvalidAccessTokenException;
+import com.erudit.user.domain.UserRole;
 import org.junit.jupiter.api.Test;
 
 import javax.crypto.Mac;
@@ -16,6 +18,7 @@ import java.util.Base64;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtTokenServiceTest {
     private static final String SECRET = "a-test-secret-that-is-at-least-32-bytes-long";
@@ -43,5 +46,25 @@ class JwtTokenServiceTest {
         mac.init(new SecretKeySpec(SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
         byte[] expected = mac.doFinal((parts[0] + "." + parts[1]).getBytes(StandardCharsets.UTF_8));
         assertThat(Base64.getUrlDecoder().decode(parts[2])).isEqualTo(expected);
+        assertThat(service.verifyAccessToken(token).roles()).containsExactly(UserRole.USER);
+    }
+
+    @Test
+    void rejectsTamperedAndExpiredTokens() {
+        Instant now = Instant.parse("2026-10-06T10:00:00Z");
+        AuthProperties properties = new AuthProperties(SECRET, Duration.ofMinutes(15), Duration.ofDays(30));
+        JwtTokenService issuer = new JwtTokenService(properties, Clock.fixed(now, ZoneOffset.UTC));
+        User user = User.builder().id(UUID.randomUUID()).email("student@example.com").build();
+        String token = issuer.issueAccessToken(user);
+
+        String[] parts = token.split("\\.");
+        String tampered = parts[0] + "." + parts[1] + "." + (parts[2].startsWith("A") ? "B" : "A")
+                + parts[2].substring(1);
+        assertThatThrownBy(() -> issuer.verifyAccessToken(tampered))
+                .isInstanceOf(InvalidAccessTokenException.class);
+        JwtTokenService verifier = new JwtTokenService(properties,
+                Clock.fixed(now.plus(Duration.ofMinutes(16)), ZoneOffset.UTC));
+        assertThatThrownBy(() -> verifier.verifyAccessToken(token))
+                .isInstanceOf(InvalidAccessTokenException.class);
     }
 }
