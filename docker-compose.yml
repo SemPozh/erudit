@@ -13,6 +13,9 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-erudit}
       DB_USERNAME: ${POSTGRES_USER:-erudit}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-erudit}
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me-32-bytes}
+      JWT_ACCESS_TTL: ${JWT_ACCESS_TTL:-PT15M}
+      JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-P30D}
       CLICKHOUSE_URL: jdbc:clickhouse:http://clickhouse:8123/${CLICKHOUSE_DB:-erudit}
       CLICKHOUSE_USERNAME: ${CLICKHOUSE_USER:-erudit}
       CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-erudit}

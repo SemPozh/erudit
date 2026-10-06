@@ -167,9 +167,9 @@ paths:
       - Auth
       operationId: login
       summary: Войти
-      description: Запланировано в задаче 8. До реализации этот маршрут вернёт 404.
+      description: Проверяет email и пароль и выдаёт пару access/refresh токенов.
       x-task-id: 8
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       requestBody:
         required: true
@@ -196,9 +196,9 @@ paths:
       - Auth
       operationId: refreshToken
       summary: Обновить access-токен
-      description: Запланировано в задаче 8. До реализации этот маршрут вернёт 404.
+      description: Одноразово обменивает действующий refresh-токен на новую пару токенов.
       x-task-id: 8
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       requestBody:
         required: true
@@ -225,9 +225,9 @@ paths:
       - Auth
       operationId: logout
       summary: Выйти
-      description: Запланировано в задаче 8. До реализации этот маршрут вернёт 404.
+      description: Отзывает переданный refresh-токен текущего пользователя.
       x-task-id: 8
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -3101,6 +3101,8 @@ components:
       required:
       - accessToken
       - refreshToken
+      - tokenType
+      - expiresIn
     RegisterRequest:
       type: object
       properties:
@@ -3132,6 +3134,8 @@ components:
         password:
           type: string
           format: password
+          minLength: 8
+          maxLength: 128
       required:
       - email
       - password
@@ -3140,6 +3144,7 @@ components:
       properties:
         refreshToken:
           type: string
+          minLength: 32
       required:
       - refreshToken
     ResetRequest:
