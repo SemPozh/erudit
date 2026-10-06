@@ -1308,9 +1308,9 @@ paths:
       - Programs
       operationId: generateProgram
       summary: Сформировать персональную программу
-      description: Запланировано в задаче 27. До реализации этот маршрут вернёт 404.
+      description: Формирует программу по тематическим результатам входного тестирования.
       x-task-id: 27
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '201':
           description: Успешный ответ
@@ -1330,9 +1330,9 @@ paths:
       - Programs
       operationId: getMyProgram
       summary: Моя программа
-      description: Запланировано в задаче 27. До реализации этот маршрут вернёт 404.
+      description: Возвращает текущую образовательную программу пользователя.
       x-task-id: 27
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1352,9 +1352,9 @@ paths:
       - Programs
       operationId: getProgramProgress
       summary: Прогресс программы
-      description: Запланировано в задаче 27. До реализации этот маршрут вернёт 404.
+      description: Возвращает программу с актуальным прогрессом уроков, модулей и всей программы.
       x-task-id: 27
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -2855,20 +2855,49 @@ components:
         modules:
           type: array
           items:
-            type: object
-            properties:
-              title:
-                type: string
-              lessons:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    contentId: *id001
-                    quizId: *id001
-        progressPercent: *id009
+            $ref: '#/components/schemas/ProgramModule'
+        progressPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
       required:
       - id
+      - modules
+      - progressPercent
+    ProgramModule:
+      type: object
+      properties:
+        id: *id001
+        topic:
+          type: string
+        title:
+          type: string
+        progressPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProgramLesson'
+      required: [id, topic, title, progressPercent, lessons]
+    ProgramLesson:
+      type: object
+      properties:
+        id: *id001
+        contentId: *id001
+        quizId: *id001
+        status:
+          type: string
+          enum: [NOT_STARTED, COMPLETED]
+        progressPercent:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+      required: [id, contentId, quizId, status, progressPercent]
     NextStep:
       type: object
       properties:
