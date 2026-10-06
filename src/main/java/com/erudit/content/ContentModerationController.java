@@ -16,10 +16,13 @@ import java.util.UUID;
 @RestController
 public class ContentModerationController implements ContentModerationApi {
     private final ContentService service;
+    private final ContentReportService reportService;
     private final HttpServletRequest servletRequest;
 
-    public ContentModerationController(ContentService service, HttpServletRequest servletRequest) {
+    public ContentModerationController(ContentService service, ContentReportService reportService,
+                                       HttpServletRequest servletRequest) {
         this.service = service;
+        this.reportService = reportService;
         this.servletRequest = servletRequest;
     }
 
@@ -50,18 +53,30 @@ public class ContentModerationController implements ContentModerationApi {
     @Override
     public ResponseEntity<ContentReportListResponse> listContentReports(Integer page, Integer size) {
         requireAdmin();
-        return ResponseEntity.notFound().build();
+        ContentReportPage result = reportService.openReports(page, size);
+        var data = result.items().stream().map(report -> new com.erudit.openapi.model.ContentReportItem(
+                report.id(), report.contentId(), report.status().name())
+                .reason(report.reason()).createdAt(report.createdAt().atOffset(java.time.ZoneOffset.UTC))).toList();
+        var pagination = new PageMetadata(result.page(), result.size(), result.total(), result.totalPages());
+        return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
+                .body(new ContentReportListResponse(data).pagination(pagination));
     }
 
     @Override
     public ResponseEntity<Void> resolveContentReport(UUID id, ReportResolutionRequest request) {
         requireAdmin();
-        return ResponseEntity.notFound().build();
+        reportService.resolve(id, ReportDecision.valueOf(request.getDecision().getValue()),
+                request.getComment(), currentAdmin());
+        return ResponseEntity.noContent().build();
     }
 
     private void requireAdmin() {
         if (!servletRequest.isUserInRole("ADMIN")) {
             throw new ForbiddenException("ADMIN role is required");
         }
+    }
+
+    private String currentAdmin() {
+        return servletRequest.getUserPrincipal().getName();
     }
 }

@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ContentModerationControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private ContentService service;
+    @MockitoBean private ContentReportService reportService;
 
     @Test
     void adminListsApprovesAndRejectsPendingContent() throws Exception {
@@ -46,6 +48,26 @@ class ContentModerationControllerTest {
     void nonAdminCannotModerate() throws Exception {
         mvc.perform(get("/api/v1/admin/content/moderation"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminListsAndResolvesReports() throws Exception {
+        UUID reportId = UUID.randomUUID();
+        UUID contentId = UUID.randomUUID();
+        ContentReport report = new ContentReport(reportId, contentId, "Incorrect fact",
+                Instant.parse("2026-10-06T12:00:00Z"));
+        when(reportService.openReports(0, 20))
+                .thenReturn(new ContentReportPage(List.of(report), 1, 0, 20));
+
+        mvc.perform(get("/api/v1/admin/content/reports").param("page", "0").param("size", "20")
+                        .with(this::admin))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data[0].id").value(reportId.toString()))
+                .andExpect(jsonPath("$.data[0].status").value("OPEN"));
+        mvc.perform(post("/api/v1/admin/content/reports/{id}/resolve", reportId).with(this::admin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"decision\":\"ACCEPT\",\"comment\":\"Confirmed\"}"))
+                .andExpect(status().isNoContent());
+        verify(reportService).resolve(reportId, ReportDecision.ACCEPT, "Confirmed", "admin");
     }
 
     private org.springframework.mock.web.MockHttpServletRequest admin(
