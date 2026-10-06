@@ -17,15 +17,17 @@ public class ContentController implements ContentApi {
     private final QuizCardService quizCardService;
     private final ContentCatalogService catalogService;
     private final ContentProgressService progressService;
+    private final ContentFeedService feedService;
     private final HttpServletRequest servletRequest;
 
     public ContentController(ContentService service, QuizCardService quizCardService,
                              ContentCatalogService catalogService, ContentProgressService progressService,
-                             HttpServletRequest servletRequest) {
+                             ContentFeedService feedService, HttpServletRequest servletRequest) {
         this.service = service;
         this.quizCardService = quizCardService;
         this.catalogService = catalogService;
         this.progressService = progressService;
+        this.feedService = feedService;
         this.servletRequest = servletRequest;
     }
 
@@ -83,7 +85,15 @@ public class ContentController implements ContentApi {
     public ResponseEntity<ContentProgressResponse> completeContent(UUID id) {
         return ResponseEntity.ok(progressResponse(progressService.complete(currentUser(), sessionId(), id)));
     }
-    @Override public ResponseEntity<ContentListResponse> getContentFeed(Integer page, Integer size) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<ContentListResponse> getContentFeed(Integer page, Integer size) {
+        ContentPage result = feedService.feed(currentUserId(), page, size);
+        var pagination = new com.erudit.openapi.model.PageMetadata(
+                result.page(), result.size(), result.total(), result.totalPages());
+        return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
+                .body(new ContentListResponse(result.items().stream().map(ContentController::item).toList())
+                        .pagination(pagination));
+    }
     @Override
     public ResponseEntity<ContentProgressResponse> getContentProgress(UUID id) {
         return ResponseEntity.ok(progressResponse(progressService.get(currentUser(), id)));
@@ -136,6 +146,14 @@ public class ContentController implements ContentApi {
             throw new com.erudit.web.UnauthorizedException("Authentication is required");
         }
         return servletRequest.getUserPrincipal().getName();
+    }
+
+    private UUID currentUserId() {
+        try {
+            return UUID.fromString(currentUser());
+        } catch (IllegalArgumentException exception) {
+            throw new com.erudit.web.UnauthorizedException("Authenticated user id is invalid");
+        }
     }
 
     private String sessionId() {
