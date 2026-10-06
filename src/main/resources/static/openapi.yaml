@@ -267,9 +267,9 @@ paths:
       - Auth
       operationId: requestPasswordReset
       summary: Запросить восстановление пароля
-      description: Запланировано в задаче 10. До реализации этот маршрут вернёт 404.
+      description: Отправляет одноразовую ссылку восстановления, если email зарегистрирован.
       x-task-id: 10
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       requestBody:
         required: true
@@ -292,9 +292,9 @@ paths:
       - Auth
       operationId: resetPassword
       summary: Сменить пароль по токену
-      description: Запланировано в задаче 10. До реализации этот маршрут вернёт 404.
+      description: Меняет пароль по действующему одноразовому токену.
       x-task-id: 10
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       requestBody:
         required: true
@@ -3160,9 +3160,12 @@ components:
       properties:
         token:
           type: string
+          minLength: 32
         newPassword:
           type: string
           format: password
+          minLength: 8
+          maxLength: 128
       required:
       - token
       - newPassword

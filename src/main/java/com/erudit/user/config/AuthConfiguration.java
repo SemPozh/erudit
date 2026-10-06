@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Clock;
 
 @Configuration
-@EnableConfigurationProperties(AuthProperties.class)
+@EnableConfigurationProperties({AuthProperties.class, PasswordResetProperties.class})
 public class AuthConfiguration {
     @Bean
     Clock authClock() {
