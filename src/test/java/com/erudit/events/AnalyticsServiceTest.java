@@ -55,5 +55,20 @@ class AnalyticsServiceTest {
         assertThat(service.learning(period.from(), period.to(), "DAY").points().getFirst().dimensions())
                 .containsEntry("correctRate", 75.0);
     }
+
+    @Test
+    void exposesFunnelMonetizationAndNotificationSeries() {
+        when(provider.getIfAvailable()).thenReturn(repository);
+        AnalyticsPeriod period = new AnalyticsPeriod(now.minusSeconds(3600), now, AnalyticsGranularity.DAY);
+        AnalyticsMetricPoint point = new AnalyticsMetricPoint(now.minusSeconds(1800), 2,
+                java.util.Map.of("conversionRate", 50.0));
+        when(repository.funnels(period)).thenReturn(List.of(point));
+        when(repository.monetization(period)).thenReturn(List.of(point));
+        when(repository.notifications(period)).thenReturn(List.of(point));
+
+        assertThat(service.funnels(period.from(), period.to(), "DAY").metric()).isEqualTo("funnels");
+        assertThat(service.monetization(period.from(), period.to(), "DAY").metric()).isEqualTo("monetization");
+        assertThat(service.notifications(period.from(), period.to(), "DAY").metric()).isEqualTo("notifications");
+    }
 }
 

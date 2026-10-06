@@ -25,7 +25,8 @@ public enum EventType {
 
     NOTIFICATION_DELIVERED("notification_delivered", EventGroup.NOTIFICATION),
     NOTIFICATION_OPENED("notification_opened", EventGroup.NOTIFICATION),
-    NOTIFICATION_CLICKED("notification_clicked", EventGroup.NOTIFICATION);
+    NOTIFICATION_CLICKED("notification_clicked", EventGroup.NOTIFICATION),
+    NOTIFICATION_UNSUBSCRIBED("notification_unsubscribed", EventGroup.NOTIFICATION);
 
     private final String value;
     private final EventGroup group;

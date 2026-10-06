@@ -35,6 +35,15 @@ class AnalyticsControllerTest {
         when(service.learning(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
                 "learning", List.of(new AnalyticsMetricPoint(from, 2,
                 java.util.Map.of("correctRate", 75.0)))));
+        when(service.funnels(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
+                "funnels", List.of(new AnalyticsMetricPoint(from, 2,
+                java.util.Map.of("startToCompleteRate", 50.0)))));
+        when(service.monetization(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
+                "monetization", List.of(new AnalyticsMetricPoint(from, 1,
+                java.util.Map.of("checkoutToPaidRate", 50.0)))));
+        when(service.notifications(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
+                "notifications", List.of(new AnalyticsMetricPoint(from, 3,
+                java.util.Map.of("clickThroughRate", 25.0)))));
 
         mvc.perform(get("/api/v1/analytics/active-users")
                         .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
@@ -56,6 +65,20 @@ class AnalyticsControllerTest {
                         .with(user("analyst")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("learning"))
                 .andExpect(jsonPath("$.data.points[0].dimensions.correctRate").value(75.0));
+        mvc.perform(get("/api/v1/analytics/funnels")
+                        .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
+                        .with(user("analyst")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("funnels"))
+                .andExpect(jsonPath("$.data.points[0].dimensions.startToCompleteRate").value(50.0));
+        mvc.perform(get("/api/v1/analytics/monetization")
+                        .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
+                        .with(user("analyst")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("monetization"));
+        mvc.perform(get("/api/v1/analytics/notifications")
+                        .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
+                        .with(user("analyst")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("notifications"))
+                .andExpect(jsonPath("$.data.points[0].dimensions.clickThroughRate").value(25.0));
     }
 }
 
