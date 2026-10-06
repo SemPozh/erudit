@@ -9,4 +9,9 @@ public class LoggingEmailSender implements EmailSender {
     public void sendVerificationEmail(String toEmail, String recipientName, String verificationLink) {
         log.info("Verification email -> {} ({}): {}", toEmail, recipientName, verificationLink);
     }
+
+    @Override
+    public void sendPasswordResetEmail(String toEmail, String recipientName, String resetLink) {
+        log.info("Password reset email -> {} ({}): {}", toEmail, recipientName, resetLink);
+    }
 }

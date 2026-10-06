@@ -70,6 +70,9 @@ erudit:
       secret: ${JWT_SECRET:local-development-secret-change-me-32-bytes}
       access-ttl: ${JWT_ACCESS_TTL:PT15M}
       refresh-ttl: ${JWT_REFRESH_TTL:P30D}
+    password-reset:
+      base-url: ${PASSWORD_RESET_BASE_URL:http://localhost:8080}
+      token-ttl: ${PASSWORD_RESET_TOKEN_TTL:PT1H}
     verification:
       base-url: ${VERIFICATION_BASE_URL:http://localhost:8080}
       token-ttl: PT24H

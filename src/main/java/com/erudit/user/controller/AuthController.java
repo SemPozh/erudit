@@ -15,6 +15,7 @@ import com.erudit.user.service.AuthenticationService;
 import com.erudit.user.service.EmailVerificationService;
 import com.erudit.user.service.IssuedTokenPair;
 import com.erudit.user.service.UserService;
+import com.erudit.user.service.PasswordResetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ public class AuthController implements AuthApi {
     private final UserService userService;
     private final EmailVerificationService emailVerificationService;
     private final AuthenticationService authenticationService;
+    private final PasswordResetService passwordResetService;
 
     @Override
     public ResponseEntity<TokenPairResponse> login(LoginRequest request) {
@@ -69,12 +71,14 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<Void> requestPasswordReset(ResetRequest request) {
-        return ResponseEntity.notFound().build();
+        passwordResetService.request(request.getEmail());
+        return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<Void> resetPassword(ResetPasswordRequest request) {
-        return ResponseEntity.notFound().build();
+        passwordResetService.reset(request.getToken(), request.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     private static TokenPairResponse toResponse(IssuedTokenPair issued) {
