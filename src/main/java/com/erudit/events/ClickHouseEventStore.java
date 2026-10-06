@@ -107,19 +107,20 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
     public List<AnalyticsMetricPoint> engagement(AnalyticsPeriod period) {
         String format = "if(empty(JSONExtractString(payload, 'format')), 'UNKNOWN', "
                 + "upperUTF8(JSONExtractString(payload, 'format')))";
-        String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, " + format + " format, "
+        String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, " + format + " content_format, "
                 + "countIf(event_type = 'content_viewed') views, "
                 + "countIf(event_type = 'content_completed') completions, "
                 + "sumIf(JSONExtractFloat(payload, 'durationSeconds'), "
                 + "event_type IN ('content_viewed', 'content_completed')) duration_seconds "
-                + "FROM " + deduplicatedSource() + " GROUP BY bucket, format ORDER BY bucket, format";
+                + "FROM " + deduplicatedSource()
+                + " GROUP BY bucket, content_format ORDER BY bucket, content_format";
         try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
             bindPeriod(statement, period);
             try (ResultSet result = statement.executeQuery()) {
                 Map<Instant, Map<String, Double>> dimensions = new LinkedHashMap<>();
                 while (result.next()) {
                     Instant bucket = result.getTimestamp("bucket").toInstant();
-                    String suffix = dimensionSuffix(result.getString("format"));
+                    String suffix = dimensionSuffix(result.getString("content_format"));
                     double views = result.getDouble("views");
                     double completions = result.getDouble("completions");
                     double minutes = result.getDouble("duration_seconds") / 60.0;
