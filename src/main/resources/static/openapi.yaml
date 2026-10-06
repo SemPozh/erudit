@@ -2077,9 +2077,9 @@ paths:
       - NotificationAdmin
       operationId: listNotificationTemplates
       summary: Шаблоны уведомлений
-      description: Запланировано в задаче 47. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Возвращает шаблоны уведомлений по типам и каналам. Требуется роль ADMIN.
       x-task-id: 47
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -2100,9 +2100,9 @@ paths:
       - NotificationAdmin
       operationId: createNotificationTemplate
       summary: Создать шаблон
-      description: Запланировано в задаче 47. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Создаёт уникальный шаблон для пары тип и канал. Требуется роль ADMIN.
       x-task-id: 47
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -2129,9 +2129,9 @@ paths:
       - NotificationAdmin
       operationId: updateNotificationTemplate
       summary: Изменить шаблон
-      description: Запланировано в задаче 47. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Изменяет шаблон и заново вычисляет параметры вида {{parameter}}. Требуется роль ADMIN.
       x-task-id: 47
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -3055,6 +3055,14 @@ components:
           type: string
         body:
           type: string
+          minLength: 1
+          maxLength: 10000
+        parameters:
+          type: array
+          readOnly: true
+          uniqueItems: true
+          items:
+            type: string
       required:
       - type
       - channel
