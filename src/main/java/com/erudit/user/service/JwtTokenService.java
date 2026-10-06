@@ -3,8 +3,12 @@ package com.erudit.user.service;
 import com.erudit.user.config.AuthProperties;
 import com.erudit.user.domain.User;
 import com.erudit.user.domain.UserRole;
+import com.erudit.user.domain.UserStatus;
+import com.erudit.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Mac;
@@ -26,15 +30,19 @@ public class JwtTokenService {
     private final byte[] secret;
     private final AuthProperties properties;
     private final Clock clock;
+    private final UserRepository userRepository;
 
-    public JwtTokenService(AuthProperties properties, Clock clock) {
+    public JwtTokenService(AuthProperties properties, Clock clock, UserRepository userRepository) {
         this.properties = properties;
         this.clock = clock;
         this.secret = properties.secret().getBytes(StandardCharsets.UTF_8);
+        this.userRepository = userRepository;
         if (secret.length < 32) {
             throw new IllegalArgumentException("JWT secret must contain at least 32 bytes");
         }
     }
+
+
 
     public String issueAccessToken(User user) {
         Instant issuedAt = clock.instant();
@@ -70,6 +78,13 @@ public class JwtTokenService {
                 throw new InvalidAccessTokenException("Expired or invalid access token");
             }
             UUID id = UUID.fromString(payload.path("sub").asText());
+
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new InvalidAccessTokenException("User not found"));
+
+            if (user.getStatus() != UserStatus.ACTIVE) {
+                throw new InvalidAccessTokenException("User account is not active");
+            }
             String email = payload.path("email").asText();
             Set<UserRole> roles = EnumSet.noneOf(UserRole.class);
             payload.path("roles").forEach(role -> roles.add(UserRole.valueOf(role.asText())));

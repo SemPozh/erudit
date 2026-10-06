@@ -12,6 +12,7 @@ import com.erudit.user.domain.User;
 import com.erudit.user.service.UserProfileService;
 import com.erudit.user.service.UserPreferenceSnapshot;
 import com.erudit.user.service.UserPreferencesService;
+import com.erudit.user.service.UserService;
 import com.erudit.web.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class UserController implements UsersApi {
     private final UserProfileService profileService;
     private final UserPreferencesService preferencesService;
     private final HttpServletRequest request;
+    private final UserService userService;
 
     @Override
     public ResponseEntity<UserProfileResponse> getMyProfile() {
@@ -39,7 +41,12 @@ public class UserController implements UsersApi {
                 profileUpdateRequest.getName(), profileUpdateRequest.getAvatarId())));
     }
 
-    @Override public ResponseEntity<Void> deleteMyAccount() { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<Void> deleteMyAccount() {
+        userService.deleteAccount(currentUserId());
+        return ResponseEntity.noContent().build();
+    }
+
     @Override public ResponseEntity<Void> addPushToken(PushTokenRequest pushTokenRequest) { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<Void> deletePushToken(UUID id) { return ResponseEntity.notFound().build(); }
     @Override
@@ -80,7 +87,9 @@ public class UserController implements UsersApi {
                 .language(value.language())
                 .timeZone(value.timeZone())
                 .favoriteCategories(
-                        value.favoriteCategories().stream().sorted().toList()
+                        value.favoriteCategories().stream()
+                                .sorted()
+                                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new))
                 )
                 .dailyGoalMinutes(value.dailyGoalMinutes())
                 .visibleInSearch(value.visibleInSearch())
