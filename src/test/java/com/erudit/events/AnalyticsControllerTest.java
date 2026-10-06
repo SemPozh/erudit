@@ -29,6 +29,12 @@ class AnalyticsControllerTest {
                 "dau", List.of(new AnalyticsMetricPoint(from, 3))));
         when(service.sessions(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
                 "sessions", List.of(new AnalyticsMetricPoint(from, 5))));
+        when(service.engagement(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
+                "engagement", List.of(new AnalyticsMetricPoint(from, 3,
+                java.util.Map.of("completions.ARTICLE", 2.0)))));
+        when(service.learning(eq(from), eq(to), eq("DAY"))).thenReturn(new AnalyticsMetricSeries(
+                "learning", List.of(new AnalyticsMetricPoint(from, 2,
+                java.util.Map.of("correctRate", 75.0)))));
 
         mvc.perform(get("/api/v1/analytics/active-users")
                         .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
@@ -40,6 +46,16 @@ class AnalyticsControllerTest {
                         .with(user("analyst")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("sessions"))
                 .andExpect(jsonPath("$.data.points[0].value").value(5.0));
+        mvc.perform(get("/api/v1/analytics/engagement")
+                        .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
+                        .with(user("analyst")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("engagement"))
+                .andExpect(jsonPath("$.data.points[0].dimensions['completions.ARTICLE']").value(2.0));
+        mvc.perform(get("/api/v1/analytics/learning")
+                        .param("from", "2026-10-01T00:00:00Z").param("to", "2026-10-03T00:00:00Z")
+                        .with(user("analyst")))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("learning"))
+                .andExpect(jsonPath("$.data.points[0].dimensions.correctRate").value(75.0));
     }
 }
 

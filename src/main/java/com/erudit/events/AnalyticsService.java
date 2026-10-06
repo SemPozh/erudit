@@ -31,6 +31,16 @@ public class AnalyticsService {
         return new AnalyticsMetricSeries("sessions", repository().sessions(period));
     }
 
+    public AnalyticsMetricSeries engagement(Instant from, Instant to, String granularity) {
+        AnalyticsPeriod period = period(from, to, granularity);
+        return new AnalyticsMetricSeries("engagement", repository().engagement(period));
+    }
+
+    public AnalyticsMetricSeries learning(Instant from, Instant to, String granularity) {
+        AnalyticsPeriod period = period(from, to, granularity);
+        return new AnalyticsMetricSeries("learning", repository().learning(period));
+    }
+
     AnalyticsPeriod period(Instant requestedFrom, Instant requestedTo, String requestedGranularity) {
         Instant to = requestedTo == null ? clock.instant() : requestedTo;
         Instant from = requestedFrom == null ? to.minus(DEFAULT_PERIOD) : requestedFrom;

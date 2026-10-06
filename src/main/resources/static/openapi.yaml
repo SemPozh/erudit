@@ -2286,9 +2286,9 @@ paths:
       - Analytics
       operationId: getEngagementMetrics
       summary: Вовлечённость
-      description: Запланировано в задаче 64. До реализации этот маршрут вернёт 404.
+      description: Возвращает просмотры, завершения и время взаимодействия с детализацией по формату в UTC.
       x-task-id: 64
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2309,9 +2309,9 @@ paths:
       - Analytics
       operationId: getLearningMetrics
       summary: Обучение
-      description: Запланировано в задаче 64. До реализации этот маршрут вернёт 404.
+      description: Возвращает завершения квизов, долю правильных ответов и среднее время прохождения в UTC.
       x-task-id: 64
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -3068,6 +3068,12 @@ components:
           type: number
           format: double
           minimum: 0
+        dimensions:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+            minimum: 0
       required:
       - time
       - value

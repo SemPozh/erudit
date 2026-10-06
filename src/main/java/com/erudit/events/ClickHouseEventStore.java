@@ -17,7 +17,10 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -100,13 +103,79 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
         return metric(period, "uniqExactIf(session_id, session_id != '')");
     }
 
+    @Override
+    public List<AnalyticsMetricPoint> engagement(AnalyticsPeriod period) {
+        String format = "if(empty(JSONExtractString(payload, 'format')), 'UNKNOWN', "
+                + "upperUTF8(JSONExtractString(payload, 'format')))";
+        String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, " + format + " format, "
+                + "countIf(event_type = 'content_viewed') views, "
+                + "countIf(event_type = 'content_completed') completions, "
+                + "sumIf(JSONExtractFloat(payload, 'durationSeconds'), "
+                + "event_type IN ('content_viewed', 'content_completed')) duration_seconds "
+                + "FROM " + deduplicatedSource() + " GROUP BY bucket, format ORDER BY bucket, format";
+        try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindPeriod(statement, period);
+            try (ResultSet result = statement.executeQuery()) {
+                Map<Instant, Map<String, Double>> dimensions = new LinkedHashMap<>();
+                while (result.next()) {
+                    Instant bucket = result.getTimestamp("bucket").toInstant();
+                    String suffix = dimensionSuffix(result.getString("format"));
+                    double views = result.getDouble("views");
+                    double completions = result.getDouble("completions");
+                    double minutes = result.getDouble("duration_seconds") / 60.0;
+                    Map<String, Double> values = dimensions.computeIfAbsent(bucket, ignored -> new LinkedHashMap<>());
+                    values.put("views." + suffix, views);
+                    values.put("completions." + suffix, completions);
+                    values.put("minutes." + suffix, round(minutes));
+                    values.merge("views", views, Double::sum);
+                    values.merge("completions", completions, Double::sum);
+                    values.merge("minutes", round(minutes), Double::sum);
+                }
+                return dimensions.entrySet().stream().map(entry -> new AnalyticsMetricPoint(
+                        entry.getKey(), entry.getValue().getOrDefault("views", 0.0), entry.getValue())).toList();
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("ClickHouse engagement query failed", exception);
+        }
+    }
+
+    @Override
+    public List<AnalyticsMetricPoint> learning(AnalyticsPeriod period) {
+        String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, "
+                + "countIf(event_type = 'quiz_completed') completions, "
+                + "countIf(event_type = 'quiz_answered') answers, "
+                + "countIf(event_type = 'quiz_answered' AND JSONExtractBool(payload, 'correct')) correct, "
+                + "sumIf(JSONExtractFloat(payload, 'durationSeconds'), event_type = 'quiz_completed') duration_seconds "
+                + "FROM " + deduplicatedSource() + " GROUP BY bucket ORDER BY bucket";
+        try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindPeriod(statement, period);
+            try (ResultSet result = statement.executeQuery()) {
+                List<AnalyticsMetricPoint> points = new ArrayList<>();
+                while (result.next()) {
+                    double completions = result.getDouble("completions");
+                    double answers = result.getDouble("answers");
+                    double correct = result.getDouble("correct");
+                    double duration = result.getDouble("duration_seconds");
+                    Map<String, Double> values = Map.of(
+                            "quizCompletions", completions,
+                            "correctRate", answers == 0 ? 0 : round(correct * 100 / answers),
+                            "averageMinutes", completions == 0 ? 0 : round(duration / 60 / completions));
+                    points.add(new AnalyticsMetricPoint(result.getTimestamp("bucket").toInstant(),
+                            completions, values));
+                }
+                return List.copyOf(points);
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("ClickHouse learning query failed", exception);
+        }
+    }
+
     private List<AnalyticsMetricPoint> metric(AnalyticsPeriod period, String aggregation) {
         String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, "
-                + aggregation + " value FROM events WHERE occurred_at >= ? AND occurred_at < ? "
+                + aggregation + " value FROM " + deduplicatedSource() + " "
                 + "GROUP BY bucket ORDER BY bucket";
         try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setTimestamp(1, Timestamp.from(period.from()));
-            statement.setTimestamp(2, Timestamp.from(period.to()));
+            bindPeriod(statement, period);
             try (ResultSet result = statement.executeQuery()) {
                 List<AnalyticsMetricPoint> points = new ArrayList<>();
                 while (result.next()) {
@@ -118,6 +187,24 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
         } catch (SQLException exception) {
             throw new IllegalStateException("ClickHouse analytics query failed", exception);
         }
+    }
+
+    private static String deduplicatedSource() {
+        return "(SELECT * FROM events WHERE occurred_at >= ? AND occurred_at < ? "
+                + "ORDER BY occurred_at DESC LIMIT 1 BY event_id) deduplicated";
+    }
+
+    private static void bindPeriod(PreparedStatement statement, AnalyticsPeriod period) throws SQLException {
+        statement.setTimestamp(1, Timestamp.from(period.from()));
+        statement.setTimestamp(2, Timestamp.from(period.to()));
+    }
+
+    private static String dimensionSuffix(String value) {
+        return value.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9_-]", "_");
+    }
+
+    private static double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
     private Connection connect() throws SQLException {
