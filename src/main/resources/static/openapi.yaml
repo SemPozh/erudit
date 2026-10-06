@@ -1398,7 +1398,7 @@ paths:
       summary: Начать квиз
       description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
       x-task-id: 31
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1426,7 +1426,7 @@ paths:
       summary: Отправить ответы квиза
       description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
       x-task-id: 31
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -2924,28 +2924,42 @@ components:
           type: string
         streakDays: *id007
         dailyGoalProgress: *id009
+    QuizAttemptAnswerOption:
+      type: object
+      required: [ id, text ]
+      properties:
+        id: *id001
+        text:
+          type: string
+    QuizAttemptQuestion:
+      type: object
+      required: [ id, text, answers ]
+      properties:
+        id: *id001
+        text:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAttemptAnswerOption'
     QuizAttempt:
       type: object
+      required: [ id, quizId, questions ]
       properties:
         id: *id001
         quizId: *id001
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuizCard'
-      required:
-      - id
-      - quizId
+            $ref: '#/components/schemas/QuizAttemptQuestion'
     QuizResult:
       type: object
+      required: [ attemptId, correctAnswers, score, experience ]
       properties:
         attemptId: *id001
         correctAnswers: *id007
         score: *id007
         experience: *id007
-      required:
-      - attemptId
-      - score
     Competition:
       type: object
       properties:
