@@ -4,6 +4,7 @@ import com.erudit.events.AnalyticsEventPublisher;
 import com.erudit.events.EventPublication;
 import com.erudit.events.EventType;
 import com.erudit.web.NotFoundException;
+import com.erudit.user.service.UserPreferenceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -23,12 +24,15 @@ public class ContentProgressService {
     private final ContentProgressRepository repository;
     private final ContentService contentService;
     private final ObjectProvider<AnalyticsEventPublisher> publisherProvider;
+    private final ObjectProvider<UserPreferenceProvider> preferenceProvider;
 
     public ContentProgressService(ContentProgressRepository repository, ContentService contentService,
-                                  ObjectProvider<AnalyticsEventPublisher> publisherProvider) {
+                                  ObjectProvider<AnalyticsEventPublisher> publisherProvider,
+                                  ObjectProvider<UserPreferenceProvider> preferenceProvider) {
         this.repository = repository;
         this.contentService = contentService;
         this.publisherProvider = publisherProvider;
+        this.preferenceProvider = preferenceProvider;
     }
 
     @Transactional(readOnly = true)
@@ -94,6 +98,7 @@ public class ContentProgressService {
     }
 
     private void publish(EventType type, String userId, String sessionId, UUID contentId) {
+        if (!analyticsAllowed(userId)) return;
         AnalyticsEventPublisher publisher = publisherProvider.getIfAvailable();
         if (publisher == null) return;
         var result = publisher.publish(new EventPublication(type, userId, sessionId,
@@ -103,6 +108,16 @@ public class ContentProgressService {
                 log.error("Failed to publish {} for content {}", type.value(), contentId, exception);
                 return null;
             });
+        }
+    }
+
+    private boolean analyticsAllowed(String userId) {
+        UserPreferenceProvider provider = preferenceProvider.getIfAvailable();
+        if (provider == null) return true;
+        try {
+            return provider.analyticsAllowed(UUID.fromString(userId));
+        } catch (IllegalArgumentException exception) {
+            return true;
         }
     }
 }

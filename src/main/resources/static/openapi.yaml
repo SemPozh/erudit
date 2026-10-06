@@ -383,9 +383,9 @@ paths:
       - Users
       operationId: getMySettings
       summary: Настройки профиля
-      description: Запланировано в задаче 12. До реализации этот маршрут вернёт 404.
+      description: Возвращает локализацию, учебные предпочтения и настройки приватности.
       x-task-id: 12
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -404,9 +404,9 @@ paths:
       - Users
       operationId: updateMySettings
       summary: Изменить настройки профиля
-      description: Запланировано в задаче 12. До реализации этот маршрут вернёт 404.
+      description: Полностью заменяет локализацию, учебные предпочтения и настройки приватности.
       x-task-id: 12
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -2650,15 +2650,32 @@ components:
       properties:
         language:
           type: string
+          pattern: '^[A-Za-z]{2,3}(-[A-Za-z]{2})?$'
         timeZone:
           type: string
+          minLength: 1
+          maxLength: 50
         favoriteCategories:
           type: array
+          maxItems: 50
+          uniqueItems: true
           items: *id001
-        dailyGoalMinutes: *id007
+        dailyGoalMinutes:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 1440
         visibleInSearch: *id008
         visibleInRating: *id008
         analyticsConsent: *id008
+      required:
+      - language
+      - timeZone
+      - favoriteCategories
+      - dailyGoalMinutes
+      - visibleInSearch
+      - visibleInRating
+      - analyticsConsent
     ContentItem:
       type: object
       properties:

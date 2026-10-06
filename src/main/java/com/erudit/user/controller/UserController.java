@@ -10,6 +10,8 @@ import com.erudit.openapi.model.UserSettings;
 import com.erudit.openapi.model.UserSettingsResponse;
 import com.erudit.user.domain.User;
 import com.erudit.user.service.UserProfileService;
+import com.erudit.user.service.UserPreferenceSnapshot;
+import com.erudit.user.service.UserPreferencesService;
 import com.erudit.web.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController implements UsersApi {
     private final UserProfileService profileService;
+    private final UserPreferencesService preferencesService;
     private final HttpServletRequest request;
 
     @Override
@@ -39,8 +42,18 @@ public class UserController implements UsersApi {
     @Override public ResponseEntity<Void> deleteMyAccount() { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<Void> addPushToken(PushTokenRequest pushTokenRequest) { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<Void> deletePushToken(UUID id) { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<UserSettingsResponse> getMySettings() { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<UserSettingsResponse> updateMySettings(UserSettings userSettings) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<UserSettingsResponse> getMySettings() {
+        return ResponseEntity.ok(settingsResponse(preferencesService.preferencesFor(currentUserId())));
+    }
+
+    @Override
+    public ResponseEntity<UserSettingsResponse> updateMySettings(UserSettings settings) {
+        return ResponseEntity.ok(settingsResponse(preferencesService.update(currentUserId(),
+                settings.getLanguage(), settings.getTimeZone(), settings.getFavoriteCategories(),
+                settings.getDailyGoalMinutes(), settings.getVisibleInSearch(),
+                settings.getVisibleInRating(), settings.getAnalyticsConsent())));
+    }
     @Override public ResponseEntity<AdminUserListResponse> searchUsers(String query, Integer page, Integer size) { return ResponseEntity.notFound().build(); }
 
     private UUID currentUserId() {
@@ -60,5 +73,18 @@ public class UserController implements UsersApi {
                 .registeredAt(user.getCreatedAt().atOffset(ZoneOffset.UTC))
                 .status(user.getStatus().name());
         return new UserProfileResponse(data);
+    }
+
+    private static UserSettingsResponse settingsResponse(UserPreferenceSnapshot value) {
+        UserSettings data = new UserSettings()
+                .language(value.language())
+                .timeZone(value.timeZone())
+                .favoriteCategories(new java.util.LinkedHashSet<>(
+                        value.favoriteCategories().stream().sorted().toList()))
+                .dailyGoalMinutes(value.dailyGoalMinutes())
+                .visibleInSearch(value.visibleInSearch())
+                .visibleInRating(value.visibleInRating())
+                .analyticsConsent(value.analyticsConsent());
+        return new UserSettingsResponse(data);
     }
 }
