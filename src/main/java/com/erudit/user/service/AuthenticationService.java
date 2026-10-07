@@ -19,6 +19,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -100,4 +101,14 @@ public class AuthenticationService {
 
     private record TokenMaterial(String raw, RefreshToken entity) {
     }
+
+
+    @Transactional
+    public void logoutAll(UUID userId) {
+        refreshTokenRepository.revokeAllActiveForUser(
+                userId,
+                LocalDateTime.now(clock)
+        );
+    }
+
 }

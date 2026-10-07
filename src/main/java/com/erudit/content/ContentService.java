@@ -4,6 +4,9 @@ import com.erudit.openapi.model.ContentUpsertRequest;
 import com.erudit.web.NotFoundException;
 import com.erudit.web.ValidationException;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.ObjectProvider;
+import com.erudit.payment.PremiumAccessService;
+import com.erudit.web.ForbiddenException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -15,10 +18,13 @@ import java.util.UUID;
 public class ContentService {
     private final ContentRepository repository;
     private final QuizCardService quizCardService;
+    private final ObjectProvider<PremiumAccessService> premiumAccess;
 
-    public ContentService(ContentRepository repository, QuizCardService quizCardService) {
+    public ContentService(ContentRepository repository, QuizCardService quizCardService,
+                          ObjectProvider<PremiumAccessService> premiumAccess) {
         this.repository = repository;
         this.quizCardService = quizCardService;
+        this.premiumAccess = premiumAccess;
     }
 
     @Transactional
@@ -34,11 +40,29 @@ public class ContentService {
 
     @Transactional(readOnly = true)
     public Content get(UUID id, boolean admin) {
+        return get(id, admin, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Content get(UUID id, boolean admin, String userId) {
         Content content = find(id);
         if (!admin && content.status() != ContentStatus.PUBLISHED) {
             throw new NotFoundException("Content not found");
         }
+        if (!admin && content.premiumLocked() && !hasPremium(userId)) {
+            throw new ForbiddenException("Active premium subscription is required");
+        }
         return content;
+    }
+
+    private boolean hasPremium(String userId) {
+        if (userId == null) return false;
+        try {
+            PremiumAccessService access = premiumAccess.getIfAvailable();
+            return access != null && access.isPremiumActive(UUID.fromString(userId));
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 
     @Transactional

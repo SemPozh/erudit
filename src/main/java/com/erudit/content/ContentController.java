@@ -39,7 +39,7 @@ public class ContentController implements ContentApi {
 
     @Override
     public ResponseEntity<ContentItemResponse> getContent(UUID id) {
-        return ResponseEntity.ok(response(service.get(id, isAdmin())));
+        return ResponseEntity.ok(response(service.get(id, isAdmin(), currentUserOrNull())));
     }
 
     @Override
@@ -93,6 +93,7 @@ public class ContentController implements ContentApi {
         if (servletRequest.getUserPrincipal() == null) {
             throw new com.erudit.web.UnauthorizedException("Authentication is required");
         }
+        service.get(id, isAdmin(), currentUser());
         java.util.List<com.erudit.openapi.model.QuizCard> cards = quizCardService.getForContent(id, isAdmin())
                 .stream().map(card -> new com.erudit.openapi.model.QuizCard(
                         card.id(), card.fact(), card.question(), card.answers())).toList();
@@ -136,6 +137,10 @@ public class ContentController implements ContentApi {
             throw new com.erudit.web.UnauthorizedException("Authentication is required");
         }
         return servletRequest.getUserPrincipal().getName();
+    }
+
+    private String currentUserOrNull() {
+        return servletRequest.getUserPrincipal() == null ? null : servletRequest.getUserPrincipal().getName();
     }
 
     private String sessionId() {
