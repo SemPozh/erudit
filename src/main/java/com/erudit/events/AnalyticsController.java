@@ -34,9 +34,13 @@ public class AnalyticsController implements AnalyticsApi {
     }
 
     @Override public ResponseEntity<MetricSeriesResponse> getEngagementMetrics(
-            OffsetDateTime from, OffsetDateTime to, String granularity) { return ResponseEntity.notFound().build(); }
+            OffsetDateTime from, OffsetDateTime to, String granularity) {
+        return ResponseEntity.ok(response(service.engagement(instant(from), instant(to), granularity)));
+    }
     @Override public ResponseEntity<MetricSeriesResponse> getLearningMetrics(
-            OffsetDateTime from, OffsetDateTime to, String granularity) { return ResponseEntity.notFound().build(); }
+            OffsetDateTime from, OffsetDateTime to, String granularity) {
+        return ResponseEntity.ok(response(service.learning(instant(from), instant(to), granularity)));
+    }
     @Override public ResponseEntity<MetricSeriesResponse> getFunnelMetrics(
             OffsetDateTime from, OffsetDateTime to, String granularity) { return ResponseEntity.notFound().build(); }
     @Override public ResponseEntity<MetricSeriesResponse> getMonetizationMetrics(
@@ -46,7 +50,8 @@ public class AnalyticsController implements AnalyticsApi {
 
     private static MetricSeriesResponse response(AnalyticsMetricSeries value) {
         var points = value.points().stream().map(point ->
-                new MetricPoint(point.time().atOffset(ZoneOffset.UTC), point.value())).toList();
+                new MetricPoint(point.time().atOffset(ZoneOffset.UTC), point.value())
+                        .dimensions(point.dimensions())).toList();
         return new MetricSeriesResponse(new MetricSeries(value.metric(), points));
     }
 

@@ -41,5 +41,19 @@ class AnalyticsServiceTest {
         assertThatThrownBy(() -> service.sessions(now.minusSeconds(1), now, "HOUR"))
                 .isInstanceOf(ValidationException.class).hasMessageContaining("granularity");
     }
+
+    @Test
+    void exposesEngagementAndLearningSeries() {
+        when(provider.getIfAvailable()).thenReturn(repository);
+        AnalyticsPeriod period = new AnalyticsPeriod(now.minusSeconds(3600), now, AnalyticsGranularity.DAY);
+        when(repository.engagement(period)).thenReturn(List.of(new AnalyticsMetricPoint(
+                now.minusSeconds(1800), 4, java.util.Map.of("completions", 2.0))));
+        when(repository.learning(period)).thenReturn(List.of(new AnalyticsMetricPoint(
+                now.minusSeconds(1800), 3, java.util.Map.of("correctRate", 75.0))));
+
+        assertThat(service.engagement(period.from(), period.to(), "DAY").metric()).isEqualTo("engagement");
+        assertThat(service.learning(period.from(), period.to(), "DAY").points().getFirst().dimensions())
+                .containsEntry("correctRate", 75.0);
+    }
 }
 
