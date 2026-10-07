@@ -72,12 +72,19 @@ public class ContentController implements ContentApi {
     }
 
     static ContentItem item(Content content) {
-        return new ContentItem(content.id(), ContentItem.TypeEnum.fromValue(content.type().name()),
+        return item(content, true);
+    }
+
+    private static ContentItem item(Content content, boolean contentAvailable) {
+        ContentItem result = new ContentItem(content.id(), ContentItem.TypeEnum.fromValue(content.type().name()),
                 content.title(), content.status().name())
-                .categoryId(content.categoryId()).description(content.description()).body(content.body())
-                .mediaUrl(content.mediaUrl()).difficulty(content.difficulty().name())
+                .categoryId(content.categoryId()).difficulty(content.difficulty().name())
                 .estimatedMinutes(content.estimatedMinutes()).authorId(content.authorId())
                 .tags(content.tags()).premiumLocked(content.premiumLocked());
+        if (contentAvailable) {
+            result.description(content.description()).body(content.body()).mediaUrl(content.mediaUrl());
+        }
+        return result;
     }
 
     // Routes below belong to later tasks sharing the Content tag.
@@ -88,10 +95,12 @@ public class ContentController implements ContentApi {
     @Override
     public ResponseEntity<ContentListResponse> getContentFeed(Integer page, Integer size) {
         ContentPage result = feedService.feed(currentUserId(), page, size);
+        boolean premiumAccess = isAdmin() || service.hasPremiumAccess(currentUserOrNull());
         var pagination = new com.erudit.openapi.model.PageMetadata(
                 result.page(), result.size(), result.total(), result.totalPages());
         return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
-                .body(new ContentListResponse(result.items().stream().map(ContentController::item).toList())
+                .body(new ContentListResponse(result.items().stream()
+                        .map(content -> item(content, premiumAccess || !content.premiumLocked())).toList())
                         .pagination(pagination));
     }
     @Override
@@ -125,10 +134,12 @@ public class ContentController implements ContentApi {
             @Nullable String type, @Nullable String difficulty, @Nullable Boolean premium,
             @Nullable String query, @Nullable String sort) {
         ContentPage result = catalogService.find(page, size, categoryId, type, difficulty, premium, query, sort);
+        boolean premiumAccess = isAdmin() || service.hasPremiumAccess(currentUserOrNull());
         var pagination = new com.erudit.openapi.model.PageMetadata(
                 result.page(), result.size(), result.total(), result.totalPages());
         return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
-                .body(new ContentListResponse(result.items().stream().map(ContentController::item).toList())
+                .body(new ContentListResponse(result.items().stream()
+                        .map(content -> item(content, premiumAccess || !content.premiumLocked())).toList())
                         .pagination(pagination));
     }
 
