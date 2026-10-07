@@ -32,6 +32,49 @@ public class ContentCatalogRepository {
         return new ContentPage(withTags(rows), total == null ? 0 : total, query.page(), query.size());
     }
 
+    public ContentPage personalizedFeed(UUID userId, Set<UUID> favoriteCategories, int page, int size) {
+        var parameters = new MapSqlParameterSource()
+                .addValue("userId", userId.toString())
+                .addValue("favorites", favoriteCategories.isEmpty()
+                        ? List.of(new UUID(0, 0)) : favoriteCategories)
+                .addValue("limit", size)
+                .addValue("offset", page * size);
+        Long total = jdbc.queryForObject("SELECT COUNT(*) FROM content WHERE status = 'PUBLISHED'",
+                parameters, Long.class);
+        String sql = """
+                SELECT c.*
+                FROM content c
+                LEFT JOIN content_progress own_progress
+                    ON own_progress.content_id = c.id AND own_progress.user_id = :userId
+                LEFT JOIN (
+                    SELECT interacted.category_id, COUNT(*) interaction_count
+                    FROM content_progress progress
+                    JOIN content interacted ON interacted.id = progress.content_id
+                    WHERE progress.user_id = :userId
+                    GROUP BY interacted.category_id
+                ) behavior ON behavior.category_id = c.category_id
+                WHERE c.status = 'PUBLISHED'
+                ORDER BY (
+                    CASE WHEN c.category_id IN (:favorites) THEN 100 ELSE 0 END
+                    + COALESCE(behavior.interaction_count, 0) * 10
+                    + CASE own_progress.status
+                        WHEN 'COMPLETED' THEN -1000
+                        WHEN 'VIEWED' THEN -100
+                        ELSE 0
+                      END
+                ) DESC, c.created_at DESC, c.id
+                LIMIT :limit OFFSET :offset
+                """;
+        List<Content> rows = jdbc.query(sql, parameters, (rs, row) -> new Content(
+                rs.getObject("id", UUID.class), rs.getObject("category_id", UUID.class),
+                ContentType.valueOf(rs.getString("type")), rs.getString("title"),
+                rs.getString("description"), rs.getString("body"), rs.getString("media_url"),
+                Difficulty.valueOf(rs.getString("difficulty")), rs.getInt("estimated_minutes"),
+                rs.getString("author_id"), ContentStatus.valueOf(rs.getString("status")),
+                rs.getTimestamp("created_at").toInstant(), List.of(), rs.getBoolean("premium_locked")));
+        return new ContentPage(withTags(rows), total == null ? 0 : total, page, size);
+    }
+
     private List<Content> withTags(List<Content> rows) {
         if (rows.isEmpty()) return rows;
         List<UUID> ids = rows.stream().map(Content::id).toList();

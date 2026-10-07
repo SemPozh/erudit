@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ContentController.class)
@@ -27,6 +28,7 @@ class ContentControllerTest {
     @MockitoBean private QuizCardService quizCardService;
     @MockitoBean private ContentCatalogService catalogService;
     @MockitoBean private ContentProgressService progressService;
+    @MockitoBean private ContentFeedService feedService;
 
     @Test
     void adminCreatesUpdatesAndArchivesContent() throws Exception {
@@ -76,6 +78,25 @@ class ContentControllerTest {
                         .content("{\"categoryId\":\"" + UUID.randomUUID() + "\",\"type\":\"UNKNOWN\",\"title\":\"\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void returnsPersonalizedFeedForAuthenticatedUser() throws Exception {
+        UUID userId = UUID.randomUUID();
+        Content recommendation = content(UUID.randomUUID(), UUID.randomUUID(),
+                ContentStatus.PUBLISHED, "Recommended");
+        when(feedService.feed(userId, 0, 20))
+                .thenReturn(new ContentPage(List.of(recommendation), 1, 0, 20));
+
+        mvc.perform(get("/api/v1/content/feed").param("page", "0").param("size", "20")
+                        .with(request -> {
+                            request.setUserPrincipal(userId::toString);
+                            return request;
+                        }))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$.data[0].title").value("Recommended"));
+        verify(feedService).feed(userId, 0, 20);
     }
 
     private org.springframework.mock.web.MockHttpServletRequest admin(

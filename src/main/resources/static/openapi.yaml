@@ -814,9 +814,9 @@ paths:
       - Content
       operationId: getContentFeed
       summary: Персональная лента
-      description: Запланировано в задаче 19. До реализации этот маршрут вернёт 404.
+      description: Ранжирует опубликованный контент по любимым категориям и истории взаимодействий; при отсутствии сигналов возвращает сначала новый контент.
       x-task-id: 19
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
