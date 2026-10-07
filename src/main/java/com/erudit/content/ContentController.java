@@ -149,17 +149,16 @@ public class ContentController implements ContentApi {
         return servletRequest.getUserPrincipal().getName();
     }
 
-<<<<<<< HEAD
     private UUID currentUserId() {
         try {
             return UUID.fromString(currentUser());
         } catch (IllegalArgumentException exception) {
             throw new com.erudit.web.UnauthorizedException("Authenticated user id is invalid");
         }
-=======
+    }
+
     private String currentUserOrNull() {
         return servletRequest.getUserPrincipal() == null ? null : servletRequest.getUserPrincipal().getName();
->>>>>>> origin/main
     }
 
     private String sessionId() {
