@@ -1,6 +1,7 @@
 package com.erudit.competition;
 
 import com.erudit.quiz.QuizRepository;
+import com.erudit.rating.RatingService;
 import com.erudit.web.NotFoundException;
 import com.erudit.web.ValidationException;
 import jakarta.transaction.Transactional;
@@ -20,13 +21,16 @@ public class CompetitionService {
     private final CompetitionRepository repository;
     private final QuizRepository quizRepository;
     private final Clock clock;
+    private final RatingService ratingService;
 
     public CompetitionService(CompetitionRepository repository,
                               QuizRepository quizRepository,
-                              Clock clock) {
+                              Clock clock,
+                              RatingService ratingService) {
         this.repository = repository;
         this.quizRepository = quizRepository;
         this.clock = clock;
+        this.ratingService = ratingService;
     }
 
     @Transactional
@@ -62,7 +66,7 @@ public class CompetitionService {
      * a rank; participants without a result score 0 and share the last rank.
      */
     public LeaderboardPage leaderboard(String username, UUID id, int page, int size) {
-        accessible(username, id);
+        Competition competition = accessible(username, id);
 
         Map<String, CompetitionRepository.AttemptResult> best = new HashMap<>();
         for (var r : repository.results(id)) {
@@ -93,6 +97,11 @@ public class CompetitionService {
         participants.stream()
                 .filter(u -> !best.containsKey(u))
                 .forEach(u -> rows.add(new Row(u, 0, lastRank)));
+
+        if (!clock.instant().isBefore(competition.endsAt())) {
+            rows.forEach(row -> ratingService.recordCompetitionResult(row.userId(), competition.id(),
+                    competition.quizId(), row.score(), row.rank(), rows.size()));
+        }
 
         int from = (int) Math.min((long) page * size, rows.size());
         int to = Math.min(from + size, rows.size());

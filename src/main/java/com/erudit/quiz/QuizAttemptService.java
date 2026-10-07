@@ -4,6 +4,7 @@ import com.erudit.assessment.SubmittedAnswer;
 import com.erudit.openapi.model.AssessmentSubmitRequestAnswersInner;
 import com.erudit.openapi.model.QuizResult;
 import com.erudit.openapi.model.QuizSubmitRequest;
+import com.erudit.rating.RatingService;
 import com.erudit.web.NotFoundException;
 import com.erudit.web.ValidationException;
 import org.springframework.dao.DuplicateKeyException;
@@ -32,17 +33,20 @@ public class QuizAttemptService {
     private final QuizHintRepository hintRepository;
     private final DailyQuizRepository dailyRepository;
     private final Clock clock;
+    private final RatingService ratingService;
 
     public QuizAttemptService(QuizRepository quizRepository,
                               QuizAttemptRepository attemptRepository,
                               QuizHintRepository hintRepository,
                               DailyQuizRepository dailyRepository,
-                              Clock clock) {
+                              Clock clock,
+                              RatingService ratingService) {
         this.quizRepository = quizRepository;
         this.attemptRepository = attemptRepository;
         this.hintRepository = hintRepository;
         this.dailyRepository = dailyRepository;
         this.clock = clock;
+        this.ratingService = ratingService;
     }
 
     // ---------- regular quiz ----------
@@ -213,6 +217,7 @@ public class QuizAttemptService {
         if (!attemptRepository.submit(finished, graded)) {
             throw new ValidationException("Attempt already submitted");
         }
+        ratingService.recordQuizResult(quiz, finished);
         return finished;
     }
 }
