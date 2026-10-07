@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record Quiz(UUID id, UUID contentId, String title, Instant createdAt, List<QuizQuestion> questions) {
+public record   Quiz(UUID id, UUID contentId, String title, Instant createdAt, List<QuizQuestion> questions) {
     public Quiz {
         if (id == null || contentId == null || createdAt == null) {
             throw new IllegalArgumentException("Quiz identity, content and creation time are required");
