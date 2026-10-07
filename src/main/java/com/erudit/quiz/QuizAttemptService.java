@@ -25,15 +25,18 @@ public class QuizAttemptService {
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository attemptRepository;
     private final Clock clock;
+    private final QuizHintRepository hintRepository;
+
     // TODO: inject whatever AssessmentService uses to turn the username into a user id
     // private final UserRepository userRepository;
 
     public QuizAttemptService(QuizRepository quizRepository,
                               QuizAttemptRepository attemptRepository,
-                              Clock clock) {
+                              Clock clock, QuizHintRepository hintRepository) {
         this.quizRepository = quizRepository;
         this.attemptRepository = attemptRepository;
         this.clock = clock;
+        this.hintRepository = hintRepository;
     }
 
     public StartedQuiz start(String username, UUID quizId) {
@@ -93,13 +96,46 @@ public class QuizAttemptService {
             graded.add(new QuizAttemptAnswer(attemptId, entry.getKey(), option.id(), option.correct()));
         }
 
+        // Each hint used costs one point (REQ 5.5 gives no formula, this is our choice).
+        int hintsUsed = hintRepository.countForAttempt(attemptId);
+        int score = Math.max(0, correct - hintsUsed);
+
         var finished = new QuizAttempt(attempt.id(), quizId, attempt.userId(),
                 attempt.startedAt(), clock.instant(),
-                correct, correct, correct + COMPLETION_BONUS);
+                correct, score, score + COMPLETION_BONUS);
 
         if (!attemptRepository.submit(finished, graded)) {
             throw new ValidationException("Attempt already submitted");
         }
         return finished;
+    }
+
+    public String requestHint(String username, UUID quizId, UUID attemptId, UUID questionId) {
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new NotFoundException("Quiz not found"));
+        QuizAttempt attempt = attemptRepository.findById(attemptId)
+                .orElseThrow(() -> new NotFoundException("Attempt not found"));
+
+        if (!attempt.userId().equals(username)) {
+            throw new NotFoundException("Attempt not found");
+        }
+        if (!attempt.quizId().equals(quizId)) {
+            throw new ValidationException("Attempt does not belong to this quiz");
+        }
+        if (attempt.submitted()) {
+            throw new ValidationException("Attempt already submitted");
+        }
+
+        QuizQuestion question = quiz.questions().stream()
+                .filter(q -> q.id().equals(questionId))
+                .findFirst()
+                .orElseThrow(() -> new ValidationException("Question does not belong to this quiz"));
+
+        String hint = Optional.ofNullable(question.quizCardId())
+                .flatMap(hintRepository::findFact)
+                .orElseThrow(() -> new NotFoundException("No hint available for this question"));
+
+        hintRepository.record(attemptId, questionId, clock.instant());
+        return hint;
     }
 }

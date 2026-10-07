@@ -2,10 +2,7 @@ package com.erudit.quiz;
 
 import com.erudit.assessment.SubmittedAnswer;
 import com.erudit.openapi.api.QuizzesApi;
-import com.erudit.openapi.model.QuizAttemptResponse;
-import com.erudit.openapi.model.QuizCardListResponse;
-import com.erudit.openapi.model.QuizResultResponse;
-import com.erudit.openapi.model.QuizSubmitRequest;
+import com.erudit.openapi.model.*;
 import com.erudit.web.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -78,8 +75,14 @@ public class QuizController implements QuizzesApi {   // use the generated inter
         return null;
     }
 
-    @Override
     public ResponseEntity<QuizCardListResponse> requestQuizHint(UUID id, UUID questionId) {
         return null;
+    }
+
+    @Override
+    public ResponseEntity<QuizHintResponse> requestQuizHint(UUID id, UUID questionId, UUID attemptId) {
+        String hint = service.requestHint(currentUser(), id, attemptId, questionId);
+        return ResponseEntity.ok(new QuizHintResponse(
+                new com.erudit.openapi.model.QuizHint(questionId, hint)));
     }
 }

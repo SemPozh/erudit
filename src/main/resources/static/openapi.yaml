@@ -1455,29 +1455,33 @@ paths:
   /api/v1/quiz/{id}/hint:
     post:
       tags:
-      - Quizzes
+        - Quizzes
       operationId: requestQuizHint
       summary: Получить подсказку
-      description: Запланировано в задаче 32. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 32. Возвращает факт, на котором основан вопрос, и фиксирует использование подсказки в попытке; каждая использованная подсказка уменьшает счёт на 1.
       x-task-id: 32
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Идентификатор ресурса
-        schema: *id001
-      - name: questionId
-        in: query
-        required: true
-        schema: *id001
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор ресурса
+          schema: *id001
+        - name: questionId
+          in: query
+          required: true
+          schema: *id001
+        - name: attemptId
+          in: query
+          required: true
+          schema: *id001
       responses:
         '200':
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuizCardListResponse'
+                $ref: '#/components/schemas/QuizHintResponse'
         default:
           description: Ошибка
           content:
@@ -2572,6 +2576,19 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    QuizHint:
+      type: object
+      required: [ questionId, hint ]
+      properties:
+        questionId: *id001
+        hint:
+          type: string
+    QuizHintResponse:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          $ref: '#/components/schemas/QuizHint'
     HelloResponse:
       type: object
       properties:
