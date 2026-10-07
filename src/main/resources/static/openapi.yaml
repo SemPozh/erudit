@@ -1374,9 +1374,9 @@ paths:
       - Programs
       operationId: getNextStep
       summary: Следующий шаг
-      description: Запланировано в задаче 29. До реализации этот маршрут вернёт 404.
+      description: Возвращает следующий незавершённый урок, прогресс ежедневной цели и текущий streak.
       x-task-id: 29
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1398,7 +1398,7 @@ paths:
       summary: Начать квиз
       description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
       x-task-id: 31
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1426,7 +1426,7 @@ paths:
       summary: Отправить ответы квиза
       description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
       x-task-id: 31
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1455,29 +1455,33 @@ paths:
   /api/v1/quiz/{id}/hint:
     post:
       tags:
-      - Quizzes
+        - Quizzes
       operationId: requestQuizHint
       summary: Получить подсказку
-      description: Запланировано в задаче 32. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 32. Возвращает факт, на котором основан вопрос, и фиксирует использование подсказки в попытке; каждая использованная подсказка уменьшает счёт на 1.
       x-task-id: 32
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Идентификатор ресурса
-        schema: *id001
-      - name: questionId
-        in: query
-        required: true
-        schema: *id001
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор ресурса
+          schema: *id001
+        - name: questionId
+          in: query
+          required: true
+          schema: *id001
+        - name: attemptId
+          in: query
+          required: true
+          schema: *id001
       responses:
         '200':
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuizCardListResponse'
+                $ref: '#/components/schemas/QuizHintResponse'
         default:
           description: Ошибка
           content:
@@ -1490,9 +1494,9 @@ paths:
       - Quizzes
       operationId: getDailyQuiz
       summary: Ежедневный квиз
-      description: Запланировано в задаче 33. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 33. Возвращает ежедневный квиз пользователя; повторный вызов в тот же день возвращает ту же незавершённую попытку, после отправки ответов новая попытка в этот день отклоняется.
       x-task-id: 33
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1512,9 +1516,9 @@ paths:
       - Quizzes
       operationId: submitDailyQuiz
       summary: Отправить ежедневный квиз
-      description: Запланировано в задаче 33. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 33. Принимает ответы на ежедневный квиз; одна попытка в день.
       x-task-id: 33
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1540,9 +1544,9 @@ paths:
       - Competitions
       operationId: createCompetition
       summary: Создать соревнование
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1568,9 +1572,9 @@ paths:
       - Competitions
       operationId: getCompetition
       summary: Детали соревнования
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1660,9 +1664,9 @@ paths:
       - Competitions
       operationId: getCompetitionLeaderboard
       summary: Таблица результатов
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1774,9 +1778,9 @@ paths:
       - Subscriptions
       operationId: createSubscription
       summary: Оформить подписку
-      description: Запланировано в задаче 41. До реализации этот маршрут вернёт 404.
+      description: Создаёт платёж через провайдера и активирует подписку после успешной оплаты.
       x-task-id: 41
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1802,9 +1806,9 @@ paths:
       - Subscriptions
       operationId: getMySubscription
       summary: Статус подписки
-      description: Запланировано в задаче 43. До реализации этот маршрут вернёт 404.
+      description: Возвращает актуальный статус последней подписки текущего пользователя.
       x-task-id: 43
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1824,9 +1828,9 @@ paths:
       - Subscriptions
       operationId: cancelSubscription
       summary: Отменить подписку
-      description: Запланировано в задаче 42. До реализации этот маршрут вернёт 404.
+      description: Отменяет принадлежащую текущему пользователю активную подписку.
       x-task-id: 42
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1852,9 +1856,9 @@ paths:
       - Payments
       operationId: listPayments
       summary: История платежей
-      description: Запланировано в задаче 44. До реализации этот маршрут вернёт 404.
+      description: Возвращает постраничную историю платежей без платёжных реквизитов.
       x-task-id: 44
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1875,9 +1879,9 @@ paths:
       - Payments
       operationId: verifyMobileReceipt
       summary: Подтвердить покупку в магазине
-      description: Запланировано в задаче 45. До реализации этот маршрут вернёт 404.
+      description: Верифицирует чек App Store или Google Play и синхронизирует подписку.
       x-task-id: 45
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1903,9 +1907,9 @@ paths:
       - Payments
       operationId: paymentWebhook
       summary: Вебхук платёжного провайдера
-      description: Запланировано в задаче 62. До реализации этот маршрут вернёт 404.
+      description: Проверяет подпись и идемпотентно обрабатывает событие платёжного провайдера.
       x-task-id: 62
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       parameters:
       - name: provider
@@ -2572,6 +2576,19 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    QuizHint:
+      type: object
+      required: [ questionId, hint ]
+      properties:
+        questionId: *id001
+        hint:
+          type: string
+    QuizHintResponse:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          $ref: '#/components/schemas/QuizHint'
     HelloResponse:
       type: object
       properties:
@@ -2924,28 +2941,42 @@ components:
           type: string
         streakDays: *id007
         dailyGoalProgress: *id009
+    QuizAttemptAnswerOption:
+      type: object
+      required: [ id, text ]
+      properties:
+        id: *id001
+        text:
+          type: string
+    QuizAttemptQuestion:
+      type: object
+      required: [ id, text, answers ]
+      properties:
+        id: *id001
+        text:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAttemptAnswerOption'
     QuizAttempt:
       type: object
+      required: [ id, quizId, questions ]
       properties:
         id: *id001
         quizId: *id001
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuizCard'
-      required:
-      - id
-      - quizId
+            $ref: '#/components/schemas/QuizAttemptQuestion'
     QuizResult:
       type: object
+      required: [ attemptId, correctAnswers, score, experience ]
       properties:
         attemptId: *id001
         correctAnswers: *id007
         score: *id007
         experience: *id007
-      required:
-      - attemptId
-      - score
     Competition:
       type: object
       properties:
@@ -2954,12 +2985,19 @@ components:
           type: string
         status:
           type: string
+          description: SCHEDULED, ACTIVE или FINISHED; вычисляется по времени начала и окончания.
+        quizId: *id001
+        creatorId:
+          type: string
+        rules:
+          type: string
+        startsAt: *id005
+        endsAt: *id005
         participantIds:
           type: array
-          items: *id001
-      required:
-      - id
-      - title
+          items:
+            type: string
+      required: [ id, title, status, quizId, creatorId, startsAt, endsAt, participantIds ]
     RatingEntry:
       type: object
       properties:
@@ -3289,11 +3327,15 @@ components:
       properties:
         title:
           type: string
+          minLength: 1
+          maxLength: 200
         quizId: *id001
+        rules:
+          type: string
+          maxLength: 2000
         startsAt: *id005
-      required:
-      - title
-      - quizId
+        endsAt: *id005
+      required: [ title, quizId, startsAt, endsAt ]
     FriendRequestCreate:
       type: object
       properties:

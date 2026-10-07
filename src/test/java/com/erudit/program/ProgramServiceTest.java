@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import org.springframework.beans.factory.ObjectProvider;
+import com.erudit.user.service.UserPreferenceProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +29,12 @@ import static org.mockito.Mockito.when;
 class ProgramServiceTest {
     private final ProgramRepository repository = mock(ProgramRepository.class);
     private final AssessmentService assessmentService = mock(AssessmentService.class);
-    private final ProgramService service = new ProgramService(repository, assessmentService);
+    private final ProgramPreferenceService preferenceService = mock(ProgramPreferenceService.class);
+    @SuppressWarnings("unchecked")
+    private final ObjectProvider<UserPreferenceProvider> userPreferences = mock(ObjectProvider.class);
+    private final ProgramService service = new ProgramService(repository, assessmentService,
+            preferenceService, userPreferences,
+            Clock.fixed(Instant.parse("2026-06-10T12:00:00Z"), ZoneOffset.UTC));
 
     @Test
     void ordersWeakTopicsFirstAndMatchesDifficulty() {
@@ -34,6 +45,7 @@ class ProgramServiceTest {
         when(assessmentService.latestResult("student")).thenReturn(assessment(List.of(
                 new TopicAssessmentScore("SCIENCE", 1, 1, 2000),
                 new TopicAssessmentScore("CULTURE", 0, 1, 0))));
+        when(preferenceService.aggregate(eq("student"), any())).thenReturn(new ProgramPreferences(Map.of()));
         when(repository.findCandidates()).thenReturn(List.of(
                 cultureAdvanced, scienceBeginner, cultureBeginner, scienceAdvanced));
         AtomicReference<LearningProgram> stored = new AtomicReference<>();
