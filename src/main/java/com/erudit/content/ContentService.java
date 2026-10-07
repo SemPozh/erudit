@@ -50,13 +50,13 @@ public class ContentService {
         if (!admin && content.status() != ContentStatus.PUBLISHED) {
             throw new NotFoundException("Content not found");
         }
-        if (!admin && content.premiumLocked() && !hasPremium(userId)) {
+        if (!admin && content.premiumLocked() && !hasPremiumAccess(userId)) {
             throw new ForbiddenException("Active premium subscription is required");
         }
         return content;
     }
 
-    private boolean hasPremium(String userId) {
+    public boolean hasPremiumAccess(String userId) {
         if (userId == null) return false;
         try {
             PremiumAccessService access = premiumAccess.getIfAvailable();
