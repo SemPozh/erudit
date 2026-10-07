@@ -9,8 +9,15 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+
+
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -222,5 +229,205 @@ class QuizIntegrationTest {
                 .andExpect(status().isUnauthorized());
         mvc.perform(post("/api/v1/quiz/{id}/start", UUID.randomUUID()).with(user("quiz-user-8")))
                 .andExpect(status().isNotFound());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions hint(
+            UUID quizId, UUID attemptId, UUID questionId, String username) throws Exception {
+        return mvc.perform(post("/api/v1/quiz/{id}/hint", quizId)
+                .param("attemptId", attemptId.toString())
+                .param("questionId", questionId.toString())
+                .with(user(username)));
+    }
+
+    @Test
+    void hintReturnsCardFactAndIsRecordedOncePerQuestion() throws Exception {
+        Quiz quiz = saveQuiz();
+        QuizQuestion q1 = quiz.questions().get(0);
+        UUID attemptId = start(quiz.id(), "hint-user-1");
+        String fact = jdbc.queryForObject(
+                "SELECT fact FROM quiz_cards WHERE id = ?", String.class, q1.quizCardId());
+
+        hint(quiz.id(), attemptId, q1.id(), "hint-user-1")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.questionId").value(q1.id().toString()))
+                .andExpect(jsonPath("$.data.hint").value(fact));
+        hint(quiz.id(), attemptId, q1.id(), "hint-user-1").andExpect(status().isOk());
+
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM quiz_attempt_hints WHERE attempt_id = ?",
+                Integer.class, attemptId)).isEqualTo(1);
+    }
+
+    @Test
+    void eachUsedHintCostsOnePoint() throws Exception {
+        Quiz quiz = saveQuiz();
+        UUID attemptId = start(quiz.id(), "hint-user-2");
+        hint(quiz.id(), attemptId, quiz.questions().get(0).id(), "hint-user-2")
+                .andExpect(status().isOk());
+
+        submit(quiz.id(), "hint-user-2", submitBody(attemptId, quiz, true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.correctAnswers").value(2))
+                .andExpect(jsonPath("$.data.score").value(1))
+                .andExpect(jsonPath("$.data.experience").value(2));
+    }
+
+    @Test
+    void scoreNeverGoesBelowZero() throws Exception {
+        Quiz quiz = saveQuiz();
+        UUID attemptId = start(quiz.id(), "hint-user-3");
+        for (QuizQuestion q : quiz.questions()) {
+            hint(quiz.id(), attemptId, q.id(), "hint-user-3").andExpect(status().isOk());
+        }
+
+        submit(quiz.id(), "hint-user-3", submitBody(attemptId, quiz, false))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.correctAnswers").value(0))
+                .andExpect(jsonPath("$.data.score").value(0))
+                .andExpect(jsonPath("$.data.experience").value(1));
+    }
+
+    @Test
+    void rejectsInvalidHintRequests() throws Exception {
+        Quiz quiz = saveQuiz();
+        Quiz other = saveQuiz();
+        QuizQuestion q1 = quiz.questions().get(0);
+        UUID attemptId = start(quiz.id(), "hint-user-4");
+
+        // another user's attempt
+        hint(quiz.id(), attemptId, q1.id(), "hint-intruder").andExpect(status().isNotFound());
+        // question from a different quiz
+        hint(quiz.id(), attemptId, other.questions().get(0).id(), "hint-user-4")
+                .andExpect(status().isBadRequest());
+        // attempt belongs to a different quiz
+        hint(other.id(), attemptId, other.questions().get(0).id(), "hint-user-4")
+                .andExpect(status().isBadRequest());
+        // not authenticated
+        mvc.perform(post("/api/v1/quiz/{id}/hint", quiz.id())
+                        .param("attemptId", attemptId.toString())
+                        .param("questionId", q1.id().toString()))
+                .andExpect(status().isUnauthorized());
+
+        // hint after the attempt is submitted
+        submit(quiz.id(), "hint-user-4", submitBody(attemptId, quiz, true)).andExpect(status().isOk());
+        hint(quiz.id(), attemptId, q1.id(), "hint-user-4").andExpect(status().isBadRequest());
+    }
+
+    // ---------- daily quiz helpers ----------
+
+    /** Marks the quiz's content as completed, so it is the daily quiz candidate for this user. */
+    private void completeContentFor(String username, Quiz quiz) {
+        Timestamp now = Timestamp.from(Instant.now());
+        jdbc.update("""
+                INSERT INTO content_progress (user_id, content_id, status, viewed_at, completed_at)
+                VALUES (?, ?, 'COMPLETED', ?, ?)
+                """, username, quiz.contentId(), now, now);
+    }
+
+    private UUID dailyAttemptId(String username) throws Exception {
+        String body = mvc.perform(get("/api/v1/quiz/daily").with(user(username)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        return UUID.fromString(objectMapper.readTree(body).at("/data/id").asText());
+    }
+
+    private org.springframework.test.web.servlet.ResultActions submitDaily(
+            String username, String body) throws Exception {
+        return mvc.perform(post("/api/v1/quiz/daily/submit")
+                .with(user(username))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body));
+    }
+
+    // ---------- daily quiz tests ----------
+
+    @Test
+    void dailyQuizUsesCompletedContentAndReturnsSameAttemptUntilSubmitted() throws Exception {
+        Quiz quiz = saveQuiz();
+        completeContentFor("daily-user-1", quiz);
+
+        String body = mvc.perform(get("/api/v1/quiz/daily").with(user("daily-user-1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.quizId").value(quiz.id().toString()))
+                .andExpect(jsonPath("$.data.questions.length()").value(2))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(body).doesNotContain("correct");
+
+        UUID first = dailyAttemptId("daily-user-1");
+        UUID second = dailyAttemptId("daily-user-1");
+        assertThat(second).isEqualTo(first);
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM quiz_attempts WHERE user_id = ? AND daily_date IS NOT NULL",
+                Integer.class, "daily-user-1")).isEqualTo(1);
+    }
+
+    @Test
+    void dailySubmitScoresAndRejectsSecondAttemptToday() throws Exception {
+        Quiz quiz = saveQuiz();
+        completeContentFor("daily-user-2", quiz);
+        UUID attemptId = dailyAttemptId("daily-user-2");
+
+        submitDaily("daily-user-2", submitBody(attemptId, quiz, true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.attemptId").value(attemptId.toString()))
+                .andExpect(jsonPath("$.data.correctAnswers").value(2))
+                .andExpect(jsonPath("$.data.score").value(2))
+                .andExpect(jsonPath("$.data.experience").value(3));
+
+        // result is stored
+        assertThat(jdbc.queryForObject(
+                "SELECT score FROM quiz_attempts WHERE id = ?", Integer.class, attemptId)).isEqualTo(2);
+
+        // no second daily attempt today, and the same attempt cannot be resubmitted
+        mvc.perform(get("/api/v1/quiz/daily").with(user("daily-user-2")))
+                .andExpect(status().isBadRequest());
+        submitDaily("daily-user-2", submitBody(attemptId, quiz, true))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void dailyQuizIsAvailableAgainTheNextDay() throws Exception {
+        Quiz quiz = saveQuiz();
+        completeContentFor("daily-user-3", quiz);
+        UUID today = dailyAttemptId("daily-user-3");
+        submitDaily("daily-user-3", submitBody(today, quiz, true)).andExpect(status().isOk());
+
+        // pretend that attempt happened yesterday
+        jdbc.update("UPDATE quiz_attempts SET daily_date = ? WHERE id = ?",
+                Date.valueOf(LocalDate.now(ZoneOffset.UTC).minusDays(1)), today);
+
+        UUID tomorrow = dailyAttemptId("daily-user-3");
+        assertThat(tomorrow).isNotEqualTo(today);
+    }
+
+    @Test
+    void dailyQuizFallsBackToAnyQuizWhenNothingIsCompleted() throws Exception {
+        saveQuiz(); // make sure at least one quiz exists
+        mvc.perform(get("/api/v1/quiz/daily").with(user("daily-user-4")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.questions").isNotEmpty());
+    }
+
+    @Test
+    void dailySubmitRejectsForeignAndNonDailyAttemptsAndAnonymous() throws Exception {
+        Quiz quiz = saveQuiz();
+        completeContentFor("daily-owner", quiz);
+        UUID dailyAttempt = dailyAttemptId("daily-owner");
+
+        // someone else's daily attempt
+        submitDaily("daily-intruder", submitBody(dailyAttempt, quiz, true))
+                .andExpect(status().isNotFound());
+
+        // a regular attempt cannot go through the daily endpoint
+        UUID regular = start(quiz.id(), "daily-owner");
+        submitDaily("daily-owner", submitBody(regular, quiz, true))
+                .andExpect(status().isBadRequest());
+
+        // not authenticated
+        mvc.perform(get("/api/v1/quiz/daily")).andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/v1/quiz/daily/submit")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(submitBody(dailyAttempt, quiz, true)))
+                .andExpect(status().isUnauthorized());
     }
 }
