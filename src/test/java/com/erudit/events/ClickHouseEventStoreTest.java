@@ -101,4 +101,47 @@ class ClickHouseEventStoreTest {
                 .containsEntry("correctRate", 50.0)
                 .containsEntry("averageMinutes", 3.0);
     }
+
+    @Test
+    @EnabledIfEnvironmentVariable(named = "CLICKHOUSE_TEST_URL", matches = ".+")
+    void aggregatesBusinessConversionsWithoutDoubleCountingEvents() throws Exception {
+        ClickHouseEventStore store = new ClickHouseEventStore(
+                System.getenv("CLICKHOUSE_TEST_URL"),
+                System.getenv("CLICKHOUSE_TEST_USERNAME"),
+                System.getenv("CLICKHOUSE_TEST_PASSWORD"));
+        store.initializeSchema();
+        Instant time = Instant.parse("2026-09-25T10:00:00Z");
+        String user = "business-metrics-user-" + UUID.randomUUID();
+        UUID duplicate = UUID.randomUUID();
+        store.write(new AnalyticsEvent(duplicate, user, "business-session", "content_viewed", time, "{}"));
+        store.write(new AnalyticsEvent(duplicate, user, "business-session", "content_viewed", time, "{}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user, "business-session", "content_started",
+                time.plusSeconds(10), "{}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user, "business-session", "content_completed",
+                time.plusSeconds(20), "{}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user, "business-session", "subscription_started",
+                time.plusSeconds(30), "{}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user, "business-session", "payment_succeeded",
+                time.plusSeconds(40), "{\"provider\":\"redacted\"}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user, "business-session", "notification_delivered",
+                time.plusSeconds(50), "{}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user, "business-session", "notification_opened",
+                time.plusSeconds(60), "{}"));
+        store.write(new AnalyticsEvent(UUID.randomUUID(), user + "-no-delivery", "business-session-2",
+                "notification_opened", time.plusSeconds(86400), "{}"));
+        AnalyticsPeriod period = new AnalyticsPeriod(Instant.parse("2026-09-25T00:00:00Z"),
+                Instant.parse("2026-09-27T00:00:00Z"), AnalyticsGranularity.DAY);
+
+        assertThat(store.funnels(period).getFirst().dimensions())
+                .containsEntry("viewedUsers", 1.0).containsEntry("startToCompleteRate", 100.0);
+        assertThat(store.monetization(period).getFirst().dimensions())
+                .containsEntry("paidUsers", 1.0).containsEntry("checkoutToPaidRate", 100.0)
+                .doesNotContainKeys("provider", "paymentMethod");
+        List<AnalyticsMetricPoint> notificationPoints = store.notifications(period);
+        assertThat(notificationPoints.getFirst().dimensions())
+                .containsEntry("openRate", 100.0).containsEntry("returnRate", 100.0);
+        assertThat(notificationPoints.get(1).dimensions()).containsEntry("openRate", 0.0);
+        assertThat(store.notifications(new AnalyticsPeriod(Instant.parse("2026-09-28T00:00:00Z"),
+                Instant.parse("2026-09-29T00:00:00Z"), AnalyticsGranularity.DAY))).isEmpty();
+    }
 }

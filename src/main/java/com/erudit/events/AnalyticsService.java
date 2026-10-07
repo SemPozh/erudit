@@ -41,6 +41,21 @@ public class AnalyticsService {
         return new AnalyticsMetricSeries("learning", repository().learning(period));
     }
 
+    public AnalyticsMetricSeries funnels(Instant from, Instant to, String granularity) {
+        AnalyticsPeriod period = period(from, to, granularity);
+        return new AnalyticsMetricSeries("funnels", repository().funnels(period));
+    }
+
+    public AnalyticsMetricSeries monetization(Instant from, Instant to, String granularity) {
+        AnalyticsPeriod period = period(from, to, granularity);
+        return new AnalyticsMetricSeries("monetization", repository().monetization(period));
+    }
+
+    public AnalyticsMetricSeries notifications(Instant from, Instant to, String granularity) {
+        AnalyticsPeriod period = period(from, to, granularity);
+        return new AnalyticsMetricSeries("notifications", repository().notifications(period));
+    }
+
     AnalyticsPeriod period(Instant requestedFrom, Instant requestedTo, String requestedGranularity) {
         Instant to = requestedTo == null ? clock.instant() : requestedTo;
         Instant from = requestedFrom == null ? to.minus(DEFAULT_PERIOD) : requestedFrom;

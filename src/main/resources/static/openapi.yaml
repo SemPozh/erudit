@@ -2336,9 +2336,9 @@ paths:
       - Analytics
       operationId: getFunnelMetrics
       summary: Воронки
-      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      description: Уникальные пользователи на этапах просмотра, прохождения контента и квиза; rates — проценты перехода между соседними этапами.
       x-task-id: 65
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2359,9 +2359,9 @@ paths:
       - Analytics
       operationId: getMonetizationMetrics
       summary: Монетизация
-      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      description: Уникальные пользователи, начавшие оформление и успешно оплатившие подписку; checkoutToPaidRate — их отношение в процентах. Платёжные реквизиты не возвращаются.
       x-task-id: 65
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2382,9 +2382,9 @@ paths:
       - Analytics
       operationId: getNotificationMetrics
       summary: Эффективность уведомлений
-      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      description: Уникальные получатели, открытия, клики, возвраты в контент и отписки; rates рассчитаны относительно доставок, returnRate — относительно открытий.
       x-task-id: 65
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':

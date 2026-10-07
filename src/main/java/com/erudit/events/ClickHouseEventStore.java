@@ -171,6 +171,95 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
         }
     }
 
+    @Override
+    public List<AnalyticsMetricPoint> funnels(AnalyticsPeriod period) {
+        String sql = "SELECT bucket, countIf(viewed > 0) viewed_users, "
+                + "countIf(started > 0) started_users, countIf(completed > 0) completed_users, "
+                + "countIf(quiz_started > 0) quiz_started_users, countIf(quiz_completed > 0) quiz_completed_users "
+                + "FROM (SELECT " + period.granularity().bucketExpression() + " bucket, user_id, "
+                + "countIf(event_type = 'content_viewed') viewed, "
+                + "countIf(event_type = 'content_started') started, "
+                + "countIf(event_type = 'content_completed') completed, "
+                + "countIf(event_type = 'quiz_started') quiz_started, "
+                + "countIf(event_type = 'quiz_completed') quiz_completed "
+                + "FROM " + deduplicatedSource() + " WHERE user_id != '' GROUP BY bucket, user_id) "
+                + "GROUP BY bucket ORDER BY bucket";
+        return conversionMetrics(period, sql, "completed_users", List.of(
+                new Counter("viewedUsers", "viewed_users"),
+                new Counter("startedUsers", "started_users"),
+                new Counter("completedUsers", "completed_users"),
+                new Counter("quizStartedUsers", "quiz_started_users"),
+                new Counter("quizCompletedUsers", "quiz_completed_users"),
+                new Conversion("viewToStartRate", "started_users", "viewed_users"),
+                new Conversion("startToCompleteRate", "completed_users", "started_users"),
+                new Conversion("quizCompletionRate", "quiz_completed_users", "quiz_started_users")));
+    }
+
+    @Override
+    public List<AnalyticsMetricPoint> monetization(AnalyticsPeriod period) {
+        String sql = "SELECT bucket, countIf(checkout > 0) checkout_users, "
+                + "countIf(paid > 0) paid_users, countIf(cancelled > 0) cancelled_users, "
+                + "countIf(expired > 0) expired_users FROM (SELECT "
+                + period.granularity().bucketExpression() + " bucket, user_id, "
+                + "countIf(event_type = 'subscription_started') checkout, "
+                + "countIf(event_type = 'payment_succeeded') paid, "
+                + "countIf(event_type = 'subscription_cancelled') cancelled, "
+                + "countIf(event_type = 'subscription_expired') expired "
+                + "FROM " + deduplicatedSource() + " WHERE user_id != '' GROUP BY bucket, user_id) "
+                + "GROUP BY bucket ORDER BY bucket";
+        return conversionMetrics(period, sql, "paid_users", List.of(
+                new Counter("checkoutUsers", "checkout_users"),
+                new Counter("paidUsers", "paid_users"),
+                new Counter("cancelledUsers", "cancelled_users"),
+                new Counter("expiredUsers", "expired_users"),
+                new Conversion("checkoutToPaidRate", "paid_users", "checkout_users")));
+    }
+
+    @Override
+    public List<AnalyticsMetricPoint> notifications(AnalyticsPeriod period) {
+        String sql = "SELECT bucket, countIf(delivered > 0) delivered_users, "
+                + "countIf(opened > 0) opened_users, countIf(clicked > 0) clicked_users, "
+                + "countIf(opened > 0 AND returned > 0) returned_users, "
+                + "countIf(unsubscribed > 0) unsubscribed_users FROM (SELECT "
+                + period.granularity().bucketExpression() + " bucket, user_id, "
+                + "countIf(event_type = 'notification_delivered') delivered, "
+                + "countIf(event_type = 'notification_opened') opened, "
+                + "countIf(event_type = 'notification_clicked') clicked, "
+                + "countIf(event_type IN ('content_viewed', 'quiz_started')) returned, "
+                + "countIf(event_type = 'notification_unsubscribed') unsubscribed "
+                + "FROM " + deduplicatedSource() + " WHERE user_id != '' GROUP BY bucket, user_id) "
+                + "GROUP BY bucket ORDER BY bucket";
+        return conversionMetrics(period, sql, "opened_users", List.of(
+                new Counter("deliveredUsers", "delivered_users"),
+                new Counter("openedUsers", "opened_users"),
+                new Counter("clickedUsers", "clicked_users"),
+                new Counter("returnedUsers", "returned_users"),
+                new Counter("unsubscribedUsers", "unsubscribed_users"),
+                new Conversion("openRate", "opened_users", "delivered_users"),
+                new Conversion("clickThroughRate", "clicked_users", "delivered_users"),
+                new Conversion("returnRate", "returned_users", "opened_users"),
+                new Conversion("unsubscribeRate", "unsubscribed_users", "delivered_users")));
+    }
+
+    private List<AnalyticsMetricPoint> conversionMetrics(AnalyticsPeriod period, String sql,
+                                                          String valueColumn, List<Dimension> dimensions) {
+        try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            bindPeriod(statement, period);
+            try (ResultSet result = statement.executeQuery()) {
+                List<AnalyticsMetricPoint> points = new ArrayList<>();
+                while (result.next()) {
+                    Map<String, Double> values = new LinkedHashMap<>();
+                    for (Dimension dimension : dimensions) dimension.add(result, values);
+                    points.add(new AnalyticsMetricPoint(result.getTimestamp("bucket").toInstant(),
+                            result.getDouble(valueColumn), Map.copyOf(values)));
+                }
+                return List.copyOf(points);
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("ClickHouse conversion query failed", exception);
+        }
+    }
+
     private List<AnalyticsMetricPoint> metric(AnalyticsPeriod period, String aggregation) {
         String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, "
                 + aggregation + " value FROM " + deduplicatedSource() + " "
@@ -206,6 +295,23 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
 
     private static double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private sealed interface Dimension permits Counter, Conversion {
+        void add(ResultSet result, Map<String, Double> values) throws SQLException;
+    }
+
+    private record Counter(String name, String column) implements Dimension {
+        @Override public void add(ResultSet result, Map<String, Double> values) throws SQLException {
+            values.put(name, result.getDouble(column));
+        }
+    }
+
+    private record Conversion(String name, String numerator, String denominator) implements Dimension {
+        @Override public void add(ResultSet result, Map<String, Double> values) throws SQLException {
+            double total = result.getDouble(denominator);
+            values.put(name, total == 0 ? 0 : round(result.getDouble(numerator) * 100 / total));
+        }
     }
 
     private Connection connect() throws SQLException {
