@@ -2,8 +2,12 @@ package com.erudit.content;
 
 import com.erudit.openapi.model.ContentUpsertRequest;
 import com.erudit.web.NotFoundException;
+import com.erudit.web.ConflictException;
 import com.erudit.web.ValidationException;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.ObjectProvider;
+import com.erudit.payment.PremiumAccessService;
+import com.erudit.web.ForbiddenException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -15,17 +19,20 @@ import java.util.UUID;
 public class ContentService {
     private final ContentRepository repository;
     private final QuizCardService quizCardService;
+    private final ObjectProvider<PremiumAccessService> premiumAccess;
 
-    public ContentService(ContentRepository repository, QuizCardService quizCardService) {
+    public ContentService(ContentRepository repository, QuizCardService quizCardService,
+                          ObjectProvider<PremiumAccessService> premiumAccess) {
         this.repository = repository;
         this.quizCardService = quizCardService;
+        this.premiumAccess = premiumAccess;
     }
 
     @Transactional
     public Content create(ContentUpsertRequest request, String authorId) {
         requireCategory(request.getCategoryId());
         Content content = fromRequest(UUID.randomUUID(), request, authorId,
-                ContentStatus.DRAFT, Instant.now(), Boolean.TRUE.equals(request.getPremiumLocked()));
+                ContentStatus.PENDING_MODERATION, Instant.now(), Boolean.TRUE.equals(request.getPremiumLocked()));
         repository.save(content);
         Content saved = find(content.id());
         quizCardService.regenerate(saved);
@@ -34,11 +41,29 @@ public class ContentService {
 
     @Transactional(readOnly = true)
     public Content get(UUID id, boolean admin) {
+        return get(id, admin, null);
+    }
+
+    @Transactional(readOnly = true)
+    public Content get(UUID id, boolean admin, String userId) {
         Content content = find(id);
         if (!admin && content.status() != ContentStatus.PUBLISHED) {
             throw new NotFoundException("Content not found");
         }
+        if (!admin && content.premiumLocked() && !hasPremium(userId)) {
+            throw new ForbiddenException("Active premium subscription is required");
+        }
         return content;
+    }
+
+    private boolean hasPremium(String userId) {
+        if (userId == null) return false;
+        try {
+            PremiumAccessService access = premiumAccess.getIfAvailable();
+            return access != null && access.isPremiumActive(UUID.fromString(userId));
+        } catch (IllegalArgumentException exception) {
+            return false;
+        }
     }
 
     @Transactional
@@ -48,6 +73,7 @@ public class ContentService {
         boolean premium = request.getPremiumLocked() == null ? current.premiumLocked() : request.getPremiumLocked();
         Content updated = fromRequest(id, request, current.authorId(), current.status(), current.createdAt(), premium);
         repository.update(updated);
+        repository.updateStatus(id, ContentStatus.PENDING_MODERATION);
         Content saved = find(id);
         quizCardService.regenerate(saved);
         return saved;
@@ -57,6 +83,31 @@ public class ContentService {
     public void archive(UUID id) {
         find(id);
         repository.updateStatus(id, ContentStatus.ARCHIVED);
+    }
+
+    @Transactional(readOnly = true)
+    public ContentPage moderationQueue(Integer requestedPage, Integer requestedSize) {
+        int page = requestedPage == null ? 0 : requestedPage;
+        int size = requestedSize == null ? 20 : requestedSize;
+        if (page < 0 || size < 1 || size > 100) {
+            throw new ValidationException("page must be non-negative and size must be between 1 and 100");
+        }
+        long total = repository.countByStatus(ContentStatus.PENDING_MODERATION);
+        return new ContentPage(repository.findByStatus(ContentStatus.PENDING_MODERATION, page, size),
+                total, page, size);
+    }
+
+    @Transactional
+    public Content moderate(UUID id, ContentStatus decision) {
+        if (decision != ContentStatus.PUBLISHED && decision != ContentStatus.REJECTED) {
+            throw new IllegalArgumentException("Unsupported moderation decision");
+        }
+        Content current = find(id);
+        if (current.status() != ContentStatus.PENDING_MODERATION) {
+            throw new ConflictException("Content has already been moderated");
+        }
+        repository.updateStatus(id, decision);
+        return find(id);
     }
 
     private Content find(UUID id) {

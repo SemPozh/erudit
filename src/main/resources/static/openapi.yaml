@@ -1099,9 +1099,9 @@ paths:
       - ContentModeration
       operationId: listModerationQueue
       summary: Очередь модерации
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Возвращает ожидающий решения контент. Требуется роль ADMIN.
       x-task-id: 20
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1123,9 +1123,9 @@ paths:
       - ContentModeration
       operationId: approveContent
       summary: Одобрить контент
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Публикует контент из очереди модерации. Требуется роль ADMIN.
       x-task-id: 20
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1152,9 +1152,9 @@ paths:
       - ContentModeration
       operationId: rejectContent
       summary: Отклонить контент
-      description: Запланировано в задаче 20. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Отклоняет контент из очереди модерации. Требуется роль ADMIN.
       x-task-id: 20
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1181,9 +1181,9 @@ paths:
       - ContentModeration
       operationId: listContentReports
       summary: Жалобы на контент
-      description: Запланировано в задаче 61. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Возвращает открытые жалобы в порядке поступления. Требуется роль ADMIN.
       x-task-id: 61
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1205,9 +1205,9 @@ paths:
       - ContentModeration
       operationId: resolveContentReport
       summary: Рассмотреть жалобу
-      description: Запланировано в задаче 61. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Необратимо принимает или отклоняет открытую жалобу и записывает действие в аудит. Требуется роль ADMIN.
       x-task-id: 61
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1374,9 +1374,9 @@ paths:
       - Programs
       operationId: getNextStep
       summary: Следующий шаг
-      description: Запланировано в задаче 29. До реализации этот маршрут вернёт 404.
+      description: Возвращает следующий незавершённый урок, прогресс ежедневной цели и текущий streak.
       x-task-id: 29
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1398,7 +1398,7 @@ paths:
       summary: Начать квиз
       description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
       x-task-id: 31
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1426,7 +1426,7 @@ paths:
       summary: Отправить ответы квиза
       description: Запланировано в задаче 31. До реализации этот маршрут вернёт 404.
       x-task-id: 31
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1455,29 +1455,33 @@ paths:
   /api/v1/quiz/{id}/hint:
     post:
       tags:
-      - Quizzes
+        - Quizzes
       operationId: requestQuizHint
       summary: Получить подсказку
-      description: Запланировано в задаче 32. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 32. Возвращает факт, на котором основан вопрос, и фиксирует использование подсказки в попытке; каждая использованная подсказка уменьшает счёт на 1.
       x-task-id: 32
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
-      - name: id
-        in: path
-        required: true
-        description: Идентификатор ресурса
-        schema: *id001
-      - name: questionId
-        in: query
-        required: true
-        schema: *id001
+        - name: id
+          in: path
+          required: true
+          description: Идентификатор ресурса
+          schema: *id001
+        - name: questionId
+          in: query
+          required: true
+          schema: *id001
+        - name: attemptId
+          in: query
+          required: true
+          schema: *id001
       responses:
         '200':
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QuizCardListResponse'
+                $ref: '#/components/schemas/QuizHintResponse'
         default:
           description: Ошибка
           content:
@@ -1490,9 +1494,9 @@ paths:
       - Quizzes
       operationId: getDailyQuiz
       summary: Ежедневный квиз
-      description: Запланировано в задаче 33. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 33. Возвращает ежедневный квиз пользователя; повторный вызов в тот же день возвращает ту же незавершённую попытку, после отправки ответов новая попытка в этот день отклоняется.
       x-task-id: 33
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1512,9 +1516,9 @@ paths:
       - Quizzes
       operationId: submitDailyQuiz
       summary: Отправить ежедневный квиз
-      description: Запланировано в задаче 33. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 33. Принимает ответы на ежедневный квиз; одна попытка в день.
       x-task-id: 33
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1540,9 +1544,9 @@ paths:
       - Competitions
       operationId: createCompetition
       summary: Создать соревнование
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1568,9 +1572,9 @@ paths:
       - Competitions
       operationId: getCompetition
       summary: Детали соревнования
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1660,9 +1664,9 @@ paths:
       - Competitions
       operationId: getCompetitionLeaderboard
       summary: Таблица результатов
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1774,9 +1778,9 @@ paths:
       - Subscriptions
       operationId: createSubscription
       summary: Оформить подписку
-      description: Запланировано в задаче 41. До реализации этот маршрут вернёт 404.
+      description: Создаёт платёж через провайдера и активирует подписку после успешной оплаты.
       x-task-id: 41
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1802,9 +1806,9 @@ paths:
       - Subscriptions
       operationId: getMySubscription
       summary: Статус подписки
-      description: Запланировано в задаче 43. До реализации этот маршрут вернёт 404.
+      description: Возвращает актуальный статус последней подписки текущего пользователя.
       x-task-id: 43
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1824,9 +1828,9 @@ paths:
       - Subscriptions
       operationId: cancelSubscription
       summary: Отменить подписку
-      description: Запланировано в задаче 42. До реализации этот маршрут вернёт 404.
+      description: Отменяет принадлежащую текущему пользователю активную подписку.
       x-task-id: 42
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1852,9 +1856,9 @@ paths:
       - Payments
       operationId: listPayments
       summary: История платежей
-      description: Запланировано в задаче 44. До реализации этот маршрут вернёт 404.
+      description: Возвращает постраничную историю платежей без платёжных реквизитов.
       x-task-id: 44
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1875,9 +1879,9 @@ paths:
       - Payments
       operationId: verifyMobileReceipt
       summary: Подтвердить покупку в магазине
-      description: Запланировано в задаче 45. До реализации этот маршрут вернёт 404.
+      description: Верифицирует чек App Store или Google Play и синхронизирует подписку.
       x-task-id: 45
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1903,9 +1907,9 @@ paths:
       - Payments
       operationId: paymentWebhook
       summary: Вебхук платёжного провайдера
-      description: Запланировано в задаче 62. До реализации этот маршрут вернёт 404.
+      description: Проверяет подпись и идемпотентно обрабатывает событие платёжного провайдера.
       x-task-id: 62
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       parameters:
       - name: provider
@@ -2164,9 +2168,9 @@ paths:
       - Events
       operationId: ingestEvent
       summary: Принять событие
-      description: Запланировано в задаче 53. До реализации этот маршрут вернёт 404.
+      description: Валидирует, дедуплицирует по eventId и сохраняет событие в ClickHouse.
       x-task-id: 53
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -2192,9 +2196,9 @@ paths:
       - Events
       operationId: ingestEventBatch
       summary: Принять пакет событий
-      description: Запланировано в задаче 53. До реализации этот маршрут вернёт 404.
+      description: Принимает до 100 событий и возвращает результат приёма для каждого eventId.
       x-task-id: 53
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -2220,9 +2224,9 @@ paths:
       - Analytics
       operationId: getActiveUsers
       summary: DAU, WAU и MAU
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      description: Возвращает уникальных активных пользователей по дням, неделям или месяцам в UTC.
       x-task-id: 56
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: &id006
       - name: from
         in: query
@@ -2263,9 +2267,9 @@ paths:
       - Analytics
       operationId: getSessionMetrics
       summary: Сессии
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      description: Возвращает число уникальных сессий по выбранной гранулярности в UTC.
       x-task-id: 56
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2286,9 +2290,9 @@ paths:
       - Analytics
       operationId: getEngagementMetrics
       summary: Вовлечённость
-      description: Запланировано в задаче 64. До реализации этот маршрут вернёт 404.
+      description: Возвращает просмотры, завершения и время взаимодействия с детализацией по формату в UTC.
       x-task-id: 64
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2309,9 +2313,9 @@ paths:
       - Analytics
       operationId: getLearningMetrics
       summary: Обучение
-      description: Запланировано в задаче 64. До реализации этот маршрут вернёт 404.
+      description: Возвращает завершения квизов, долю правильных ответов и среднее время прохождения в UTC.
       x-task-id: 64
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2332,9 +2336,9 @@ paths:
       - Analytics
       operationId: getFunnelMetrics
       summary: Воронки
-      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      description: Уникальные пользователи на этапах просмотра, прохождения контента и квиза; rates — проценты перехода между соседними этапами.
       x-task-id: 65
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2355,9 +2359,9 @@ paths:
       - Analytics
       operationId: getMonetizationMetrics
       summary: Монетизация
-      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      description: Уникальные пользователи, начавшие оформление и успешно оплатившие подписку; checkoutToPaidRate — их отношение в процентах. Платёжные реквизиты не возвращаются.
       x-task-id: 65
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2378,9 +2382,9 @@ paths:
       - Analytics
       operationId: getNotificationMetrics
       summary: Эффективность уведомлений
-      description: Запланировано в задаче 65. До реализации этот маршрут вернёт 404.
+      description: Уникальные получатели, открытия, клики, возвраты в контент и отписки; rates рассчитаны относительно доставок, returnRate — относительно открытий.
       x-task-id: 65
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -2572,6 +2576,19 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    QuizHint:
+      type: object
+      required: [ questionId, hint ]
+      properties:
+        questionId: *id001
+        hint:
+          type: string
+    QuizHintResponse:
+      type: object
+      required: [ data ]
+      properties:
+        data:
+          $ref: '#/components/schemas/QuizHint'
     HelloResponse:
       type: object
       properties:
@@ -2924,28 +2941,42 @@ components:
           type: string
         streakDays: *id007
         dailyGoalProgress: *id009
+    QuizAttemptAnswerOption:
+      type: object
+      required: [ id, text ]
+      properties:
+        id: *id001
+        text:
+          type: string
+    QuizAttemptQuestion:
+      type: object
+      required: [ id, text, answers ]
+      properties:
+        id: *id001
+        text:
+          type: string
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/QuizAttemptAnswerOption'
     QuizAttempt:
       type: object
+      required: [ id, quizId, questions ]
       properties:
         id: *id001
         quizId: *id001
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuizCard'
-      required:
-      - id
-      - quizId
+            $ref: '#/components/schemas/QuizAttemptQuestion'
     QuizResult:
       type: object
+      required: [ attemptId, correctAnswers, score, experience ]
       properties:
         attemptId: *id001
         correctAnswers: *id007
         score: *id007
         experience: *id007
-      required:
-      - attemptId
-      - score
     Competition:
       type: object
       properties:
@@ -2954,12 +2985,19 @@ components:
           type: string
         status:
           type: string
+          description: SCHEDULED, ACTIVE или FINISHED; вычисляется по времени начала и окончания.
+        quizId: *id001
+        creatorId:
+          type: string
+        rules:
+          type: string
+        startsAt: *id005
+        endsAt: *id005
         participantIds:
           type: array
-          items: *id001
-      required:
-      - id
-      - title
+          items:
+            type: string
+      required: [ id, title, status, quizId, creatorId, startsAt, endsAt, participantIds ]
     RatingEntry:
       type: object
       properties:
@@ -3079,7 +3117,16 @@ components:
       type: object
       properties:
         time: *id005
-        value: *id009
+        value:
+          type: number
+          format: double
+          minimum: 0
+        dimensions:
+          type: object
+          additionalProperties:
+            type: number
+            format: double
+            minimum: 0
       required:
       - time
       - value
@@ -3297,11 +3344,15 @@ components:
       properties:
         title:
           type: string
+          minLength: 1
+          maxLength: 200
         quizId: *id001
+        rules:
+          type: string
+          maxLength: 2000
         startsAt: *id005
-      required:
-      - title
-      - quizId
+        endsAt: *id005
+      required: [ title, quizId, startsAt, endsAt ]
     FriendRequestCreate:
       type: object
       properties:
@@ -3354,6 +3405,8 @@ components:
       properties:
         events:
           type: array
+          minItems: 1
+          maxItems: 100
           items:
             $ref: '#/components/schemas/EventRequest'
       required:

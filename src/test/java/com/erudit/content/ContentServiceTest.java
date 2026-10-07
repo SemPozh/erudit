@@ -2,6 +2,7 @@ package com.erudit.content;
 
 import com.erudit.openapi.model.ContentUpsertRequest;
 import com.erudit.web.NotFoundException;
+import com.erudit.web.ConflictException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ class ContentServiceTest {
     @Autowired private ContentRepository repository;
     @Autowired private ContentReportService reportService;
     @Autowired private ContentReportRepository reportRepository;
+    @Autowired private ContentModerationAuditRepository auditRepository;
 
     @Test
     void preservesIdentityAndStatusWhileUpdatingThenArchives() {
@@ -32,7 +34,7 @@ class ContentServiceTest {
         assertThat(updated.id()).isEqualTo(created.id());
         assertThat(updated.authorId()).isEqualTo("admin-1");
         assertThat(updated.createdAt()).isEqualTo(created.createdAt());
-        assertThat(updated.status()).isEqualTo(ContentStatus.DRAFT);
+        assertThat(updated.status()).isEqualTo(ContentStatus.PENDING_MODERATION);
         assertThat(updated.tags()).containsExactly("new");
 
         ContentReport report = reportService.report(created.id(), "Content needs an editorial review");
@@ -48,6 +50,48 @@ class ContentServiceTest {
         Content draft = service.create(request(category(), "Draft", Set.of()), "admin-1");
         assertThatThrownBy(() -> service.get(draft.id(), false)).isInstanceOf(NotFoundException.class);
         assertThat(service.get(draft.id(), true)).isEqualTo(draft);
+    }
+
+    @Test
+    void queuesAndModeratesContentExactlyOnce() {
+        Content pending = service.create(request(category(), "Pending", Set.of()), "admin-1");
+
+        assertThat(pending.status()).isEqualTo(ContentStatus.PENDING_MODERATION);
+        assertThat(service.moderationQueue(0, 20).items()).extracting(Content::id).contains(pending.id());
+        assertThat(service.moderate(pending.id(), ContentStatus.PUBLISHED).status())
+                .isEqualTo(ContentStatus.PUBLISHED);
+        assertThatThrownBy(() -> service.moderate(pending.id(), ContentStatus.REJECTED))
+                .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void resolvesReportsAndArchivesContentOnlyWhenAccepted() {
+        Content acceptedContent = service.create(request(category(), "Accepted report", Set.of()), "admin-1");
+        service.moderate(acceptedContent.id(), ContentStatus.PUBLISHED);
+        ContentReport accepted = reportService.report(acceptedContent.id(), "Incorrect fact");
+
+        reportService.resolve(accepted.id(), ReportDecision.ACCEPT, " Confirmed ", "moderator-1");
+
+        ContentReport acceptedResult = reportRepository.findById(accepted.id()).orElseThrow();
+        assertThat(acceptedResult.status()).isEqualTo(ContentReportStatus.RESOLVED);
+        assertThat(acceptedResult.decision()).isEqualTo(ReportDecision.ACCEPT);
+        assertThat(acceptedResult.resolutionComment()).isEqualTo("Confirmed");
+        assertThat(acceptedResult.resolvedBy()).isEqualTo("moderator-1");
+        assertThat(repository.findById(acceptedContent.id()).orElseThrow().status())
+                .isEqualTo(ContentStatus.ARCHIVED);
+        assertThat(auditRepository.countReportResolutions(accepted.id())).isEqualTo(1);
+        assertThatThrownBy(() -> reportService.resolve(
+                accepted.id(), ReportDecision.REJECT, null, "moderator-2"))
+                .isInstanceOf(ConflictException.class);
+
+        Content rejectedContent = service.create(request(category(), "Rejected report", Set.of()), "admin-1");
+        service.moderate(rejectedContent.id(), ContentStatus.PUBLISHED);
+        ContentReport rejected = reportService.report(rejectedContent.id(), "Not a violation");
+        reportService.resolve(rejected.id(), ReportDecision.REJECT, null, "moderator-1");
+        assertThat(repository.findById(rejectedContent.id()).orElseThrow().status())
+                .isEqualTo(ContentStatus.PUBLISHED);
+        assertThat(reportService.openReports(0, 50).items())
+                .extracting(ContentReport::id).doesNotContain(accepted.id(), rejected.id());
     }
 
     private UUID category() {
