@@ -2602,6 +2602,8 @@ components:
       properties:
         reason:
           type: string
+          minLength: 10
+          maxLength: 500
           example: В материале есть фактическая ошибка
       required:
       - reason
