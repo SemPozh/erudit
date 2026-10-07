@@ -2168,9 +2168,9 @@ paths:
       - Events
       operationId: ingestEvent
       summary: Принять событие
-      description: Запланировано в задаче 53. До реализации этот маршрут вернёт 404.
+      description: Валидирует, дедуплицирует по eventId и сохраняет событие в ClickHouse.
       x-task-id: 53
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -2196,9 +2196,9 @@ paths:
       - Events
       operationId: ingestEventBatch
       summary: Принять пакет событий
-      description: Запланировано в задаче 53. До реализации этот маршрут вернёт 404.
+      description: Принимает до 100 событий и возвращает результат приёма для каждого eventId.
       x-task-id: 53
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -3388,6 +3388,8 @@ components:
       properties:
         events:
           type: array
+          minItems: 1
+          maxItems: 100
           items:
             $ref: '#/components/schemas/EventRequest'
       required:
