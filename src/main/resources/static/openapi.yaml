@@ -480,15 +480,17 @@ paths:
       - Users
       operationId: searchUsers
       summary: Найти пользователей
-      description: Запланировано в задаче 37. До реализации этот маршрут вернёт 404.
+      description: Ищет видимые профили по имени или email без учёта регистра.
       x-task-id: 37
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: query
         in: query
         required: true
         schema:
           type: string
+          minLength: 1
+          maxLength: 255
       - &id002
         name: page
         in: query
