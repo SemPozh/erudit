@@ -71,7 +71,7 @@ public class ContentController implements ContentApi {
         return new ContentItemResponse(item(content));
     }
 
-    private static ContentItem item(Content content) {
+    static ContentItem item(Content content) {
         return new ContentItem(content.id(), ContentItem.TypeEnum.fromValue(content.type().name()),
                 content.title(), content.status().name())
                 .categoryId(content.categoryId()).description(content.description()).body(content.body())

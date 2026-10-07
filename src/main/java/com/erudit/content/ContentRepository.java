@@ -59,6 +59,21 @@ public class ContentRepository {
         jdbc.update("UPDATE content SET status = ? WHERE id = ?", status.name(), id);
     }
 
+    public boolean archiveIfPublished(UUID id) {
+        return jdbc.update("UPDATE content SET status = 'ARCHIVED' WHERE id = ? AND status = 'PUBLISHED'", id) == 1;
+    }
+
+    public List<Content> findByStatus(ContentStatus status, int page, int size) {
+        return jdbc.queryForList("SELECT id FROM content WHERE status = ? ORDER BY created_at, id LIMIT ? OFFSET ?",
+                        UUID.class, status.name(), size, page * size).stream()
+                .map(id -> findById(id).orElseThrow()).toList();
+    }
+
+    public long countByStatus(ContentStatus status) {
+        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM content WHERE status = ?", Long.class, status.name());
+        return count == null ? 0 : count;
+    }
+
     public Optional<Content> findById(UUID id) {
         List<Content> rows = jdbc.query("SELECT * FROM content WHERE id = ?", (rs, row) -> new Content(
                 rs.getObject("id", UUID.class),
