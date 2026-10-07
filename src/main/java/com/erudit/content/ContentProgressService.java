@@ -37,14 +37,14 @@ public class ContentProgressService {
 
     @Transactional(readOnly = true)
     public ContentProgress get(String userId, UUID contentId) {
-        contentService.get(contentId, false);
+        contentService.get(contentId, false, userId);
         return repository.find(userId, contentId)
                 .orElseThrow(() -> new NotFoundException("Content progress not found"));
     }
 
     @Transactional
     public ContentProgress markViewed(String userId, String sessionId, UUID contentId) {
-        contentService.get(contentId, false);
+        contentService.get(contentId, false, userId);
         var existing = repository.find(userId, contentId);
         List<EventType> events = new ArrayList<>();
         events.add(EventType.CONTENT_VIEWED);
@@ -63,7 +63,7 @@ public class ContentProgressService {
 
     @Transactional
     public ContentProgress complete(String userId, String sessionId, UUID contentId) {
-        contentService.get(contentId, false);
+        contentService.get(contentId, false, userId);
         Instant now = Instant.now();
         var existing = repository.find(userId, contentId);
         ContentProgress progress;

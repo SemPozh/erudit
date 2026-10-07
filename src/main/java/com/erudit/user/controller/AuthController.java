@@ -1,4 +1,4 @@
-package com.erudit.user.web;
+package com.erudit.user.controller;
 
 import com.erudit.openapi.api.AuthApi;
 import com.erudit.openapi.model.LoginRequest;
@@ -16,12 +16,15 @@ import com.erudit.user.service.EmailVerificationService;
 import com.erudit.user.service.IssuedTokenPair;
 import com.erudit.user.service.UserService;
 import com.erudit.user.service.PasswordResetService;
+import com.erudit.web.UnauthorizedException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,6 +33,7 @@ public class AuthController implements AuthApi {
     private final EmailVerificationService emailVerificationService;
     private final AuthenticationService authenticationService;
     private final PasswordResetService passwordResetService;
+    private final HttpServletRequest request;
 
     @Override
     public ResponseEntity<TokenPairResponse> login(LoginRequest request) {
@@ -66,7 +70,15 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<Void> logoutAll() {
-        return ResponseEntity.notFound().build();
+        if (request.getUserPrincipal() == null) {
+            throw new UnauthorizedException("Authentication is required");
+        }
+
+        UUID userId = UUID.fromString(request.getUserPrincipal().getName());
+
+        authenticationService.logoutAll(userId);
+
+        return ResponseEntity.noContent().build();
     }
 
     @Override
