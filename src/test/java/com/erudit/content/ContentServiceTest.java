@@ -23,6 +23,7 @@ class ContentServiceTest {
     @Autowired private ContentRepository repository;
     @Autowired private ContentReportService reportService;
     @Autowired private ContentReportRepository reportRepository;
+    @Autowired private ContentModerationAuditRepository auditRepository;
 
     @Test
     void preservesIdentityAndStatusWhileUpdatingThenArchives() {
@@ -61,6 +62,36 @@ class ContentServiceTest {
                 .isEqualTo(ContentStatus.PUBLISHED);
         assertThatThrownBy(() -> service.moderate(pending.id(), ContentStatus.REJECTED))
                 .isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void resolvesReportsAndArchivesContentOnlyWhenAccepted() {
+        Content acceptedContent = service.create(request(category(), "Accepted report", Set.of()), "admin-1");
+        service.moderate(acceptedContent.id(), ContentStatus.PUBLISHED);
+        ContentReport accepted = reportService.report(acceptedContent.id(), "Incorrect fact");
+
+        reportService.resolve(accepted.id(), ReportDecision.ACCEPT, " Confirmed ", "moderator-1");
+
+        ContentReport acceptedResult = reportRepository.findById(accepted.id()).orElseThrow();
+        assertThat(acceptedResult.status()).isEqualTo(ContentReportStatus.RESOLVED);
+        assertThat(acceptedResult.decision()).isEqualTo(ReportDecision.ACCEPT);
+        assertThat(acceptedResult.resolutionComment()).isEqualTo("Confirmed");
+        assertThat(acceptedResult.resolvedBy()).isEqualTo("moderator-1");
+        assertThat(repository.findById(acceptedContent.id()).orElseThrow().status())
+                .isEqualTo(ContentStatus.ARCHIVED);
+        assertThat(auditRepository.countReportResolutions(accepted.id())).isEqualTo(1);
+        assertThatThrownBy(() -> reportService.resolve(
+                accepted.id(), ReportDecision.REJECT, null, "moderator-2"))
+                .isInstanceOf(ConflictException.class);
+
+        Content rejectedContent = service.create(request(category(), "Rejected report", Set.of()), "admin-1");
+        service.moderate(rejectedContent.id(), ContentStatus.PUBLISHED);
+        ContentReport rejected = reportService.report(rejectedContent.id(), "Not a violation");
+        reportService.resolve(rejected.id(), ReportDecision.REJECT, null, "moderator-1");
+        assertThat(repository.findById(rejectedContent.id()).orElseThrow().status())
+                .isEqualTo(ContentStatus.PUBLISHED);
+        assertThat(reportService.openReports(0, 50).items())
+                .extracting(ContentReport::id).doesNotContain(accepted.id(), rejected.id());
     }
 
     private UUID category() {

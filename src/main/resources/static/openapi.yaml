@@ -1181,9 +1181,9 @@ paths:
       - ContentModeration
       operationId: listContentReports
       summary: Жалобы на контент
-      description: Запланировано в задаче 61. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Возвращает открытые жалобы в порядке поступления. Требуется роль ADMIN.
       x-task-id: 61
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1205,9 +1205,9 @@ paths:
       - ContentModeration
       operationId: resolveContentReport
       summary: Рассмотреть жалобу
-      description: Запланировано в задаче 61. До реализации этот маршрут вернёт 404. Требуется роль ADMIN.
+      description: Необратимо принимает или отклоняет открытую жалобу и записывает действие в аудит. Требуется роль ADMIN.
       x-task-id: 61
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
