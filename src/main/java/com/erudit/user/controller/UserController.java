@@ -13,6 +13,8 @@ import com.erudit.user.service.UserProfileService;
 import com.erudit.user.service.UserPreferenceSnapshot;
 import com.erudit.user.service.UserPreferencesService;
 import com.erudit.user.service.UserService;
+import com.erudit.user.service.UserSearchService;
+import com.erudit.user.service.DevicePushTokenService;
 import com.erudit.web.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,8 @@ public class UserController implements UsersApi {
     private final UserPreferencesService preferencesService;
     private final HttpServletRequest request;
     private final UserService userService;
+    private final UserSearchService userSearchService;
+    private final DevicePushTokenService pushTokenService;
 
     @Override
     public ResponseEntity<UserProfileResponse> getMyProfile() {
@@ -47,8 +51,18 @@ public class UserController implements UsersApi {
         return ResponseEntity.noContent().build();
     }
 
-    @Override public ResponseEntity<Void> addPushToken(PushTokenRequest pushTokenRequest) { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<Void> deletePushToken(UUID id) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<Void> addPushToken(PushTokenRequest pushTokenRequest) {
+        pushTokenService.register(currentUserId(), pushTokenRequest.getToken(),
+                pushTokenRequest.getPlatform().getValue());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePushToken(UUID id) {
+        pushTokenService.revoke(currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
     @Override
     public ResponseEntity<UserSettingsResponse> getMySettings() {
         return ResponseEntity.ok(settingsResponse(preferencesService.preferencesFor(currentUserId())));
@@ -61,7 +75,15 @@ public class UserController implements UsersApi {
                 settings.getDailyGoalMinutes(), settings.getVisibleInSearch(),
                 settings.getVisibleInRating(), settings.getAnalyticsConsent())));
     }
-    @Override public ResponseEntity<AdminUserListResponse> searchUsers(String query, Integer page, Integer size) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<AdminUserListResponse> searchUsers(String query, Integer page, Integer size) {
+        var result = userSearchService.search(currentUserId(), query, page, size);
+        var pagination = new com.erudit.openapi.model.PageMetadata(
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
+        var body = new AdminUserListResponse(result.getContent().stream()
+                .map(UserController::profile).toList()).pagination(pagination);
+        return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.getTotalElements())).body(body);
+    }
 
     private UUID currentUserId() {
         if (request.getUserPrincipal() == null) {
@@ -75,11 +97,14 @@ public class UserController implements UsersApi {
     }
 
     private static UserProfileResponse response(User user) {
-        UserProfile data = new UserProfile(user.getId(), user.getEmail(), user.getName())
+        return new UserProfileResponse(profile(user));
+    }
+
+    private static UserProfile profile(User user) {
+        return new UserProfile(user.getId(), user.getEmail(), user.getName())
                 .avatarUrl(user.getAvatar())
                 .registeredAt(user.getCreatedAt().atOffset(ZoneOffset.UTC))
                 .status(user.getStatus().name());
-        return new UserProfileResponse(data);
     }
 
     private static UserSettingsResponse settingsResponse(UserPreferenceSnapshot value) {

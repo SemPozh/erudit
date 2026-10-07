@@ -432,9 +432,9 @@ paths:
       - Users
       operationId: addPushToken
       summary: Добавить push-токен
-      description: Запланировано в задаче 60. До реализации этот маршрут вернёт 404.
+      description: Регистрирует или реактивирует токен устройства текущего пользователя.
       x-task-id: 60
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -456,9 +456,9 @@ paths:
       - Users
       operationId: deletePushToken
       summary: Удалить push-токен
-      description: Запланировано в задаче 60. До реализации этот маршрут вернёт 404.
+      description: Отзывает токен устройства, принадлежащий текущему пользователю.
       x-task-id: 60
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -480,15 +480,17 @@ paths:
       - Users
       operationId: searchUsers
       summary: Найти пользователей
-      description: Запланировано в задаче 37. До реализации этот маршрут вернёт 404.
+      description: Ищет видимые профили по имени или email без учёта регистра.
       x-task-id: 37
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: query
         in: query
         required: true
         schema:
           type: string
+          minLength: 1
+          maxLength: 255
       - &id002
         name: page
         in: query
@@ -2602,6 +2604,8 @@ components:
       properties:
         reason:
           type: string
+          minLength: 10
+          maxLength: 500
           example: В материале есть фактическая ошибка
       required:
       - reason
@@ -3262,8 +3266,11 @@ components:
       properties:
         token:
           type: string
+          minLength: 1
+          maxLength: 4096
         platform:
           type: string
+          enum: [ANDROID, IOS, WEB]
       required:
       - token
       - platform
