@@ -223,4 +223,86 @@ class QuizIntegrationTest {
         mvc.perform(post("/api/v1/quiz/{id}/start", UUID.randomUUID()).with(user("quiz-user-8")))
                 .andExpect(status().isNotFound());
     }
+
+    private org.springframework.test.web.servlet.ResultActions hint(
+            UUID quizId, UUID attemptId, UUID questionId, String username) throws Exception {
+        return mvc.perform(post("/api/v1/quiz/{id}/hint", quizId)
+                .param("attemptId", attemptId.toString())
+                .param("questionId", questionId.toString())
+                .with(user(username)));
+    }
+
+    @Test
+    void hintReturnsCardFactAndIsRecordedOncePerQuestion() throws Exception {
+        Quiz quiz = saveQuiz();
+        QuizQuestion q1 = quiz.questions().get(0);
+        UUID attemptId = start(quiz.id(), "hint-user-1");
+        String fact = jdbc.queryForObject(
+                "SELECT fact FROM quiz_cards WHERE id = ?", String.class, q1.quizCardId());
+
+        hint(quiz.id(), attemptId, q1.id(), "hint-user-1")
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.questionId").value(q1.id().toString()))
+                .andExpect(jsonPath("$.data.hint").value(fact));
+        hint(quiz.id(), attemptId, q1.id(), "hint-user-1").andExpect(status().isOk());
+
+        assertThat(jdbc.queryForObject(
+                "SELECT count(*) FROM quiz_attempt_hints WHERE attempt_id = ?",
+                Integer.class, attemptId)).isEqualTo(1);
+    }
+
+    @Test
+    void eachUsedHintCostsOnePoint() throws Exception {
+        Quiz quiz = saveQuiz();
+        UUID attemptId = start(quiz.id(), "hint-user-2");
+        hint(quiz.id(), attemptId, quiz.questions().get(0).id(), "hint-user-2")
+                .andExpect(status().isOk());
+
+        submit(quiz.id(), "hint-user-2", submitBody(attemptId, quiz, true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.correctAnswers").value(2))
+                .andExpect(jsonPath("$.data.score").value(1))
+                .andExpect(jsonPath("$.data.experience").value(2));
+    }
+
+    @Test
+    void scoreNeverGoesBelowZero() throws Exception {
+        Quiz quiz = saveQuiz();
+        UUID attemptId = start(quiz.id(), "hint-user-3");
+        for (QuizQuestion q : quiz.questions()) {
+            hint(quiz.id(), attemptId, q.id(), "hint-user-3").andExpect(status().isOk());
+        }
+
+        submit(quiz.id(), "hint-user-3", submitBody(attemptId, quiz, false))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.correctAnswers").value(0))
+                .andExpect(jsonPath("$.data.score").value(0))
+                .andExpect(jsonPath("$.data.experience").value(1));
+    }
+
+    @Test
+    void rejectsInvalidHintRequests() throws Exception {
+        Quiz quiz = saveQuiz();
+        Quiz other = saveQuiz();
+        QuizQuestion q1 = quiz.questions().get(0);
+        UUID attemptId = start(quiz.id(), "hint-user-4");
+
+        // another user's attempt
+        hint(quiz.id(), attemptId, q1.id(), "hint-intruder").andExpect(status().isNotFound());
+        // question from a different quiz
+        hint(quiz.id(), attemptId, other.questions().get(0).id(), "hint-user-4")
+                .andExpect(status().isBadRequest());
+        // attempt belongs to a different quiz
+        hint(other.id(), attemptId, other.questions().get(0).id(), "hint-user-4")
+                .andExpect(status().isBadRequest());
+        // not authenticated
+        mvc.perform(post("/api/v1/quiz/{id}/hint", quiz.id())
+                        .param("attemptId", attemptId.toString())
+                        .param("questionId", q1.id().toString()))
+                .andExpect(status().isUnauthorized());
+
+        // hint after the attempt is submitted
+        submit(quiz.id(), "hint-user-4", submitBody(attemptId, quiz, true)).andExpect(status().isOk());
+        hint(quiz.id(), attemptId, q1.id(), "hint-user-4").andExpect(status().isBadRequest());
+    }
 }
