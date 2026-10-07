@@ -2224,9 +2224,9 @@ paths:
       - Analytics
       operationId: getActiveUsers
       summary: DAU, WAU и MAU
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      description: Возвращает уникальных активных пользователей по дням, неделям или месяцам в UTC.
       x-task-id: 56
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: &id006
       - name: from
         in: query
@@ -2267,9 +2267,9 @@ paths:
       - Analytics
       operationId: getSessionMetrics
       summary: Сессии
-      description: Запланировано в задаче 56. До реализации этот маршрут вернёт 404.
+      description: Возвращает число уникальных сессий по выбранной гранулярности в UTC.
       x-task-id: 56
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id006
       responses:
         '200':
@@ -3102,7 +3102,10 @@ components:
       type: object
       properties:
         time: *id005
-        value: *id009
+        value:
+          type: number
+          format: double
+          minimum: 0
       required:
       - time
       - value

@@ -16,11 +16,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Component
 @ConditionalOnProperty(name = "clickhouse.enabled", havingValue = "true", matchIfMissing = true)
-public class ClickHouseEventStore implements AnalyticsEventSink {
+public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetricsRepository {
     private final String url;
     private final String username;
     private final String password;
@@ -85,6 +87,36 @@ public class ClickHouseEventStore implements AnalyticsEventSink {
                 result.next();
                 return result.getLong(1);
             }
+        }
+    }
+
+    @Override
+    public List<AnalyticsMetricPoint> activeUsers(AnalyticsPeriod period) {
+        return metric(period, "uniqExactIf(user_id, user_id != '')");
+    }
+
+    @Override
+    public List<AnalyticsMetricPoint> sessions(AnalyticsPeriod period) {
+        return metric(period, "uniqExactIf(session_id, session_id != '')");
+    }
+
+    private List<AnalyticsMetricPoint> metric(AnalyticsPeriod period, String aggregation) {
+        String sql = "SELECT " + period.granularity().bucketExpression() + " bucket, "
+                + aggregation + " value FROM events WHERE occurred_at >= ? AND occurred_at < ? "
+                + "GROUP BY bucket ORDER BY bucket";
+        try (Connection connection = connect(); PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, Timestamp.from(period.from()));
+            statement.setTimestamp(2, Timestamp.from(period.to()));
+            try (ResultSet result = statement.executeQuery()) {
+                List<AnalyticsMetricPoint> points = new ArrayList<>();
+                while (result.next()) {
+                    points.add(new AnalyticsMetricPoint(result.getTimestamp("bucket").toInstant(),
+                            result.getDouble("value")));
+                }
+                return List.copyOf(points);
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("ClickHouse analytics query failed", exception);
         }
     }
 
