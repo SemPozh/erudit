@@ -65,10 +65,10 @@ class ContentControllerTest {
     void readsContentUsingCallerVisibility() throws Exception {
         UUID id = UUID.randomUUID();
         Content published = content(id, UUID.randomUUID(), ContentStatus.PUBLISHED, "Published");
-        when(service.get(id, false)).thenReturn(published);
+        when(service.get(id, false, null)).thenReturn(published);
         mvc.perform(get("/api/v1/content/{id}", id)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Published"));
-        verify(service).get(id, false);
+        verify(service).get(id, false, null);
     }
 
     @Test

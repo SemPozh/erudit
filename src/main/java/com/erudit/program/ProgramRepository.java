@@ -60,6 +60,24 @@ public class ProgramRepository {
         }, userId).stream().findFirst();
     }
 
+    public List<Instant> completionTimes(String userId) {
+        return jdbc.query("""
+                SELECT completed_at FROM content_progress
+                WHERE user_id = ? AND status = 'COMPLETED' AND completed_at IS NOT NULL
+                ORDER BY completed_at DESC
+                """, (rs, row) -> rs.getTimestamp("completed_at").toInstant(), userId);
+    }
+
+    public int completedMinutes(String userId, Instant from, Instant to) {
+        Integer minutes = jdbc.queryForObject("""
+                SELECT COALESCE(SUM(c.estimated_minutes), 0)
+                FROM content_progress cp JOIN content c ON c.id = cp.content_id
+                WHERE cp.user_id = ? AND cp.status = 'COMPLETED'
+                  AND cp.completed_at >= ? AND cp.completed_at < ?
+                """, Integer.class, userId, Timestamp.from(from), Timestamp.from(to));
+        return minutes == null ? 0 : minutes;
+    }
+
     private List<ProgramModule> findModules(UUID programId, String userId) {
         return jdbc.query("""
                 SELECT id, topic, title, position FROM program_modules
