@@ -1374,9 +1374,9 @@ paths:
       - Programs
       operationId: getNextStep
       summary: Следующий шаг
-      description: Запланировано в задаче 29. До реализации этот маршрут вернёт 404.
+      description: Возвращает следующий незавершённый урок, прогресс ежедневной цели и текущий streak.
       x-task-id: 29
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1778,9 +1778,9 @@ paths:
       - Subscriptions
       operationId: createSubscription
       summary: Оформить подписку
-      description: Запланировано в задаче 41. До реализации этот маршрут вернёт 404.
+      description: Создаёт платёж через провайдера и активирует подписку после успешной оплаты.
       x-task-id: 41
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1806,9 +1806,9 @@ paths:
       - Subscriptions
       operationId: getMySubscription
       summary: Статус подписки
-      description: Запланировано в задаче 43. До реализации этот маршрут вернёт 404.
+      description: Возвращает актуальный статус последней подписки текущего пользователя.
       x-task-id: 43
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1828,9 +1828,9 @@ paths:
       - Subscriptions
       operationId: cancelSubscription
       summary: Отменить подписку
-      description: Запланировано в задаче 42. До реализации этот маршрут вернёт 404.
+      description: Отменяет принадлежащую текущему пользователю активную подписку.
       x-task-id: 42
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1856,9 +1856,9 @@ paths:
       - Payments
       operationId: listPayments
       summary: История платежей
-      description: Запланировано в задаче 44. До реализации этот маршрут вернёт 404.
+      description: Возвращает постраничную историю платежей без платёжных реквизитов.
       x-task-id: 44
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -1879,9 +1879,9 @@ paths:
       - Payments
       operationId: verifyMobileReceipt
       summary: Подтвердить покупку в магазине
-      description: Запланировано в задаче 45. До реализации этот маршрут вернёт 404.
+      description: Верифицирует чек App Store или Google Play и синхронизирует подписку.
       x-task-id: 45
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1907,9 +1907,9 @@ paths:
       - Payments
       operationId: paymentWebhook
       summary: Вебхук платёжного провайдера
-      description: Запланировано в задаче 62. До реализации этот маршрут вернёт 404.
+      description: Проверяет подпись и идемпотентно обрабатывает событие платёжного провайдера.
       x-task-id: 62
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       parameters:
       - name: provider

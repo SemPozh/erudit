@@ -47,6 +47,13 @@ class ProgramIntegrationTest {
                         .value(culture.contentId().toString()))
                 .andExpect(jsonPath("$.data.progressPercent").value(0.0));
 
+        mvc.perform(get("/api/v1/program/next").with(user(userId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.contentId").value(culture.contentId().toString()))
+                .andExpect(jsonPath("$.data.reason").value("CONTINUE_PROGRAM"))
+                .andExpect(jsonPath("$.data.streakDays").value(0))
+                .andExpect(jsonPath("$.data.dailyGoalProgress").value(0.0));
+
         Instant now = Instant.now();
         jdbc.update("""
                 INSERT INTO content_progress (user_id, content_id, status, viewed_at, completed_at)
@@ -60,6 +67,10 @@ class ProgramIntegrationTest {
                 .andExpect(jsonPath("$.data.modules[0].lessons[0].status").value("COMPLETED"));
         mvc.perform(get("/api/v1/program/me").with(user(userId)))
                 .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/program/next").with(user(userId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.reason").value("DAILY_GOAL_COMPLETE"))
+                .andExpect(jsonPath("$.data.streakDays").value(1));
     }
 
     @Test

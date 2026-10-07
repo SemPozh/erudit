@@ -65,6 +65,10 @@ springdoc:
     operations-sorter: alpha
     try-it-out-enabled: true
 erudit:
+  payments:
+    webhook-secret: ${PAYMENT_WEBHOOK_SECRET:local-webhook-secret}
+    maintenance-interval: ${PAYMENT_MAINTENANCE_INTERVAL:PT1H}
+    maintenance-initial-delay: ${PAYMENT_MAINTENANCE_INITIAL_DELAY:PT1M}
   auth:
     jwt:
       secret: ${JWT_SECRET:local-development-secret-change-me-32-bytes}

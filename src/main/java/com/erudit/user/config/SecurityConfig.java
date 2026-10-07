@@ -56,6 +56,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/actuator/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/webhooks/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

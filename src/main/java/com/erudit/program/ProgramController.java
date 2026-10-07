@@ -36,7 +36,11 @@ public class ProgramController implements ProgramsApi {
 
     @Override
     public ResponseEntity<NextStepResponse> getNextStep() {
-        return ResponseEntity.notFound().build();
+        NextStep value = service.next(currentUser());
+        var data = new com.erudit.openapi.model.NextStep()
+                .contentId(value.contentId()).quizId(value.quizId()).reason(value.reason())
+                .streakDays(value.streakDays()).dailyGoalProgress(value.dailyGoalProgress());
+        return ResponseEntity.ok(new NextStepResponse(data));
     }
 
     private ProgramResponse response(LearningProgram program) {
