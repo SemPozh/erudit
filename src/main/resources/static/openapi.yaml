@@ -1945,9 +1945,9 @@ paths:
       - Notifications
       operationId: getNotificationPreferences
       summary: Настройки уведомлений
-      description: Запланировано в задаче 46. До реализации этот маршрут вернёт 404.
+      description: Возвращает каналы, типы и тихие часы текущего пользователя.
       x-task-id: 46
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1966,9 +1966,9 @@ paths:
       - Notifications
       operationId: updateNotificationPreferences
       summary: Изменить настройки уведомлений
-      description: Запланировано в задаче 46. До реализации этот маршрут вернёт 404.
+      description: Полностью заменяет настройки уведомлений текущего пользователя; изменения применяются немедленно.
       x-task-id: 46
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -3064,16 +3064,23 @@ components:
       properties:
         channels:
           type: array
+          uniqueItems: true
           items:
             type: string
+            enum: [PUSH, EMAIL]
         types:
           type: array
+          uniqueItems: true
           items:
             type: string
+            enum: [INACTIVITY, DAILY_QUIZ, NEW_CONTENT, ACHIEVEMENT, SOCIAL, SUBSCRIPTION]
         quietHoursStart:
           type: string
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
         quietHoursEnd:
           type: string
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+      required: [channels, types]
     NotificationTemplate:
       type: object
       properties:
