@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Component
 public class ErScoreCalculator {
-    static final int MAX_SCORE = 2000;
+    public static final int MAX_SCORE = 2000;
 
     public AssessmentScore calculate(List<AnswerOutcome> outcomes) {
         if (outcomes.isEmpty()) throw new IllegalArgumentException("At least one answer outcome is required");
