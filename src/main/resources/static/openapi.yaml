@@ -1544,9 +1544,9 @@ paths:
       - Competitions
       operationId: createCompetition
       summary: Создать соревнование
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -1572,9 +1572,9 @@ paths:
       - Competitions
       operationId: getCompetition
       summary: Детали соревнования
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1664,9 +1664,9 @@ paths:
       - Competitions
       operationId: getCompetitionLeaderboard
       summary: Таблица результатов
-      description: Запланировано в задаче 34. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 34
       x-task-id: 34
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -2985,12 +2985,19 @@ components:
           type: string
         status:
           type: string
+          description: SCHEDULED, ACTIVE или FINISHED; вычисляется по времени начала и окончания.
+        quizId: *id001
+        creatorId:
+          type: string
+        rules:
+          type: string
+        startsAt: *id005
+        endsAt: *id005
         participantIds:
           type: array
-          items: *id001
-      required:
-      - id
-      - title
+          items:
+            type: string
+      required: [ id, title, status, quizId, creatorId, startsAt, endsAt, participantIds ]
     RatingEntry:
       type: object
       properties:
@@ -3313,11 +3320,15 @@ components:
       properties:
         title:
           type: string
+          minLength: 1
+          maxLength: 200
         quizId: *id001
+        rules:
+          type: string
+          maxLength: 2000
         startsAt: *id005
-      required:
-      - title
-      - quizId
+        endsAt: *id005
+      required: [ title, quizId, startsAt, endsAt ]
     FriendRequestCreate:
       type: object
       properties:
