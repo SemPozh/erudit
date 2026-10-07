@@ -14,6 +14,7 @@ import com.erudit.user.service.UserPreferenceSnapshot;
 import com.erudit.user.service.UserPreferencesService;
 import com.erudit.user.service.UserService;
 import com.erudit.user.service.UserSearchService;
+import com.erudit.user.service.DevicePushTokenService;
 import com.erudit.web.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class UserController implements UsersApi {
     private final HttpServletRequest request;
     private final UserService userService;
     private final UserSearchService userSearchService;
+    private final DevicePushTokenService pushTokenService;
 
     @Override
     public ResponseEntity<UserProfileResponse> getMyProfile() {
@@ -49,8 +51,18 @@ public class UserController implements UsersApi {
         return ResponseEntity.noContent().build();
     }
 
-    @Override public ResponseEntity<Void> addPushToken(PushTokenRequest pushTokenRequest) { return ResponseEntity.notFound().build(); }
-    @Override public ResponseEntity<Void> deletePushToken(UUID id) { return ResponseEntity.notFound().build(); }
+    @Override
+    public ResponseEntity<Void> addPushToken(PushTokenRequest pushTokenRequest) {
+        pushTokenService.register(currentUserId(), pushTokenRequest.getToken(),
+                pushTokenRequest.getPlatform().getValue());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> deletePushToken(UUID id) {
+        pushTokenService.revoke(currentUserId(), id);
+        return ResponseEntity.noContent().build();
+    }
     @Override
     public ResponseEntity<UserSettingsResponse> getMySettings() {
         return ResponseEntity.ok(settingsResponse(preferencesService.preferencesFor(currentUserId())));
