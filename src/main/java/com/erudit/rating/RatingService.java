@@ -16,6 +16,8 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Map;
+import com.erudit.notification.*;
 
 @Service
 public class RatingService {
@@ -23,13 +25,16 @@ public class RatingService {
     private final GradeService gradeService;
     private final ObjectProvider<AnalyticsEventPublisher> publisherProvider;
     private final Clock clock;
+    private final ObjectProvider<UserNotificationService> notifications;
 
     public RatingService(RatingRepository repository, GradeService gradeService,
-                         ObjectProvider<AnalyticsEventPublisher> publisherProvider, Clock clock) {
+                         ObjectProvider<AnalyticsEventPublisher> publisherProvider, Clock clock,
+                         ObjectProvider<UserNotificationService> notifications) {
         this.repository = repository;
         this.gradeService = gradeService;
         this.publisherProvider = publisherProvider;
         this.clock = clock;
+        this.notifications = notifications;
     }
 
     @Transactional
@@ -73,7 +78,14 @@ public class RatingService {
         repository.insertEvent(userId, sourceType, sourceId, repository.categoryForQuiz(quizId),
                 Math.max(0, points), Math.max(0, erDelta), now);
         repository.saveProfile(updated, now);
+        var overtaken=repository.friendsOvertaken(userId,current.points(),updated.points());
+        if(!overtaken.isEmpty()) publishOvertakes(userId,sourceId,overtaken);
         return new RatingUpdate(true, updated.points(), updated.erScore(), updated.gradeCode());
+    }
+
+    private void publishOvertakes(String winner,UUID sourceId,java.util.List<String> overtaken) {
+        Runnable action=()->overtaken.forEach(value->{try{UUID target=UUID.fromString(value);UserNotificationService service=notifications.getIfAvailable();if(service!=null)service.send(target,NotificationType.SOCIAL,Map.of("friendId",winner),java.time.ZoneId.of("UTC"),"overtaken:"+winner+":"+sourceId);}catch(RuntimeException ignored){}AnalyticsEventPublisher publisher=publisherProvider.getIfAvailable();if(publisher!=null)publisher.publish(new EventPublication(EventType.FRIEND_OVERTAKEN,value,"rating:"+sourceId,"{\"friendId\":\""+winner+"\"}"));});
+        if(TransactionSynchronizationManager.isActualTransactionActive())TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){@Override public void afterCommit(){action.run();}});else action.run();
     }
 
     private void publishAfterCommit(EventType type, String userId, UUID sourceId, int points, int erScore) {
