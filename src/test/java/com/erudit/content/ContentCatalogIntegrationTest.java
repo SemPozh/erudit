@@ -1,5 +1,11 @@
 package com.erudit.content;
 
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.service.ContentService;
+
 import com.erudit.openapi.model.ContentUpsertRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

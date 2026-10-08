@@ -1,11 +1,19 @@
 package com.erudit.program;
 
-import com.erudit.assessment.AssessmentFeedback;
-import com.erudit.assessment.AssessmentService;
-import com.erudit.assessment.AssessmentSubmission;
-import com.erudit.assessment.Grade;
-import com.erudit.assessment.TopicAssessmentScore;
-import com.erudit.content.Difficulty;
+import com.erudit.program.model.LearningProgram;
+import com.erudit.program.model.ProgramCandidate;
+import com.erudit.program.model.ProgramModule;
+import com.erudit.program.model.ProgramPreferences;
+import com.erudit.program.repository.ProgramRepository;
+import com.erudit.program.service.ProgramPreferenceService;
+import com.erudit.program.service.ProgramService;
+
+import com.erudit.assessment.model.AssessmentFeedback;
+import com.erudit.assessment.service.AssessmentService;
+import com.erudit.assessment.dto.AssessmentSubmission;
+import com.erudit.assessment.model.Grade;
+import com.erudit.assessment.model.TopicAssessmentScore;
+import com.erudit.content.model.Difficulty;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

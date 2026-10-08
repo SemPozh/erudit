@@ -3,7 +3,7 @@ package com.erudit.user;
 import com.erudit.user.repository.UserPreferencesRepository;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.UserPreferencesService;
-import com.erudit.web.ValidationException;
+import com.erudit.web.exception.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 

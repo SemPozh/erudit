@@ -1,8 +1,8 @@
 package com.erudit.user;
 
 import com.erudit.user.config.AuthProperties;
-import com.erudit.user.domain.User;
-import com.erudit.user.domain.UserRole;
+import com.erudit.user.model.User;
+import com.erudit.user.model.UserRole;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.InvalidAccessTokenException;
 import com.erudit.user.service.JwtTokenService;

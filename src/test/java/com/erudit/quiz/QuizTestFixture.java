@@ -1,5 +1,9 @@
 package com.erudit.quiz;
 
+import com.erudit.quiz.model.Quiz;
+import com.erudit.quiz.model.QuizAnswerOption;
+import com.erudit.quiz.model.QuizQuestion;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Timestamp;

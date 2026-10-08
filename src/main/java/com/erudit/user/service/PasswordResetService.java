@@ -1,13 +1,13 @@
 package com.erudit.user.service;
 
 import com.erudit.user.config.PasswordResetProperties;
-import com.erudit.user.domain.PasswordResetToken;
-import com.erudit.user.domain.User;
-import com.erudit.user.notification.EmailSender;
+import com.erudit.user.model.PasswordResetToken;
+import com.erudit.user.model.User;
+import com.erudit.user.service.EmailSender;
 import com.erudit.user.repository.PasswordResetTokenRepository;
 import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.web.ValidationException;
+import com.erudit.web.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

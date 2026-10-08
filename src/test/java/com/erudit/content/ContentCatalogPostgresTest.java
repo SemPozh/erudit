@@ -1,5 +1,10 @@
 package com.erudit.content;
 
+import com.erudit.content.dto.CategoryPage;
+import com.erudit.content.model.Category;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.service.ContentCatalogService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

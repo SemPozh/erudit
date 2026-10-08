@@ -1,5 +1,8 @@
 package com.erudit.payment;
 
+import com.erudit.payment.model.Subscription;
+import com.erudit.payment.model.SubscriptionStatus;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

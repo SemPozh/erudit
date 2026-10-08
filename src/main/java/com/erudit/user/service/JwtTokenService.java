@@ -1,9 +1,9 @@
 package com.erudit.user.service;
 
 import com.erudit.user.config.AuthProperties;
-import com.erudit.user.domain.User;
-import com.erudit.user.domain.UserRole;
-import com.erudit.user.domain.UserStatus;
+import com.erudit.user.model.User;
+import com.erudit.user.model.UserRole;
+import com.erudit.user.model.UserStatus;
 import com.erudit.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

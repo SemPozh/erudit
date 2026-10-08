@@ -1,5 +1,11 @@
 package com.erudit.payment;
 
+import com.erudit.payment.model.Subscription;
+import com.erudit.payment.model.SubscriptionStatus;
+import com.erudit.payment.repository.SubscriptionRepository;
+import com.erudit.payment.service.SubscriptionExpiryNotifier;
+import com.erudit.payment.service.SubscriptionMaintenanceService;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;

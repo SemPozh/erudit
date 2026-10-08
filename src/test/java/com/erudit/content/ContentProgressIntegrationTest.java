@@ -1,8 +1,18 @@
 package com.erudit.content;
 
-import com.erudit.events.AnalyticsEventPublisher;
-import com.erudit.events.EventPublication;
-import com.erudit.events.EventType;
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentProgress;
+import com.erudit.content.model.ContentProgressStatus;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.content.repository.ContentProgressRepository;
+import com.erudit.content.repository.ContentRepository;
+
+import com.erudit.events.service.AnalyticsEventPublisher;
+import com.erudit.events.dto.EventPublication;
+import com.erudit.events.model.EventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

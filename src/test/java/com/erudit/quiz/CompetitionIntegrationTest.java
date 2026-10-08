@@ -1,5 +1,10 @@
 package com.erudit.quiz;
 
+import com.erudit.quiz.model.Quiz;
+import com.erudit.quiz.model.QuizAnswerOption;
+import com.erudit.quiz.model.QuizQuestion;
+import com.erudit.quiz.repository.QuizRepository;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

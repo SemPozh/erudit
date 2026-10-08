@@ -1,6 +1,6 @@
 package com.erudit.user.repository;
 
-import com.erudit.user.domain.User;
+import com.erudit.user.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
 package com.erudit.user.service;
 
-import com.erudit.user.domain.User;
-import com.erudit.user.domain.UserStatus;
+import com.erudit.user.model.User;
+import com.erudit.user.model.UserStatus;
 import com.erudit.user.dto.RegisterRequest;
 import com.erudit.user.dto.UserProfileResponse;
 import com.erudit.user.exception.EmailAlreadyExistsException;

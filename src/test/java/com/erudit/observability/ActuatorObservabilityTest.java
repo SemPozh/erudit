@@ -1,5 +1,7 @@
 package com.erudit.observability;
 
+import com.erudit.observability.config.RequestCorrelationFilter;
+
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;

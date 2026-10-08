@@ -1,5 +1,14 @@
 package com.erudit.assessment;
 
+import com.erudit.assessment.dto.AssessmentSubmission;
+import com.erudit.assessment.model.AssessmentFeedback;
+import com.erudit.assessment.model.AssessmentOption;
+import com.erudit.assessment.model.AssessmentQuestion;
+import com.erudit.assessment.model.Grade;
+import com.erudit.assessment.model.SubmittedAnswer;
+import com.erudit.assessment.model.TopicAssessmentScore;
+import com.erudit.assessment.repository.AssessmentRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,5 +1,8 @@
 package com.erudit.quiz;
 
+import com.erudit.quiz.model.Quiz;
+import com.erudit.quiz.repository.QuizRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

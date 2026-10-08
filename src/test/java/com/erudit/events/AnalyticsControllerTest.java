@@ -1,5 +1,10 @@
 package com.erudit.events;
 
+import com.erudit.events.controller.AnalyticsController;
+import com.erudit.events.model.AnalyticsMetricPoint;
+import com.erudit.events.model.AnalyticsMetricSeries;
+import com.erudit.events.service.AnalyticsService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

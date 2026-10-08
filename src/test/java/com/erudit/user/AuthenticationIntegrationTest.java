@@ -1,6 +1,6 @@
 package com.erudit.user;
 
-import com.erudit.user.domain.User;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -1,5 +1,11 @@
 package com.erudit.notification;
 
+import com.erudit.notification.model.NotificationChannel;
+import com.erudit.notification.model.NotificationPreference;
+import com.erudit.notification.model.NotificationType;
+import com.erudit.notification.repository.NotificationPreferenceRepository;
+import com.erudit.notification.service.NotificationPreferenceService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -42,7 +48,7 @@ class NotificationPreferenceServiceTest {
         assertThat(service.get(userId).channels()).containsExactlyInAnyOrder(NotificationChannel.values());
         assertThatThrownBy(() -> service.update(userId, List.of(NotificationChannel.PUSH),
                 List.of(NotificationType.SOCIAL), "22:00", null))
-                .isInstanceOf(com.erudit.web.ValidationException.class);
+                .isInstanceOf(com.erudit.web.exception.ValidationException.class);
     }
 
     private UUID user() {

@@ -1,5 +1,17 @@
 package com.erudit.content;
 
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentProgress;
+import com.erudit.content.model.ContentProgressStatus;
+import com.erudit.content.model.ContentSlice;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.content.repository.ContentCatalogRepository;
+import com.erudit.content.repository.ContentProgressRepository;
+import com.erudit.content.repository.ContentRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

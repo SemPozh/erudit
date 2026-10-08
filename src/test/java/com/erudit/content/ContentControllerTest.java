@@ -1,5 +1,17 @@
 package com.erudit.content;
 
+import com.erudit.content.controller.ContentController;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentSlice;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.content.service.ContentCatalogService;
+import com.erudit.content.service.ContentFeedService;
+import com.erudit.content.service.ContentProgressService;
+import com.erudit.content.service.ContentService;
+import com.erudit.content.service.QuizCardService;
+
 import com.erudit.openapi.model.ContentUpsertRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

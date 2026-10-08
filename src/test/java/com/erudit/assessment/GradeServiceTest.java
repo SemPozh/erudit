@@ -1,5 +1,9 @@
 package com.erudit.assessment;
 
+import com.erudit.assessment.model.Grade;
+import com.erudit.assessment.repository.GradeRepository;
+import com.erudit.assessment.service.GradeService;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

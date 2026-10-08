@@ -1,13 +1,13 @@
 package com.erudit.user;
 
-import com.erudit.content.Category;
-import com.erudit.content.Content;
-import com.erudit.content.ContentRepository;
-import com.erudit.content.ContentStatus;
-import com.erudit.content.ContentType;
-import com.erudit.content.Difficulty;
-import com.erudit.events.AnalyticsEventPublisher;
-import com.erudit.user.domain.User;
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.events.service.AnalyticsEventPublisher;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.Test;

@@ -1,11 +1,11 @@
 package com.erudit.user.service;
 
-import com.erudit.user.domain.DevicePushToken;
-import com.erudit.user.domain.PushPlatform;
+import com.erudit.user.model.DevicePushToken;
+import com.erudit.user.model.PushPlatform;
 import com.erudit.user.repository.DevicePushTokenRepository;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.web.NotFoundException;
-import com.erudit.web.ValidationException;
+import com.erudit.web.exception.NotFoundException;
+import com.erudit.web.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

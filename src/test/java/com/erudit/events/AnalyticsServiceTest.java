@@ -1,6 +1,13 @@
 package com.erudit.events;
 
-import com.erudit.web.ValidationException;
+import com.erudit.events.model.AnalyticsGranularity;
+import com.erudit.events.model.AnalyticsMetricPoint;
+import com.erudit.events.model.AnalyticsMetricSeries;
+import com.erudit.events.model.AnalyticsPeriod;
+import com.erudit.events.repository.AnalyticsMetricsRepository;
+import com.erudit.events.service.AnalyticsService;
+
+import com.erudit.web.exception.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 

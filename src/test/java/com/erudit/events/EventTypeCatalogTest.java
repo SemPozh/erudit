@@ -1,5 +1,10 @@
 package com.erudit.events;
 
+import com.erudit.events.model.AnalyticsEvent;
+import com.erudit.events.model.EventGroup;
+import com.erudit.events.model.EventType;
+import com.erudit.events.service.EventTypeCatalog;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

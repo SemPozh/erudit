@@ -1,8 +1,8 @@
 package com.erudit.user.service;
 
-import com.erudit.user.domain.User;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.web.ValidationException;
+import com.erudit.web.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

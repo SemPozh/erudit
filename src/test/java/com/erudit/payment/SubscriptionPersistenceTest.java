@@ -1,5 +1,11 @@
 package com.erudit.payment;
 
+import com.erudit.payment.model.Subscription;
+import com.erudit.payment.model.SubscriptionPlan;
+import com.erudit.payment.model.SubscriptionStatus;
+import com.erudit.payment.repository.SubscriptionPlanRepository;
+import com.erudit.payment.repository.SubscriptionRepository;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

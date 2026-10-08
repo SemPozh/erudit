@@ -1,5 +1,12 @@
 package com.erudit.content;
 
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.content.model.QuizCard;
+import com.erudit.content.service.ExtractiveQuizCardGenerator;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

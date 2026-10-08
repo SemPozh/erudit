@@ -1,8 +1,20 @@
 package com.erudit.content;
 
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentReport;
+import com.erudit.content.model.ContentReportStatus;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ReportDecision;
+import com.erudit.content.repository.ContentModerationAuditRepository;
+import com.erudit.content.repository.ContentReportRepository;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.service.ContentReportService;
+import com.erudit.content.service.ContentService;
+
 import com.erudit.openapi.model.ContentUpsertRequest;
-import com.erudit.web.NotFoundException;
-import com.erudit.web.ConflictException;
+import com.erudit.web.exception.NotFoundException;
+import com.erudit.web.exception.ConflictException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

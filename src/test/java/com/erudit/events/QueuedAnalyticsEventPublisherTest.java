@@ -1,5 +1,10 @@
 package com.erudit.events;
 
+import com.erudit.events.dto.EventPublication;
+import com.erudit.events.model.AnalyticsEvent;
+import com.erudit.events.model.EventType;
+import com.erudit.events.service.QueuedAnalyticsEventPublisher;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;

@@ -1,5 +1,6 @@
 package com.erudit.web;
 
+import com.erudit.web.controller.HelloController;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

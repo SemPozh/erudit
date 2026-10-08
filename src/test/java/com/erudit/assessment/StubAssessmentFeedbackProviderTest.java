@@ -1,5 +1,11 @@
 package com.erudit.assessment;
 
+import com.erudit.assessment.model.AssessmentFeedback;
+import com.erudit.assessment.model.AssessmentFeedbackContext;
+import com.erudit.assessment.model.TopicAssessmentScore;
+import com.erudit.assessment.service.AssessmentFeedbackProvider;
+import com.erudit.assessment.service.StubAssessmentFeedbackProvider;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
