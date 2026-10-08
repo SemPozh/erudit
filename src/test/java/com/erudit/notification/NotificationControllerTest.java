@@ -8,12 +8,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalTime;
+import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,6 +25,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class NotificationControllerTest {
     @Autowired private MockMvc mvc;
     @MockitoBean private NotificationPreferenceService service;
+    @MockitoBean private UserNotificationService notificationService;
+
+    @Test
+    void listsReadsAndCountsNotifications() throws Exception {
+        UUID userId = UUID.randomUUID();
+        UUID notificationId = UUID.randomUUID();
+        when(notificationService.list(userId, 0, 20)).thenReturn(new UserNotificationPage(List.of(
+                new UserNotification(notificationId, userId, NotificationType.SOCIAL, "Friend", "Update", null,
+                        Instant.parse("2026-10-08T10:00:00Z"))), 1, 0, 20));
+        when(notificationService.unread(userId)).thenReturn(1L);
+
+        mvc.perform(get("/api/v1/notifications?page=0&size=20").with(request -> authenticated(request, userId)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data[0].id").value(notificationId.toString()))
+                .andExpect(jsonPath("$.data[0].read").value(false));
+        mvc.perform(get("/api/v1/notifications/unread-count").with(request -> authenticated(request, userId)))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.count").value(1));
+        mvc.perform(post("/api/v1/notifications/{id}/read", notificationId)
+                        .with(request -> authenticated(request, userId))).andExpect(status().isNoContent());
+        mvc.perform(post("/api/v1/notifications/read-all")
+                        .with(request -> authenticated(request, userId))).andExpect(status().isNoContent());
+        verify(notificationService).read(userId, notificationId);
+        verify(notificationService).readAll(userId);
+    }
 
     @Test
     void readsAndUpdatesCurrentUsersPreferences() throws Exception {
