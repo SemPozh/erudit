@@ -527,9 +527,9 @@ paths:
       - Friends
       operationId: sendFriendRequest
       summary: Отправить заявку в друзья
-      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      description: Создаёт заявку в друзья.
       x-task-id: 38
-      x-implementation-status: planned
+      x-implementation-status: implemented
       requestBody:
         required: true
         content:
@@ -554,9 +554,9 @@ paths:
       - Friends
       operationId: listFriendRequests
       summary: Входящие заявки
-      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 38.
       x-task-id: 38
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: &id004
       - *id002
       - *id003
@@ -579,9 +579,9 @@ paths:
       - Friends
       operationId: acceptFriendRequest
       summary: Принять заявку
-      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 38.
       x-task-id: 38
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -603,9 +603,9 @@ paths:
       - Friends
       operationId: rejectFriendRequest
       summary: Отклонить заявку
-      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 38.
       x-task-id: 38
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -627,9 +627,9 @@ paths:
       - Friends
       operationId: listFriends
       summary: Список друзей
-      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 38.
       x-task-id: 38
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -650,9 +650,9 @@ paths:
       - Friends
       operationId: removeFriend
       summary: Удалить друга
-      description: Запланировано в задаче 38. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 38.
       x-task-id: 38
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1602,9 +1602,9 @@ paths:
       - Competitions
       operationId: addCompetitionParticipant
       summary: Добавить участника
-      description: Запланировано в задаче 63. До реализации этот маршрут вернёт 404.
+      description: Добавляет участника; доступно создателю до завершения соревнования.
       x-task-id: 63
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1636,9 +1636,9 @@ paths:
       - Competitions
       operationId: inviteToCompetition
       summary: Пригласить друга
-      description: Запланировано в задаче 63. До реализации этот маршрут вернёт 404.
+      description: Приглашает друга; повторный вызов идемпотентен.
       x-task-id: 63
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -1696,9 +1696,9 @@ paths:
       - Ratings
       operationId: getRating
       summary: Общий рейтинг
-      description: Запланировано в задаче 36. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 36.
       x-task-id: 36
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - *id002
       - *id003
@@ -1735,9 +1735,9 @@ paths:
       - Ratings
       operationId: getMyRating
       summary: Моя позиция
-      description: Запланировано в задаче 36. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 36.
       x-task-id: 36
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -1757,9 +1757,9 @@ paths:
       - Ratings
       operationId: getFriendsRating
       summary: Рейтинг друзей
-      description: Запланировано в задаче 36. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 36.
       x-task-id: 36
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':

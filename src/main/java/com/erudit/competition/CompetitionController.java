@@ -65,7 +65,8 @@ public class CompetitionController implements CompetitionsApi {   // check gener
 
     @Override
     public ResponseEntity<Void> inviteToCompetition(UUID id, FriendRequestCreate friendRequestCreate) {
-        return null;
+        service.invite(currentUser(), id, friendRequestCreate.getUserId());
+        return ResponseEntity.noContent().build();
     }
 
     private CompetitionResponse toResponse(CompetitionService.Details details) {
@@ -92,7 +93,7 @@ public class CompetitionController implements CompetitionsApi {   // check gener
 
     @Override
     public ResponseEntity<CompetitionResponse> addCompetitionParticipant(UUID id, FriendRequestCreate friendRequestCreate) {
-        return null;
+        return ResponseEntity.ok(toResponse(service.addParticipant(currentUser(), id, friendRequestCreate.getUserId())));
     }
 
 }

@@ -196,4 +196,25 @@ class CompetitionIntegrationTest {
         mvc.perform(get("/api/v1/competition/{id}", id)).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/competition/{id}/leaderboard", id)).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void creatorAddsParticipantsAndInvitesFriendsIdempotently() throws Exception {
+        UUID creator=createUser("owner"), friend=createUser("friend"), stranger=createUser("stranger");
+        Quiz quiz=saveQuiz(); UUID competition=createActive(creator.toString(),quiz);
+        jdbc.update("insert into friend_requests values (?,?,?,'ACCEPTED',?,?)",UUID.randomUUID(),creator,friend,Timestamp.from(Instant.now()),Timestamp.from(Instant.now()));
+        String body="{\"userId\":\""+friend+"\"}";
+        mvc.perform(post("/api/v1/competition/{id}/participants",competition).with(user(stranger.toString())).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/competition/{id}/participants",competition).with(user(creator.toString())).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk()).andExpect(jsonPath("$.data.participantIds.length()").value(2));
+        mvc.perform(post("/api/v1/competition/{id}/participants",competition).with(user(creator.toString())).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isOk()).andExpect(jsonPath("$.data.participantIds.length()").value(2));
+        mvc.perform(post("/api/v1/competition/{id}/invitations",competition).with(user(creator.toString())).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isNoContent());
+        mvc.perform(post("/api/v1/competition/{id}/invitations",competition).with(user(creator.toString())).contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isNoContent());
+        assertThat(jdbc.queryForObject("select count(*) from competition_invitations where competition_id=?",Integer.class,competition)).isEqualTo(1);
+    }
+
+    private UUID createUser(String name) {
+        UUID id=UUID.randomUUID();
+        jdbc.update("insert into users(id,email,password_hash,name,created_at,status,role,email_verified) values (?,?,?,?,?,'ACTIVE','USER',true)",id,name+id+"@test.local","hash",name,java.time.LocalDateTime.now());
+        jdbc.update("insert into user_settings(user_id) values (?)",id);
+        return id;
+    }
 }

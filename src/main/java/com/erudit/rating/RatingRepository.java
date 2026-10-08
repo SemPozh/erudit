@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -66,5 +67,21 @@ public class RatingRepository {
                     """, profile.userId(), profile.points(), profile.erScore(), profile.gradeCode(),
                     Timestamp.from(updatedAt));
         }
+    }
+
+    public List<RatingRow> rating(UUID categoryId, Instant since, String viewerId, boolean friendsOnly, int page, int size) {
+        String score = categoryId == null && since == null ? "p.points" : "COALESCE(sum(e.points),0)";
+        String join = categoryId == null && since == null ? "" : " JOIN rating_events e ON e.user_id=p.user_id AND (?::uuid IS NULL OR e.category_id=?) AND (?::timestamptz IS NULL OR e.occurred_at>=?) ";
+        String friendship = friendsOnly ? " AND (p.user_id=? OR EXISTS (SELECT 1 FROM friend_requests f WHERE f.status='ACCEPTED' AND ((f.requester_id::text=? AND f.addressee_id::text=p.user_id) OR (f.addressee_id::text=? AND f.requester_id::text=p.user_id))))" : "";
+        String sql="SELECT p.user_id,"+score+" score,p.grade_code,dense_rank() OVER(ORDER BY "+score+" DESC) rank FROM user_rating_profiles p JOIN users u ON u.id::text=p.user_id LEFT JOIN user_settings s ON s.user_id=u.id"+join+" WHERE COALESCE(s.visible_in_rating,true)"+friendship+" GROUP BY p.user_id,p.points,p.grade_code ORDER BY score DESC,p.user_id LIMIT ? OFFSET ?";
+        var args=new java.util.ArrayList<Object>(); if(!join.isEmpty()){args.add(categoryId);args.add(categoryId);args.add(since==null?null:Timestamp.from(since));args.add(since==null?null:Timestamp.from(since));} if(friendsOnly){args.add(viewerId);args.add(viewerId);args.add(viewerId);} args.add(size);args.add(page*size);
+        return jdbc.query(sql,(rs,n)->new RatingRow(rs.getString("user_id"),rs.getLong("score"),rs.getInt("rank"),rs.getString("grade_code")),args.toArray());
+    }
+
+    public long ratingCount(UUID categoryId, Instant since, String viewerId, boolean friendsOnly) {
+        String event=categoryId==null&&since==null?"":" AND EXISTS (SELECT 1 FROM rating_events e WHERE e.user_id=p.user_id AND (?::uuid IS NULL OR e.category_id=?) AND (?::timestamptz IS NULL OR e.occurred_at>=?))";
+        String friendship=friendsOnly?" AND (p.user_id=? OR EXISTS (SELECT 1 FROM friend_requests f WHERE f.status='ACCEPTED' AND ((f.requester_id::text=? AND f.addressee_id::text=p.user_id) OR (f.addressee_id::text=? AND f.requester_id::text=p.user_id))))":"";
+        var args=new java.util.ArrayList<Object>();if(!event.isEmpty()){args.add(categoryId);args.add(categoryId);args.add(since==null?null:Timestamp.from(since));args.add(since==null?null:Timestamp.from(since));}if(friendsOnly){args.add(viewerId);args.add(viewerId);args.add(viewerId);}
+        return jdbc.queryForObject("SELECT count(*) FROM user_rating_profiles p JOIN users u ON u.id::text=p.user_id LEFT JOIN user_settings s ON s.user_id=u.id WHERE COALESCE(s.visible_in_rating,true)"+event+friendship,Long.class,args.toArray());
     }
 }
