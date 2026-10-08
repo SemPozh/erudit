@@ -32,15 +32,13 @@ public class ContentCatalogRepository {
         return new ContentPage(withTags(rows), total == null ? 0 : total, query.page(), query.size());
     }
 
-    public ContentPage personalizedFeed(UUID userId, Set<UUID> favoriteCategories, int page, int size) {
+    public ContentSlice personalizedFeed(UUID userId, Set<UUID> favoriteCategories, int page, int size) {
         var parameters = new MapSqlParameterSource()
                 .addValue("userId", userId.toString())
                 .addValue("favorites", favoriteCategories.isEmpty()
                         ? List.of(new UUID(0, 0)) : favoriteCategories)
-                .addValue("limit", size)
+                .addValue("limit", size + 1)
                 .addValue("offset", page * size);
-        Long total = jdbc.queryForObject("SELECT COUNT(*) FROM content WHERE status = 'PUBLISHED'",
-                parameters, Long.class);
         String sql = """
                 SELECT c.*
                 FROM content c
@@ -72,7 +70,9 @@ public class ContentCatalogRepository {
                 Difficulty.valueOf(rs.getString("difficulty")), rs.getInt("estimated_minutes"),
                 rs.getString("author_id"), ContentStatus.valueOf(rs.getString("status")),
                 rs.getTimestamp("created_at").toInstant(), List.of(), rs.getBoolean("premium_locked")));
-        return new ContentPage(withTags(rows), total == null ? 0 : total, page, size);
+        boolean hasMore = rows.size() > size;
+        List<Content> pageItems = hasMore ? rows.subList(0, size) : rows;
+        return new ContentSlice(withTags(pageItems), page, size, hasMore);
     }
 
     private List<Content> withTags(List<Content> rows) {

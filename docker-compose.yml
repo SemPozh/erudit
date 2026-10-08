@@ -27,6 +27,8 @@ services:
       MEDIA_STORAGE_PATH: /app/data/media
       MEDIA_MAX_SIZE_BYTES: ${MEDIA_MAX_SIZE_BYTES:-52428800}
       MEDIA_MAX_FILE_SIZE: ${MEDIA_MAX_FILE_SIZE:-50MB}
+      NOTIFICATION_DAILY_LIMIT: ${NOTIFICATION_DAILY_LIMIT:-10}
+      NOTIFICATION_TRIGGER_CRON: ${NOTIFICATION_TRIGGER_CRON:-0 0 * * * *}
     volumes:
       - media_data:/app/data/media
     depends_on:

@@ -816,13 +816,23 @@ paths:
       - Content
       operationId: getContentFeed
       summary: Персональная лента
-      description: Ранжирует опубликованный контент по любимым категориям и истории взаимодействий; при отсутствии сигналов возвращает сначала новый контент.
+      description: Бесконечная лента без подсчёта общего количества. Ранжирует опубликованный контент по любимым категориям и истории взаимодействий; следующая страница указана в X-Next-Page, если X-Has-More равен true.
       x-task-id: 19
       x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
           description: Успешный ответ
+          headers:
+            X-Has-More:
+              description: Есть ли следующая страница
+              schema:
+                type: boolean
+            X-Next-Page:
+              description: Номер следующей страницы; отсутствует на последней странице
+              schema:
+                type: integer
+                minimum: 0
           content:
             application/json:
               schema:

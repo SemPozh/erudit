@@ -52,6 +52,20 @@ class ContentFeedIntegrationTest {
         assertThat(ids.indexOf(newer.id())).isLessThan(ids.indexOf(older.id()));
     }
 
+    @Test
+    void readsOneExtraRowToSignalTheNextPageWithoutCountingAllRows() {
+        UUID category = category("Feed scrolling");
+        content(category, "First", Instant.parse("2040-01-01T00:00:00Z"));
+        content(category, "Second", Instant.parse("2040-01-02T00:00:00Z"));
+
+        ContentSlice first = catalogRepository.personalizedFeed(UUID.randomUUID(), Set.of(), 0, 1);
+        ContentSlice second = catalogRepository.personalizedFeed(UUID.randomUUID(), Set.of(), 1, 1);
+
+        assertThat(first.items()).hasSize(1);
+        assertThat(first.hasMore()).isTrue();
+        assertThat(second.items()).hasSize(1);
+    }
+
     private UUID category(String name) {
         UUID id = UUID.randomUUID();
         contentRepository.saveCategory(new Category(id, name + " " + id));

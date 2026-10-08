@@ -94,14 +94,16 @@ public class ContentController implements ContentApi {
     }
     @Override
     public ResponseEntity<ContentListResponse> getContentFeed(Integer page, Integer size) {
-        ContentPage result = feedService.feed(currentUserId(), page, size);
+        ContentSlice result = feedService.feed(currentUserId(), page, size);
         boolean premiumAccess = isAdmin() || service.hasPremiumAccess(currentUserOrNull());
-        var pagination = new com.erudit.openapi.model.PageMetadata(
-                result.page(), result.size(), result.total(), result.totalPages());
-        return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total()))
+        ResponseEntity.BodyBuilder response = ResponseEntity.ok()
+                .header("X-Has-More", Boolean.toString(result.hasMore()));
+        if (result.hasMore()) {
+            response.header("X-Next-Page", Integer.toString(result.page() + 1));
+        }
+        return response
                 .body(new ContentListResponse(result.items().stream()
-                        .map(content -> item(content, premiumAccess || !content.premiumLocked())).toList())
-                        .pagination(pagination));
+                        .map(content -> item(content, premiumAccess || !content.premiumLocked())).toList()));
     }
     @Override
     public ResponseEntity<ContentProgressResponse> getContentProgress(UUID id) {
