@@ -66,6 +66,11 @@ public class NotificationTemplateService {
     }
 
     @Transactional(readOnly = true)
+    public NotificationTemplate get(UUID id) {
+        return repository.find(id).orElseThrow(() -> new NotFoundException("Notification template not found"));
+    }
+
+    @Transactional(readOnly = true)
     public RenderedNotification render(NotificationType type, NotificationChannel channel,
                                        Map<String, String> parameters) {
         NotificationTemplate template = repository.find(type, channel)

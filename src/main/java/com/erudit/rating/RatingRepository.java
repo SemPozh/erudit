@@ -84,4 +84,13 @@ public class RatingRepository {
         var args=new java.util.ArrayList<Object>();if(!event.isEmpty()){args.add(categoryId);args.add(categoryId);args.add(since==null?null:Timestamp.from(since));args.add(since==null?null:Timestamp.from(since));}if(friendsOnly){args.add(viewerId);args.add(viewerId);args.add(viewerId);}
         return jdbc.queryForObject("SELECT count(*) FROM user_rating_profiles p JOIN users u ON u.id::text=p.user_id LEFT JOIN user_settings s ON s.user_id=u.id WHERE COALESCE(s.visible_in_rating,true)"+event+friendship,Long.class,args.toArray());
     }
+
+    public List<String> friendsOvertaken(String userId,long before,long after) {
+        return jdbc.query("""
+            SELECT p.user_id FROM user_rating_profiles p JOIN friend_requests f
+              ON f.status='ACCEPTED' AND ((f.requester_id::text=? AND f.addressee_id::text=p.user_id)
+                 OR (f.addressee_id::text=? AND f.requester_id::text=p.user_id))
+            WHERE p.points>? AND p.points<=?
+            """,(rs,n)->rs.getString(1),userId,userId,before,after);
+    }
 }
