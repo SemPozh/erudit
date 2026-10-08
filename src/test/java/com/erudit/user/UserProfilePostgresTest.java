@@ -19,7 +19,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "clickhouse.enabled=false")
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 class UserProfilePostgresTest {
     @Container
     @ServiceConnection

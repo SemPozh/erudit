@@ -11,7 +11,6 @@ import com.erudit.events.repository.ClickHouseEventStore;
 import com.erudit.events.service.QueuedAnalyticsEventPublisher;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 import java.time.Instant;
 import java.time.Clock;
@@ -24,12 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ClickHouseEventStoreTest {
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "CLICKHOUSE_TEST_URL", matches = ".+")
     void writesAndReadsEvent() throws Exception {
-        ClickHouseEventStore store = new ClickHouseEventStore(
-                System.getenv("CLICKHOUSE_TEST_URL"),
-                System.getenv("CLICKHOUSE_TEST_USERNAME"),
-                System.getenv("CLICKHOUSE_TEST_PASSWORD"));
+        ClickHouseEventStore store = clickHouseStore();
         store.initializeSchema();
 
         var publisher = new QueuedAnalyticsEventPublisher(store, Runnable::run,
@@ -46,12 +41,8 @@ class ClickHouseEventStoreTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "CLICKHOUSE_TEST_URL", matches = ".+")
     void aggregatesUniqueUsersAndSessionsByUtcDay() throws Exception {
-        ClickHouseEventStore store = new ClickHouseEventStore(
-                System.getenv("CLICKHOUSE_TEST_URL"),
-                System.getenv("CLICKHOUSE_TEST_USERNAME"),
-                System.getenv("CLICKHOUSE_TEST_PASSWORD"));
+        ClickHouseEventStore store = clickHouseStore();
         store.initializeSchema();
         Instant first = Instant.parse("2026-09-20T10:00:00Z");
         store.write(new AnalyticsEvent(UUID.randomUUID(), "metrics-user-a", "metrics-session-a",
@@ -68,12 +59,8 @@ class ClickHouseEventStoreTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "CLICKHOUSE_TEST_URL", matches = ".+")
     void aggregatesDeduplicatedEngagementAndLearningAcrossDaysAndFormats() throws Exception {
-        ClickHouseEventStore store = new ClickHouseEventStore(
-                System.getenv("CLICKHOUSE_TEST_URL"),
-                System.getenv("CLICKHOUSE_TEST_USERNAME"),
-                System.getenv("CLICKHOUSE_TEST_PASSWORD"));
+        ClickHouseEventStore store = clickHouseStore();
         store.initializeSchema();
         Instant dayOne = Instant.parse("2026-09-22T10:00:00Z");
         UUID duplicate = UUID.randomUUID();
@@ -113,12 +100,8 @@ class ClickHouseEventStoreTest {
     }
 
     @Test
-    @EnabledIfEnvironmentVariable(named = "CLICKHOUSE_TEST_URL", matches = ".+")
     void aggregatesBusinessConversionsWithoutDoubleCountingEvents() throws Exception {
-        ClickHouseEventStore store = new ClickHouseEventStore(
-                System.getenv("CLICKHOUSE_TEST_URL"),
-                System.getenv("CLICKHOUSE_TEST_USERNAME"),
-                System.getenv("CLICKHOUSE_TEST_PASSWORD"));
+        ClickHouseEventStore store = clickHouseStore();
         store.initializeSchema();
         Instant time = Instant.parse("2026-09-25T10:00:00Z");
         String user = "business-metrics-user-" + UUID.randomUUID();
@@ -153,5 +136,20 @@ class ClickHouseEventStoreTest {
         assertThat(notificationPoints.get(1).dimensions()).containsEntry("openRate", 0.0);
         assertThat(store.notifications(new AnalyticsPeriod(Instant.parse("2026-09-28T00:00:00Z"),
                 Instant.parse("2026-09-29T00:00:00Z"), AnalyticsGranularity.DAY))).isEmpty();
+    }
+
+    private static ClickHouseEventStore clickHouseStore() {
+        return new ClickHouseEventStore(
+                requiredEnvironmentVariable("CLICKHOUSE_TEST_URL"),
+                requiredEnvironmentVariable("CLICKHOUSE_TEST_USERNAME"),
+                requiredEnvironmentVariable("CLICKHOUSE_TEST_PASSWORD"));
+    }
+
+    private static String requiredEnvironmentVariable(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(name + " must be configured to run ClickHouse integration tests");
+        }
+        return value;
     }
 }

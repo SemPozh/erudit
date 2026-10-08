@@ -139,7 +139,12 @@ tasks.jacocoTestCoverageVerification {
         fileTree(it) { exclude("com/erudit/openapi/**") }
     }))
     violationRules {
-        rule { limit { minimum = "0.70".toBigDecimal() } }
+        rule {
+            limit {
+                counter = "LINE"
+                minimum = "0.70".toBigDecimal()
+            }
+        }
     }
 }
 
@@ -149,8 +154,27 @@ tasks.check {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    addTestListener(object : org.gradle.api.tasks.testing.TestListener {
+        override fun beforeSuite(suite: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+
+        override fun afterSuite(
+            suite: org.gradle.api.tasks.testing.TestDescriptor,
+            result: org.gradle.api.tasks.testing.TestResult
+        ) {
+            if (suite.parent == null && result.skippedTestCount > 0) {
+                throw GradleException("Skipped tests are not allowed: ${result.skippedTestCount}")
+            }
+        }
+
+        override fun beforeTest(testDescriptor: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+
+        override fun afterTest(
+            testDescriptor: org.gradle.api.tasks.testing.TestDescriptor,
+            result: org.gradle.api.tasks.testing.TestResult
+        ) = Unit
+    })
     testLogging {
-        events("failed")
+        events("failed", "skipped")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
         showStackTraces = true
         showCauses = true

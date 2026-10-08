@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(properties = "clickhouse.enabled=false")
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 class PasswordResetPostgresTest {
     @Container
     @ServiceConnection
