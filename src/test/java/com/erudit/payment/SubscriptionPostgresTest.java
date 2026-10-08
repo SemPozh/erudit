@@ -15,7 +15,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(properties = "clickhouse.enabled=false")
-@Testcontainers(disabledWithoutDocker = true)
+@Testcontainers
 class SubscriptionPostgresTest {
     @Container
     @ServiceConnection
