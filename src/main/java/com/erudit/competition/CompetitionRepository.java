@@ -41,6 +41,24 @@ public class CompetitionRepository {
                 """, competitionId, userId, Timestamp.from(joinedAt));
     }
 
+    public void addParticipantIfAbsent(UUID competitionId, String userId, Instant joinedAt) {
+        jdbc.update("""
+                INSERT INTO competition_participants (competition_id, user_id, joined_at)
+                VALUES (?, ?, ?) ON CONFLICT DO NOTHING
+                """, competitionId, userId, Timestamp.from(joinedAt));
+    }
+
+    public int participantCount(UUID competitionId) {
+        return jdbc.queryForObject("SELECT count(*) FROM competition_participants WHERE competition_id=?", Integer.class, competitionId);
+    }
+
+    public boolean inviteIfAbsent(UUID competitionId, UUID userId, Instant invitedAt) {
+        return jdbc.update("""
+                INSERT INTO competition_invitations (competition_id, user_id, invited_at)
+                VALUES (?, ?, ?) ON CONFLICT DO NOTHING
+                """, competitionId, userId, Timestamp.from(invitedAt)) == 1;
+    }
+
     public Optional<Competition> findById(UUID id) {
         return jdbc.query("""
                 SELECT id, title, quiz_id, creator_id, rules, starts_at, ends_at, created_at

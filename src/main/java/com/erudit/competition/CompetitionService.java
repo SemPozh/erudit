@@ -4,11 +4,18 @@ import com.erudit.quiz.QuizRepository;
 import com.erudit.rating.RatingService;
 import com.erudit.web.NotFoundException;
 import com.erudit.web.ValidationException;
+import com.erudit.web.ForbiddenException;
+import com.erudit.friend.FriendService;
+import com.erudit.notification.*;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -22,15 +29,58 @@ public class CompetitionService {
     private final QuizRepository quizRepository;
     private final Clock clock;
     private final RatingService ratingService;
+    private final FriendService friends;
+    private final ObjectProvider<UserNotificationService> notifications;
 
     public CompetitionService(CompetitionRepository repository,
                               QuizRepository quizRepository,
                               Clock clock,
-                              RatingService ratingService) {
+                              RatingService ratingService, FriendService friends,
+                              ObjectProvider<UserNotificationService> notifications) {
         this.repository = repository;
         this.quizRepository = quizRepository;
         this.clock = clock;
         this.ratingService = ratingService;
+        this.friends = friends;
+        this.notifications = notifications;
+    }
+
+    @Transactional
+    public Details addParticipant(String username, UUID id, UUID target) {
+        Competition competition = editableByCreator(username, id);
+        if (repository.participantCount(id) >= 100 && !repository.isParticipant(id, target.toString())) {
+            throw new ValidationException("Competition participant limit reached");
+        }
+        repository.addParticipantIfAbsent(id, target.toString(), clock.instant());
+        return details(competition);
+    }
+
+    @Transactional
+    public void invite(String username, UUID id, UUID target) {
+        Competition competition = editableByCreator(username, id);
+        UUID creator;
+        try { creator = UUID.fromString(username); } catch (IllegalArgumentException e) { throw new ForbiddenException("Creator identity is invalid"); }
+        if (!friends.areFriends(creator, target)) throw new ForbiddenException("Only friends can be invited");
+        if (repository.inviteIfAbsent(id, target, clock.instant())) {
+            Runnable notify = () -> {
+                UserNotificationService notifier = notifications.getIfAvailable();
+                if (notifier != null) try { notifier.send(target, NotificationType.SOCIAL,
+                        Map.of("competition", competition.title()), ZoneId.of("UTC")); }
+                catch (RuntimeException ignored) { }
+            };
+            if (TransactionSynchronizationManager.isActualTransactionActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override public void afterCommit() { notify.run(); }
+                });
+            } else notify.run();
+        }
+    }
+
+    private Competition editableByCreator(String username, UUID id) {
+        Competition competition = repository.findById(id).orElseThrow(() -> new NotFoundException("Competition not found"));
+        if (!competition.creatorId().equals(username)) throw new ForbiddenException("Only the creator can change participants");
+        if (!clock.instant().isBefore(competition.endsAt())) throw new ValidationException("Competition is closed");
+        return competition;
     }
 
     @Transactional
