@@ -65,6 +65,9 @@ springdoc:
     operations-sorter: alpha
     try-it-out-enabled: true
 erudit:
+  notifications:
+    daily-limit: ${NOTIFICATION_DAILY_LIMIT:10}
+    trigger-cron: ${NOTIFICATION_TRIGGER_CRON:0 0 * * * *}
   payments:
     webhook-secret: ${PAYMENT_WEBHOOK_SECRET:local-webhook-secret}
     maintenance-interval: ${PAYMENT_MAINTENANCE_INTERVAL:PT1H}

@@ -86,7 +86,7 @@ class ContentControllerTest {
         Content recommendation = content(UUID.randomUUID(), UUID.randomUUID(),
                 ContentStatus.PUBLISHED, "Recommended");
         when(feedService.feed(userId, 0, 20))
-                .thenReturn(new ContentPage(List.of(recommendation), 1, 0, 20));
+                .thenReturn(new ContentSlice(List.of(recommendation), 0, 20, true));
 
         mvc.perform(get("/api/v1/content/feed").param("page", "0").param("size", "20")
                         .with(request -> {
@@ -94,7 +94,10 @@ class ContentControllerTest {
                             return request;
                         }))
                 .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(header().string("X-Has-More", "true"))
+                .andExpect(header().string("X-Next-Page", "1"))
+                .andExpect(header().doesNotExist("X-Total-Count"))
+                .andExpect(jsonPath("$.pagination").doesNotExist())
                 .andExpect(jsonPath("$.data[0].title").value("Recommended"));
         verify(feedService).feed(userId, 0, 20);
     }

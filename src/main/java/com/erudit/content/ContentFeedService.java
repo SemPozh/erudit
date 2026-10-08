@@ -18,7 +18,7 @@ public class ContentFeedService {
     }
 
     @Transactional(readOnly = true)
-    public ContentPage feed(UUID userId, Integer requestedPage, Integer requestedSize) {
+    public ContentSlice feed(UUID userId, Integer requestedPage, Integer requestedSize) {
         int page = requestedPage == null ? 0 : requestedPage;
         int size = requestedSize == null ? 20 : requestedSize;
         if (page < 0 || size < 1 || size > 50) {
