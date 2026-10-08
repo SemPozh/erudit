@@ -1,6 +1,6 @@
 package com.erudit.user.repository;
 
-import com.erudit.user.domain.RefreshToken;
+import com.erudit.user.model.RefreshToken;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

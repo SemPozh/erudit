@@ -1,5 +1,7 @@
 package com.erudit.program;
 
+import com.erudit.program.service.ProgramService;
+
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;

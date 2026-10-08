@@ -1,5 +1,7 @@
 package com.erudit.web;
 
+import com.erudit.web.dto.ApiResponse;
+import com.erudit.web.exception.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.junit.jupiter.api.Test;

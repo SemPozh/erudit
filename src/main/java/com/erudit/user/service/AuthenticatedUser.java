@@ -1,6 +1,6 @@
 package com.erudit.user.service;
 
-import com.erudit.user.domain.UserRole;
+import com.erudit.user.model.UserRole;
 
 import java.util.Set;
 import java.util.UUID;

@@ -1,5 +1,9 @@
 package com.erudit.content;
 
+import com.erudit.content.controller.ContentReportController;
+import com.erudit.content.model.ContentReport;
+import com.erudit.content.service.ContentReportService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

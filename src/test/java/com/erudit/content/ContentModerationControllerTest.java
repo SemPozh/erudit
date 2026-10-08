@@ -1,5 +1,17 @@
 package com.erudit.content;
 
+import com.erudit.content.controller.ContentModerationController;
+import com.erudit.content.dto.ContentPage;
+import com.erudit.content.dto.ContentReportPage;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentReport;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.content.model.ReportDecision;
+import com.erudit.content.service.ContentReportService;
+import com.erudit.content.service.ContentService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

@@ -1,8 +1,14 @@
 package com.erudit.program;
 
-import com.erudit.content.ContentRepository;
-import com.erudit.content.Difficulty;
-import com.erudit.quiz.QuizRepository;
+import com.erudit.program.model.LearningProgram;
+import com.erudit.program.model.LessonStatus;
+import com.erudit.program.model.ProgramLesson;
+import com.erudit.program.model.ProgramModule;
+import com.erudit.program.repository.ProgramRepository;
+
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.model.Difficulty;
+import com.erudit.quiz.repository.QuizRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

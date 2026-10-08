@@ -1,11 +1,11 @@
 package com.erudit.user.service;
 
-import com.erudit.user.domain.User;
-import com.erudit.user.domain.UserPreferences;
+import com.erudit.user.model.User;
+import com.erudit.user.model.UserPreferences;
 import com.erudit.user.repository.UserPreferencesRepository;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.web.NotFoundException;
-import com.erudit.web.ValidationException;
+import com.erudit.web.exception.NotFoundException;
+import com.erudit.web.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;

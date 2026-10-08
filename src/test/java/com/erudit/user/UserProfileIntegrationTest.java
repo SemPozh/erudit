@@ -1,8 +1,8 @@
 package com.erudit.user;
 
-import com.erudit.media.MediaAsset;
-import com.erudit.media.MediaRepository;
-import com.erudit.user.domain.User;
+import com.erudit.media.model.MediaAsset;
+import com.erudit.media.repository.MediaRepository;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;

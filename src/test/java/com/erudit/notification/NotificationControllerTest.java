@@ -1,5 +1,14 @@
 package com.erudit.notification;
 
+import com.erudit.notification.controller.NotificationController;
+import com.erudit.notification.dto.UserNotificationPage;
+import com.erudit.notification.model.NotificationChannel;
+import com.erudit.notification.model.NotificationPreference;
+import com.erudit.notification.model.NotificationType;
+import com.erudit.notification.model.UserNotification;
+import com.erudit.notification.service.NotificationPreferenceService;
+import com.erudit.notification.service.UserNotificationService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

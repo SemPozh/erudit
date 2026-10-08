@@ -1,15 +1,15 @@
 package com.erudit.program;
 
-import com.erudit.content.Category;
-import com.erudit.content.Content;
-import com.erudit.content.ContentRepository;
-import com.erudit.content.ContentStatus;
-import com.erudit.content.ContentType;
-import com.erudit.content.Difficulty;
-import com.erudit.quiz.Quiz;
-import com.erudit.quiz.QuizAnswerOption;
-import com.erudit.quiz.QuizQuestion;
-import com.erudit.quiz.QuizRepository;
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.model.ContentType;
+import com.erudit.content.model.Difficulty;
+import com.erudit.quiz.model.Quiz;
+import com.erudit.quiz.model.QuizAnswerOption;
+import com.erudit.quiz.model.QuizQuestion;
+import com.erudit.quiz.repository.QuizRepository;
 
 import java.time.Instant;
 import java.util.List;

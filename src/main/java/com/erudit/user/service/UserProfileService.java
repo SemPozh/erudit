@@ -1,11 +1,11 @@
 package com.erudit.user.service;
 
-import com.erudit.media.MediaAsset;
-import com.erudit.media.MediaRepository;
-import com.erudit.user.domain.User;
+import com.erudit.media.model.MediaAsset;
+import com.erudit.media.repository.MediaRepository;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.web.NotFoundException;
-import com.erudit.web.ValidationException;
+import com.erudit.web.exception.NotFoundException;
+import com.erudit.web.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,8 +1,8 @@
 package com.erudit.user;
 
-import com.erudit.content.Category;
-import com.erudit.content.ContentRepository;
-import com.erudit.user.domain.User;
+import com.erudit.content.model.Category;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.JwtTokenService;
 import com.erudit.user.service.UserPreferenceProvider;

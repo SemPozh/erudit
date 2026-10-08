@@ -1,7 +1,7 @@
 package com.erudit.user;
 
-import com.erudit.user.domain.User;
-import com.erudit.user.notification.EmailSender;
+import com.erudit.user.model.User;
+import com.erudit.user.service.EmailSender;
 import com.erudit.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

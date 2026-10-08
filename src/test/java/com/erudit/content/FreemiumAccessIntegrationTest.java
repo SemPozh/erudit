@@ -1,10 +1,17 @@
 package com.erudit.content;
 
+import com.erudit.content.model.Category;
+import com.erudit.content.model.Content;
+import com.erudit.content.model.ContentStatus;
+import com.erudit.content.repository.ContentProgressRepository;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.service.ContentService;
+
 import com.erudit.openapi.model.ContentUpsertRequest;
-import com.erudit.payment.Subscription;
-import com.erudit.payment.SubscriptionRepository;
-import com.erudit.payment.SubscriptionStatus;
-import com.erudit.user.domain.User;
+import com.erudit.payment.model.Subscription;
+import com.erudit.payment.repository.SubscriptionRepository;
+import com.erudit.payment.model.SubscriptionStatus;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;

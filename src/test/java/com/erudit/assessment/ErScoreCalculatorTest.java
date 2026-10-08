@@ -1,5 +1,10 @@
 package com.erudit.assessment;
 
+import com.erudit.assessment.model.AnswerOutcome;
+import com.erudit.assessment.model.AssessmentScore;
+import com.erudit.assessment.model.TopicAssessmentScore;
+import com.erudit.assessment.service.ErScoreCalculator;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -1,5 +1,15 @@
 package com.erudit.events;
 
+import com.erudit.events.dto.EventPublication;
+import com.erudit.events.model.AnalyticsEvent;
+import com.erudit.events.model.AnalyticsGranularity;
+import com.erudit.events.model.AnalyticsMetricPoint;
+import com.erudit.events.model.AnalyticsPeriod;
+import com.erudit.events.model.EventGroup;
+import com.erudit.events.model.EventType;
+import com.erudit.events.repository.ClickHouseEventStore;
+import com.erudit.events.service.QueuedAnalyticsEventPublisher;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 

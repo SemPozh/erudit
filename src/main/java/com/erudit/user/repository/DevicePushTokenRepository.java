@@ -1,6 +1,6 @@
 package com.erudit.user.repository;
 
-import com.erudit.user.domain.DevicePushToken;
+import com.erudit.user.model.DevicePushToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

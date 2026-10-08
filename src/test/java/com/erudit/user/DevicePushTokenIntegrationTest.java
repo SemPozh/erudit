@@ -1,8 +1,8 @@
 package com.erudit.user;
 
-import com.erudit.user.domain.DevicePushToken;
-import com.erudit.user.domain.PushPlatform;
-import com.erudit.user.domain.User;
+import com.erudit.user.model.DevicePushToken;
+import com.erudit.user.model.PushPlatform;
+import com.erudit.user.model.User;
 import com.erudit.user.repository.DevicePushTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.user.service.JwtTokenService;

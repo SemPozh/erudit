@@ -16,7 +16,7 @@ import com.erudit.user.service.EmailVerificationService;
 import com.erudit.user.service.IssuedTokenPair;
 import com.erudit.user.service.UserService;
 import com.erudit.user.service.PasswordResetService;
-import com.erudit.web.UnauthorizedException;
+import com.erudit.web.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,11 +1,11 @@
 package com.erudit.user.service;
 
 import com.erudit.user.config.VerificationProperties;
-import com.erudit.user.domain.EmailVerificationToken;
-import com.erudit.user.domain.User;
+import com.erudit.user.model.EmailVerificationToken;
+import com.erudit.user.model.User;
 import com.erudit.user.exception.ExpiredVerificationTokenException;
 import com.erudit.user.exception.InvalidVerificationTokenException;
-import com.erudit.user.notification.EmailSender;
+import com.erudit.user.service.EmailSender;
 import com.erudit.user.repository.EmailVerificationTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

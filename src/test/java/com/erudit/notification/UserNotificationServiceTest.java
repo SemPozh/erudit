@@ -1,5 +1,19 @@
 package com.erudit.notification;
 
+import com.erudit.events.dto.EventPublication;
+import com.erudit.events.service.AnalyticsEventPublisher;
+import com.erudit.notification.model.NotificationChannel;
+import com.erudit.notification.model.NotificationDeliveryStatus;
+import com.erudit.notification.model.NotificationPreference;
+import com.erudit.notification.model.NotificationType;
+import com.erudit.notification.model.RenderedNotification;
+import com.erudit.notification.model.UserNotification;
+import com.erudit.notification.repository.UserNotificationRepository;
+import com.erudit.notification.service.NotificationPreferenceService;
+import com.erudit.notification.service.NotificationTemplateService;
+import com.erudit.notification.service.NotificationTransport;
+import com.erudit.notification.service.UserNotificationService;
+
 import com.erudit.events.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;

@@ -1,5 +1,7 @@
 package com.erudit.observability;
 
+import com.erudit.observability.config.RequestCorrelationFilter;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 import org.springframework.mock.web.MockHttpServletRequest;

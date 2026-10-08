@@ -1,5 +1,9 @@
 package com.erudit.payment;
 
+import com.erudit.payment.model.SubscriptionStatus;
+import com.erudit.payment.repository.SubscriptionRepository;
+import com.erudit.payment.service.PaymentWebhookService;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package com.erudit.program;
 
-import com.erudit.content.ContentRepository;
-import com.erudit.content.Difficulty;
-import com.erudit.quiz.QuizRepository;
+import com.erudit.content.repository.ContentRepository;
+import com.erudit.content.model.Difficulty;
+import com.erudit.quiz.repository.QuizRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

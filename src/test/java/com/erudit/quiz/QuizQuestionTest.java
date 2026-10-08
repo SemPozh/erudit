@@ -1,5 +1,8 @@
 package com.erudit.quiz;
 
+import com.erudit.quiz.model.QuizAnswerOption;
+import com.erudit.quiz.model.QuizQuestion;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

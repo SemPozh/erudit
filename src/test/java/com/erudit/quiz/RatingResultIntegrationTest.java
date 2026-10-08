@@ -1,10 +1,17 @@
 package com.erudit.quiz;
 
-import com.erudit.assessment.SubmittedAnswer;
-import com.erudit.events.AnalyticsEventPublisher;
-import com.erudit.events.EventType;
-import com.erudit.rating.RatingRepository;
-import com.erudit.rating.RatingService;
+import com.erudit.quiz.model.Quiz;
+import com.erudit.quiz.model.QuizAnswerOption;
+import com.erudit.quiz.model.QuizAttempt;
+import com.erudit.quiz.model.QuizQuestion;
+import com.erudit.quiz.repository.QuizRepository;
+import com.erudit.quiz.service.QuizAttemptService;
+
+import com.erudit.assessment.model.SubmittedAnswer;
+import com.erudit.events.service.AnalyticsEventPublisher;
+import com.erudit.events.model.EventType;
+import com.erudit.rating.repository.RatingRepository;
+import com.erudit.rating.service.RatingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

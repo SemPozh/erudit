@@ -1,12 +1,12 @@
 package com.erudit.user.service;
 
 import com.erudit.user.config.AuthProperties;
-import com.erudit.user.domain.RefreshToken;
-import com.erudit.user.domain.User;
-import com.erudit.user.domain.UserStatus;
+import com.erudit.user.model.RefreshToken;
+import com.erudit.user.model.User;
+import com.erudit.user.model.UserStatus;
 import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.web.UnauthorizedException;
+import com.erudit.web.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

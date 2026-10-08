@@ -1,6 +1,10 @@
 package com.erudit.program;
 
-import com.erudit.assessment.TopicAssessmentScore;
+import com.erudit.program.model.ProgramPreferences;
+import com.erudit.program.repository.ProgramPreferenceRepository;
+import com.erudit.program.service.ProgramPreferenceService;
+
+import com.erudit.assessment.model.TopicAssessmentScore;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

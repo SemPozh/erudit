@@ -70,13 +70,13 @@ openApiGenerate {
 
     importMappings.set(
         mapOf(
-            "ContentReportRequest" to "com.erudit.content.ContentReportRequest"
+            "ContentReportRequest" to "com.erudit.content.dto.ContentReportRequest"
         )
     )
 
     schemaMappings.set(
         mapOf(
-            "ContentReportRequest" to "com.erudit.content.ContentReportRequest"
+            "ContentReportRequest" to "com.erudit.content.dto.ContentReportRequest"
         )
     )
 
