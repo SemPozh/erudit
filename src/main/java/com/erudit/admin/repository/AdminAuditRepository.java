@@ -29,13 +29,31 @@ public class AdminAuditRepository {
     }
 
     public AdminAuditPage list(int page, int size, UUID actor, String action, Instant from, Instant to) {
-        String where = " WHERE (? IS NULL OR actor_id=?) AND (? IS NULL OR action=?) AND (? IS NULL OR occurred_at>=?) AND (? IS NULL OR occurred_at<=?)";
-        Object[] filter = {actor == null ? null : actor.toString(), actor == null ? null : actor.toString(), action, action, from == null ? null : Timestamp.from(from), from == null ? null : Timestamp.from(from), to == null ? null : Timestamp.from(to), to == null ? null : Timestamp.from(to)};
-        var args = new ArrayList<Object>(Arrays.asList(filter));
+        var clauses = new ArrayList<String>();
+        var filter = new ArrayList<Object>();
+        if (actor != null) {
+            clauses.add("actor_id = ?");
+            filter.add(actor.toString());
+        }
+        if (action != null && !action.isBlank()) {
+            clauses.add("action = ?");
+            filter.add(action);
+        }
+        if (from != null) {
+            clauses.add("occurred_at >= ?");
+            filter.add(Timestamp.from(from));
+        }
+        if (to != null) {
+            clauses.add("occurred_at <= ?");
+            filter.add(Timestamp.from(to));
+        }
+
+        String where = clauses.isEmpty() ? "" : " WHERE " + String.join(" AND ", clauses);
+        var args = new ArrayList<>(filter);
         args.add(size);
         args.add(page * size);
         var rows = jdbc.query("SELECT * FROM admin_audit_log" + where + " ORDER BY occurred_at DESC,id DESC LIMIT ? OFFSET ?", (rs, n) -> map(rs), args.toArray());
-        long total = jdbc.queryForObject("SELECT count(*) FROM admin_audit_log" + where, Long.class, filter);
+        long total = jdbc.queryForObject("SELECT count(*) FROM admin_audit_log" + where, Long.class, filter.toArray());
         return new AdminAuditPage(rows, total, page, size);
     }
 

@@ -6,7 +6,7 @@ import com.erudit.competition.service.CompetitionService;
 import com.erudit.openapi.api.CompetitionsApi;
 import com.erudit.openapi.model.CompetitionCreateRequest;
 import com.erudit.openapi.model.CompetitionResponse;
-import com.erudit.openapi.model.FriendRequestCreate;
+import com.erudit.openapi.model.FriendCreateRequest;
 import com.erudit.openapi.model.RatingListResponse;
 import com.erudit.web.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -67,8 +67,8 @@ public class CompetitionController implements CompetitionsApi {   // check gener
     }
 
     @Override
-    public ResponseEntity<Void> inviteToCompetition(UUID id, FriendRequestCreate friendRequestCreate) {
-        service.invite(currentUser(), id, friendRequestCreate.getUserId());
+    public ResponseEntity<Void> inviteToCompetition(UUID id, FriendCreateRequest friendCreateRequest) {
+        service.invite(currentUser(), id, friendCreateRequest.getUserId());
         return ResponseEntity.noContent().build();
     }
 
@@ -95,8 +95,8 @@ public class CompetitionController implements CompetitionsApi {   // check gener
     }
 
     @Override
-    public ResponseEntity<CompetitionResponse> addCompetitionParticipant(UUID id, FriendRequestCreate friendRequestCreate) {
-        return ResponseEntity.ok(toResponse(service.addParticipant(currentUser(), id, friendRequestCreate.getUserId())));
+    public ResponseEntity<CompetitionResponse> addCompetitionParticipant(UUID id, FriendCreateRequest friendCreateRequest) {
+        return ResponseEntity.ok(toResponse(service.addParticipant(currentUser(), id, friendCreateRequest.getUserId())));
     }
 
 }

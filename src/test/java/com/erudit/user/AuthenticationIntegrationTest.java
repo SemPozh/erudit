@@ -11,14 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.erudit.user.service.PasswordHasher;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static com.erudit.support.TestUserRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,7 +30,7 @@ class AuthenticationIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
     @Autowired private RefreshTokenRepository refreshTokenRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private PasswordHasher passwordHasher;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String email;
@@ -40,7 +40,7 @@ class AuthenticationIntegrationTest {
         email = "auth-" + UUID.randomUUID() + "@example.com";
         userRepository.save(User.builder()
                 .email(email)
-                .passwordHash(passwordEncoder.encode("correct-password"))
+                .passwordHash(passwordHasher.encode("correct-password"))
                 .name("Auth Student")
                 .build());
     }

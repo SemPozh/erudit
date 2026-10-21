@@ -9,6 +9,8 @@ plugins {
 group = "com.erudit"
 version = "0.0.1-SNAPSHOT"
 
+val postgresTestImage = providers.gradleProperty("postgresTestImage")
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(25))
@@ -28,10 +30,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-zipkin")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
-    implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-security") // TODO убрать
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     implementation("com.clickhouse:clickhouse-jdbc:0.9.8:all")
+    implementation("at.favre.lib:bcrypt:0.10.2")
 
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.flywaydb:flyway-database-postgresql")
@@ -50,13 +52,11 @@ dependencies {
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
+    testImplementation("org.testcontainers:testcontainers-jdbc:2.0.5")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
     testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("com.h2database:h2") // TODO убрать
-
 }
 
 // OpenAPI code generation
@@ -68,18 +68,6 @@ openApiGenerate {
     apiPackage.set("com.erudit.openapi.api")
     modelPackage.set("com.erudit.openapi.model")
 
-    importMappings.set(
-        mapOf(
-            "ContentReportRequest" to "com.erudit.content.dto.ContentReportRequest"
-        )
-    )
-
-    schemaMappings.set(
-        mapOf(
-            "ContentReportRequest" to "com.erudit.content.dto.ContentReportRequest"
-        )
-    )
-
     configOptions.set(
         mapOf(
             "interfaceOnly" to "true",
@@ -87,8 +75,7 @@ openApiGenerate {
             "useSpringBoot4" to "true",
             "useJackson3" to "true",
             "openApiNullable" to "false",
-            "useTags" to "true",
-            "dateLibrary" to "java8"
+            "useTags" to "true"
         )
     )
 }
@@ -107,19 +94,8 @@ sourceSets {
     }
 }
 
-configurations {
-    compileClasspath {
-        extendsFrom(configurations.annotationProcessor.get())
-    }
-}
-
 tasks.named("compileJava") {
     dependsOn(tasks.named("openApiGenerate"))
-}
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.jacocoTestReport {
@@ -154,6 +130,12 @@ tasks.check {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+    systemProperty("test.postgres.image", postgresTestImage.get())
+    systemProperty(
+        "test.database.url",
+        "jdbc:tc:postgresql:${postgresTestImage.get().removePrefix("postgres:")}:///erudit?TC_DAEMON=true"
+    )
     addTestListener(object : org.gradle.api.tasks.testing.TestListener {
         override fun beforeSuite(suite: org.gradle.api.tasks.testing.TestDescriptor) = Unit
 

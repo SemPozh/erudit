@@ -5,6 +5,7 @@ import com.erudit.admin.service.AdminService;
 import com.erudit.openapi.api.AdminApi;
 import com.erudit.openapi.model.*;
 import com.erudit.user.model.User;
+import com.erudit.web.exception.ForbiddenException;
 import com.erudit.web.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
@@ -24,6 +25,7 @@ public class AdminController implements AdminApi {
     }
 
     public ResponseEntity<AdminUserListResponse> listAdminUsers(Integer page, Integer size, String query) {
+        requireAdmin();
         var p = service.users(query, page, size);
         var r = new AdminUserListResponse(p.getContent().stream().map(this::profile).toList());
         r.setPagination(meta(p.getNumber(), p.getSize(), p.getTotalElements(), p.getTotalPages()));
@@ -41,6 +43,7 @@ public class AdminController implements AdminApi {
     }
 
     public ResponseEntity<AuditListResponse> listAuditLog(Integer page, Integer size, UUID actorId, String action, OffsetDateTime from, OffsetDateTime to) {
+        requireAdmin();
         var p = service.audit(page, size, actorId, action, from == null ? null : from.toInstant(), to == null ? null : to.toInstant());
         var data = p.items().stream().map(this::audit).toList();
         return ResponseEntity.ok(new AuditListResponse(data, meta(p.page(), p.size(), p.total(), (int) Math.ceil(p.total() / (double) p.size()))));
@@ -65,11 +68,16 @@ public class AdminController implements AdminApi {
     }
 
     private UUID actor() {
-        if (request.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
+        requireAdmin();
         try {
             return UUID.fromString(request.getUserPrincipal().getName());
         } catch (Exception e) {
             throw new UnauthorizedException("Invalid administrator identity");
         }
+    }
+
+    private void requireAdmin() {
+        if (request.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
+        if (!request.isUserInRole("ADMIN")) throw new ForbiddenException("ADMIN role is required");
     }
 }

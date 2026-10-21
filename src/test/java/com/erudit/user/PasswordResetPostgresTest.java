@@ -9,7 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.erudit.user.service.PasswordHasher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -26,18 +26,18 @@ import static org.mockito.Mockito.verify;
 class PasswordResetPostgresTest {
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine");
+    static final PostgreSQLContainer POSTGRES = com.erudit.support.PostgresTestContainer.create();
 
     @Autowired private UserRepository userRepository;
     @Autowired private PasswordResetService passwordResetService;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private PasswordHasher passwordHasher;
     @MockitoBean private EmailSender emailSender;
 
     @Test
     void storesAndConsumesResetTokenOnPostgres() {
         String email = "postgres-reset-" + UUID.randomUUID() + "@example.com";
         User user = userRepository.save(User.builder().email(email)
-                .passwordHash(passwordEncoder.encode("old-password"))
+                .passwordHash(passwordHasher.encode("old-password"))
                 .name("Postgres Reset").build());
         passwordResetService.request(email);
         ArgumentCaptor<String> link = ArgumentCaptor.forClass(String.class);
@@ -46,7 +46,7 @@ class PasswordResetPostgresTest {
 
         passwordResetService.reset(rawToken, "new-password");
 
-        assertThat(passwordEncoder.matches("new-password",
+        assertThat(passwordHasher.matches("new-password",
                 userRepository.findById(user.getId()).orElseThrow().getPasswordHash())).isTrue();
     }
 }

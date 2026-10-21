@@ -41,7 +41,7 @@ services:
   postgres:
     image: postgres:17-alpine
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-erudit}
       POSTGRES_USER: ${POSTGRES_USER:-erudit}
@@ -66,7 +66,6 @@ services:
       - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
     volumes:
       - clickhouse_data:/var/lib/clickhouse
-      - ./src/main/resources/clickhouse/events.sql:/docker-entrypoint-initdb.d/001_events.sql:ro
     healthcheck:
       test: ["CMD", "clickhouse-client", "--user", "${CLICKHOUSE_USER:-erudit}", "--password", "${CLICKHOUSE_PASSWORD:-erudit}", "--query", "SELECT 1"]
       interval: 5s

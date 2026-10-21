@@ -6,7 +6,7 @@ import com.erudit.content.model.ContentProgressStatus;
 import com.erudit.content.repository.ContentProgressRepository;
 
 import com.erudit.events.service.AnalyticsEventPublisher;
-import com.erudit.events.dto.EventPublication;
+import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.EventType;
 import com.erudit.web.exception.NotFoundException;
 import com.erudit.user.service.UserPreferenceProvider;
@@ -106,7 +106,7 @@ public class ContentProgressService {
         if (!analyticsAllowed(userId)) return;
         AnalyticsEventPublisher publisher = publisherProvider.getIfAvailable();
         if (publisher == null) return;
-        var result = publisher.publish(new EventPublication(type, userId, sessionId,
+        var result = publisher.publish(new EventPublicationRequest(type, userId, sessionId,
                 "{\"contentId\":\"" + contentId + "\"}"));
         if (result != null) {
             result.exceptionally(exception -> {

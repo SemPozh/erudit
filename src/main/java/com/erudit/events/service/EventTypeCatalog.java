@@ -17,7 +17,8 @@ public final class EventTypeCatalog {
     private static final Map<EventGroup, List<EventType>> BY_GROUP = groupTypes();
 
     private EventTypeCatalog() {
-    } // TODO бросить exception (пример в чате)
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     public static EventType require(String value) {
         EventType type = BY_VALUE.get(value);

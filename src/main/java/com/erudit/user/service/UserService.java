@@ -8,7 +8,6 @@ import com.erudit.user.exception.EmailAlreadyExistsException;
 import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final EmailVerificationService emailVerificationService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final Clock clock;
@@ -35,7 +34,7 @@ public class UserService {
 
         User user = User.builder()
                 .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
+                .passwordHash(passwordHasher.encode(request.password()))
                 .name(request.name())
                 .build();
 

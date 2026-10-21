@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class UserProfilePostgresTest {
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine");
+    static final PostgreSQLContainer POSTGRES = com.erudit.support.PostgresTestContainer.create();
 
     @Autowired private UserRepository userRepository;
     @Autowired private MediaRepository mediaRepository;

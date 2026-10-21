@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -132,10 +131,10 @@ public class ContentService {
         if (request.getTitle().isBlank()) {
             throw new ValidationException("title must not be blank");
         }
-        ContentType type = parseEnum(ContentType.class, request.getType().getValue(), "type");
+        ContentType type = parseContentType(request.getType().getValue());
         Difficulty difficulty = request.getDifficulty() == null
                 ? Difficulty.BEGINNER
-                : parseEnum(Difficulty.class, request.getDifficulty().getValue(), "difficulty");
+                : parseDifficulty(request.getDifficulty().getValue());
         int estimatedMinutes = request.getEstimatedMinutes() == null ? 1 : request.getEstimatedMinutes();
         if (estimatedMinutes < 1) {
             throw new ValidationException("estimatedMinutes must be positive");
@@ -152,11 +151,19 @@ public class ContentService {
         return value == null ? "" : value;
     }
 
-    private static <T extends Enum<T>> T parseEnum(Class<T> type, String value, String field) {
+    private static ContentType parseContentType(String value) {
         try {
-            return Enum.valueOf(type, value.toUpperCase(Locale.ROOT));
+            return ContentType.fromValue(value);
         } catch (IllegalArgumentException exception) {
-            throw new ValidationException("Unsupported " + field + ": " + value);
+            throw new ValidationException("Unsupported type: " + value);
+        }
+    }
+
+    private static Difficulty parseDifficulty(String value) {
+        try {
+            return Difficulty.fromValue(value);
+        } catch (IllegalArgumentException exception) {
+            throw new ValidationException("Unsupported difficulty: " + value);
         }
     }
 }

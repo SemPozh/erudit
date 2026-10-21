@@ -7,20 +7,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.beans.factory.ObjectProvider;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.Map;
 
 @Component
@@ -44,18 +42,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 throw new InvalidAccessTokenException("JWT verification is unavailable");
             }
             AuthenticatedUser user = jwtTokenService.verifyAccessToken(authorization.substring(7));
-            var authorities = user.roles().stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.name())).toList();
-            var authentication = new UsernamePasswordAuthenticationToken(user.id().toString(), null, authorities);
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            chain.doFilter(request, response);
+            chain.doFilter(new AuthenticatedRequest(request, user), response);
         } catch (InvalidAccessTokenException exception) {
-            SecurityContextHolder.clearContext();
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             objectMapper.writeValue(response.getOutputStream(), Map.of("error", Map.of(
                     "code", "UNAUTHORIZED", "message", "Invalid or expired access token")));
+        }
+    }
+
+    private static final class AuthenticatedRequest extends HttpServletRequestWrapper {
+        private final AuthenticatedUser user;
+        private final Principal principal;
+
+        private AuthenticatedRequest(HttpServletRequest request, AuthenticatedUser user) {
+            super(request);
+            this.user = user;
+            this.principal = () -> user.id().toString();
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            return principal;
+        }
+
+        @Override
+        public String getRemoteUser() {
+            return principal.getName();
+        }
+
+        @Override
+        public boolean isUserInRole(String role) {
+            String normalized = role.startsWith("ROLE_") ? role.substring(5) : role;
+            return user.roles().stream().anyMatch(candidate -> candidate.name().equals(normalized));
+        }
+
+        @Override
+        public String getAuthType() {
+            return "Bearer";
         }
     }
 }

@@ -12,8 +12,6 @@ import com.erudit.web.exception.ValidationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Locale;
-
 @Service
 public class ContentCatalogService {
     private final ContentCatalogRepository repository;
@@ -29,7 +27,7 @@ public class ContentCatalogService {
                             String difficulty, Boolean premium, String query, String sort) {
         if (page < 0 || size < 1 || size > 50) throw new ValidationException("size must be between 1 and 50");
         return repository.find(new ContentCatalogQuery(page, size, categoryId,
-                parse(ContentType.class, type, "type"), parse(Difficulty.class, difficulty, "difficulty"),
+                parseContentType(type), parseDifficulty(difficulty),
                 premium, query, parseSort(sort)));
     }
 
@@ -53,12 +51,21 @@ public class ContentCatalogService {
         };
     }
 
-    private static <T extends Enum<T>> T parse(Class<T> type, String value, String field) {
+    private static ContentType parseContentType(String value) {
         if (value == null || value.isBlank()) return null;
         try {
-            return Enum.valueOf(type, value.toUpperCase(Locale.ROOT));
+            return ContentType.fromValue(value);
         } catch (IllegalArgumentException exception) {
-            throw new ValidationException("Unsupported " + field);
+            throw new ValidationException("Unsupported type");
+        }
+    }
+
+    private static Difficulty parseDifficulty(String value) {
+        if (value == null || value.isBlank()) return null;
+        try {
+            return Difficulty.fromValue(value);
+        } catch (IllegalArgumentException exception) {
+            throw new ValidationException("Unsupported difficulty");
         }
     }
 }

@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ProgramPostgresTest {
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine");
+    static final PostgreSQLContainer POSTGRES = com.erudit.support.PostgresTestContainer.create();
 
     @Autowired private ProgramRepository repository;
     @Autowired private ContentRepository contentRepository;

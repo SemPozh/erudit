@@ -1,14 +1,14 @@
 package com.erudit.events.controller;
 
-import com.erudit.events.dto.EventIngestionResult;
+import com.erudit.events.dto.EventIngestionResponse;
 import com.erudit.events.service.EventIngestionService;
 
 import com.erudit.openapi.api.EventsApi;
 import com.erudit.openapi.model.EventReceipt;
 import com.erudit.openapi.model.EventReceiptListResponse;
 import com.erudit.openapi.model.EventReceiptResponse;
-import com.erudit.openapi.model.EventRequest;
-import com.erudit.openapi.model.EventsBatchRequest;
+import com.erudit.openapi.model.EventBatchRequest;
+import com.erudit.openapi.model.EventIngestionRequest;
 import com.erudit.web.exception.ForbiddenException;
 import com.erudit.web.exception.UnauthorizedException;
 import com.erudit.web.exception.ValidationException;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-// TODO DTO везде с -Request / -Response
 public class EventController implements EventsApi {
     private static final int MAX_BATCH_SIZE = 100;
     private final EventIngestionService service;
@@ -32,13 +31,13 @@ public class EventController implements EventsApi {
     }
 
     @Override
-    public ResponseEntity<EventReceiptResponse> ingestEvent(EventRequest request) {
-        EventIngestionResult result = ingest(request, currentUser());
+    public ResponseEntity<EventReceiptResponse> ingestEvent(EventIngestionRequest request) {
+        EventIngestionResponse result = ingest(request, currentUser());
         return ResponseEntity.accepted().body(new EventReceiptResponse(receipt(result)));
     }
 
     @Override
-    public ResponseEntity<EventReceiptListResponse> ingestEventBatch(EventsBatchRequest request) {
+    public ResponseEntity<EventReceiptListResponse> ingestEventBatch(EventBatchRequest request) {
         if (request.getEvents() == null || request.getEvents().isEmpty() || request.getEvents().size() > MAX_BATCH_SIZE) {
             throw new ValidationException("events must contain between 1 and 100 items");
         }
@@ -48,7 +47,7 @@ public class EventController implements EventsApi {
         return ResponseEntity.accepted().body(new EventReceiptListResponse(receipts));
     }
 
-    private EventIngestionResult ingest(EventRequest request, UUID currentUser) {
+    private EventIngestionResponse ingest(EventIngestionRequest request, UUID currentUser) {
         UUID eventUser = request.getUserId() == null ? currentUser : request.getUserId();
         if (!eventUser.equals(currentUser) && !servletRequest.isUserInRole("ADMIN")) {
             throw new ForbiddenException("Events can only be submitted for the authenticated user");
@@ -66,7 +65,7 @@ public class EventController implements EventsApi {
         }
     }
 
-    private static EventReceipt receipt(EventIngestionResult result) {
+    private static EventReceipt receipt(EventIngestionResponse result) {
         return new EventReceipt(result.eventId(), result.accepted());
     }
 }

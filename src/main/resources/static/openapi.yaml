@@ -71,7 +71,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/content/{id}/report: # TODO перенести v1 в параметр application.yaml
+  /api/v1/content/{id}/report:
     post:
       tags:
       - ContentReports
@@ -412,7 +412,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserSettings'
+              $ref: '#/components/schemas/UserSettingsRequest'
       responses:
         '200':
           description: Успешный ответ
@@ -535,7 +535,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FriendRequestCreate'
+              $ref: '#/components/schemas/FriendCreateRequest'
       responses:
         '201':
           description: Успешный ответ
@@ -690,11 +690,13 @@ paths:
         required: false
         schema:
           type: string
+          enum: [ARTICLE, FACT_CARD, AUDIO, VIDEO, COMBINED, QUIZ_BLOCK]
       - name: difficulty
         in: query
         required: false
         schema:
           type: string
+          enum: [BEGINNER, INTERMEDIATE, ADVANCED]
       - name: premium
         in: query
         required: false
@@ -710,6 +712,7 @@ paths:
         required: false
         schema:
           type: string
+          enum: ['createdAt,desc', 'createdAt,asc', 'title,asc', 'title,desc', 'estimatedMinutes,asc', 'estimatedMinutes,desc']
       responses:
         '200':
           description: Успешный ответ
@@ -1151,6 +1154,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContentItemResponse'
+        '409':
+          description: Контент уже был обработан модератором
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         default:
           description: Ошибка
           content:
@@ -1180,6 +1189,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ContentItemResponse'
+        '409':
+          description: Контент уже был обработан модератором
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         default:
           description: Ошибка
           content:
@@ -1235,6 +1250,12 @@ paths:
       responses:
         '204':
           description: Операция выполнена
+        '409':
+          description: Жалоба уже была рассмотрена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         default:
           description: Ошибка
           content:
@@ -1626,7 +1647,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FriendRequestCreate'
+              $ref: '#/components/schemas/FriendCreateRequest'
       responses:
         '200':
           description: Успешный ответ
@@ -1660,7 +1681,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FriendRequestCreate'
+              $ref: '#/components/schemas/FriendCreateRequest'
       responses:
         '204':
           description: Операция выполнена
@@ -1986,7 +2007,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotificationPreferences'
+              $ref: '#/components/schemas/NotificationPreferencesRequest'
       responses:
         '200':
           description: Успешный ответ
@@ -2124,7 +2145,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotificationTemplate'
+              $ref: '#/components/schemas/NotificationTemplateRequest'
       responses:
         '201':
           description: Успешный ответ
@@ -2159,7 +2180,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotificationTemplate'
+              $ref: '#/components/schemas/NotificationTemplateRequest'
       responses:
         '200':
           description: Успешный ответ
@@ -2188,7 +2209,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EventRequest'
+              $ref: '#/components/schemas/EventIngestionRequest'
       responses:
         '202':
           description: Успешный ответ
@@ -2216,7 +2237,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EventsBatchRequest'
+              $ref: '#/components/schemas/EventBatchRequest'
       responses:
         '202':
           description: Успешный ответ
@@ -2616,6 +2637,7 @@ components:
           type: string
           minLength: 10
           maxLength: 500
+          pattern: '.*\S.*'
           example: В материале есть фактическая ошибка
       required:
       - reason
@@ -2707,6 +2729,9 @@ components:
       - visibleInSearch
       - visibleInRating
       - analyticsConsent
+    UserSettingsRequest:
+      allOf:
+      - $ref: '#/components/schemas/UserSettings'
     ContentItem:
       type: object
       properties:
@@ -3095,6 +3120,9 @@ components:
           type: string
           pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
       required: [channels, types]
+    NotificationPreferencesRequest:
+      allOf:
+      - $ref: '#/components/schemas/NotificationPreferences'
     NotificationTemplate:
       type: object
       properties:
@@ -3119,6 +3147,9 @@ components:
       - type
       - channel
       - body
+    NotificationTemplateRequest:
+      allOf:
+      - $ref: '#/components/schemas/NotificationTemplate'
     EventReceipt:
       type: object
       properties:
@@ -3370,7 +3401,7 @@ components:
         startsAt: *id005
         endsAt: *id005
       required: [ title, quizId, startsAt, endsAt ]
-    FriendRequestCreate:
+    FriendCreateRequest:
       type: object
       properties:
         userId: *id001
@@ -3399,7 +3430,7 @@ components:
       required:
       - provider
       - receipt
-    EventRequest:
+    EventIngestionRequest:
       type: object
       properties:
         eventId: *id001
@@ -3417,7 +3448,7 @@ components:
       - sessionId
       - eventType
       - timestamp
-    EventsBatchRequest:
+    EventBatchRequest:
       type: object
       properties:
         events:
@@ -3425,7 +3456,7 @@ components:
           minItems: 1
           maxItems: 100
           items:
-            $ref: '#/components/schemas/EventRequest'
+            $ref: '#/components/schemas/EventIngestionRequest'
       required:
       - events
     NotificationSendManyRequest:

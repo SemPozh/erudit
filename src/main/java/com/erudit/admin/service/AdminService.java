@@ -8,6 +8,7 @@ import com.erudit.notification.service.UserNotificationService;
 import com.erudit.user.model.*;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.web.exception.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,21 +17,13 @@ import java.time.*;
 import java.util.*;
 
 @Service
-// TODO везде Lombok
+@RequiredArgsConstructor
 public class AdminService {
     private final UserRepository users;
     private final UserNotificationService notifications;
     private final NotificationTemplateService templates;
     private final AdminAuditRepository audit;
     private final Clock clock;
-
-    public AdminService(UserRepository users, UserNotificationService notifications, NotificationTemplateService templates, AdminAuditRepository audit, Clock clock) {
-        this.users = users;
-        this.notifications = notifications;
-        this.templates = templates;
-        this.audit = audit;
-        this.clock = clock;
-    }
 
     public Page<User> users(String query, Integer page, Integer size) {
         int p = page == null ? 0 : page, s = size == null ? 20 : size;

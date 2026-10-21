@@ -4,7 +4,7 @@ FROM eclipse-temurin:25-jdk AS build
 WORKDIR /app
 
 # Copy Gradle wrapper and build configuration
-COPY gradlew settings.gradle.kts build.gradle.kts ./
+COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle ./gradle
 
 # Convert Windows line endings and make Gradle wrapper executable

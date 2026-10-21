@@ -11,7 +11,7 @@ import com.erudit.content.repository.ContentProgressRepository;
 import com.erudit.content.repository.ContentRepository;
 
 import com.erudit.events.service.AnalyticsEventPublisher;
-import com.erudit.events.dto.EventPublication;
+import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.EventType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static com.erudit.support.TestUserRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -96,7 +96,7 @@ class ContentProgressIntegrationTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    private org.mockito.ArgumentMatcher<EventPublication> event(EventType type) {
+    private org.mockito.ArgumentMatcher<EventPublicationRequest> event(EventType type) {
         return publication -> publication.eventType() == type
                 && publication.userId().equals(USER)
                 && publication.payload().contains(contentId.toString());
