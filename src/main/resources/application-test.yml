@@ -6,3 +6,5 @@ spring:
     password: ''
 clickhouse:
   enabled: false
+
+# TODO переложить в модуль test

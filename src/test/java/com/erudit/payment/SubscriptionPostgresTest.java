@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class SubscriptionPostgresTest {
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine");
+    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine"); // TODO указывать в конфигах
 
     @Autowired private SubscriptionPlanRepository planRepository;
 

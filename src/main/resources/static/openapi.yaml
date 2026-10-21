@@ -71,7 +71,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/content/{id}/report:
+  /api/v1/content/{id}/report: # TODO перенести v1 в параметр application.yaml
     post:
       tags:
       - ContentReports

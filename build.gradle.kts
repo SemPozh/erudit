@@ -29,7 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security") // TODO убрать
 
     implementation("com.clickhouse:clickhouse-jdbc:0.9.8:all")
 
@@ -55,7 +55,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
     testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("com.h2database:h2")
+    testRuntimeOnly("com.h2database:h2") // TODO убрать
 
 }
 

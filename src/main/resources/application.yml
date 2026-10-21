@@ -83,3 +83,5 @@ erudit:
     verification:
       base-url: ${VERIFICATION_BASE_URL:http://localhost:8080}
       token-ttl: PT24H
+
+# TODO добавить валидацию entity через hibername

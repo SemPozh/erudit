@@ -41,7 +41,8 @@ public class ContentCatalogService {
     }
 
     private static ContentCatalogQuery.Sort parseSort(String value) {
-        if (value == null || value.isBlank() || value.equals("createdAt,desc")) return ContentCatalogQuery.Sort.CREATED_DESC;
+        if (value == null || value.isBlank() || value.equals("createdAt,desc"))
+            return ContentCatalogQuery.Sort.CREATED_DESC;
         return switch (value) {
             case "createdAt,asc" -> ContentCatalogQuery.Sort.CREATED_ASC;
             case "title,asc" -> ContentCatalogQuery.Sort.TITLE_ASC;
@@ -54,7 +55,10 @@ public class ContentCatalogService {
 
     private static <T extends Enum<T>> T parse(Class<T> type, String value, String field) {
         if (value == null || value.isBlank()) return null;
-        try { return Enum.valueOf(type, value.toUpperCase(Locale.ROOT)); }
-        catch (IllegalArgumentException exception) { throw new ValidationException("Unsupported " + field); }
+        try {
+            return Enum.valueOf(type, value.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            throw new ValidationException("Unsupported " + field);
+        }
     }
 }

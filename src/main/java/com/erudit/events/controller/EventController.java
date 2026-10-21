@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+// TODO DTO везде с -Request / -Response
 public class EventController implements EventsApi {
     private static final int MAX_BATCH_SIZE = 100;
     private final EventIngestionService service;

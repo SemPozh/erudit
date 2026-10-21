@@ -49,7 +49,7 @@ public class EventIngestionService {
         } catch (Exception exception) {
             repository.release(eventId);
             throw new ServiceUnavailableException("Analytics event could not be stored");
-        }
+        } // TODO упростить обработку исключений
     }
 
     private String validate(UUID eventId, String sessionId, String eventType,
