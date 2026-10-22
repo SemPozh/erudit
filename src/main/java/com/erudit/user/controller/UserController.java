@@ -16,7 +16,7 @@ import com.erudit.user.service.UserPreferencesService;
 import com.erudit.user.service.UserService;
 import com.erudit.user.service.UserSearchService;
 import com.erudit.user.service.DevicePushTokenService;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -87,14 +87,7 @@ public class UserController implements UsersApi {
     }
 
     private UUID currentUserId() {
-        if (request.getUserPrincipal() == null) {
-            throw new UnauthorizedException("Authentication is required");
-        }
-        try {
-            return UUID.fromString(request.getUserPrincipal().getName());
-        } catch (IllegalArgumentException exception) {
-            throw new UnauthorizedException("Access token subject is invalid");
-        }
+        return com.erudit.user.config.LabOneRequestIdentity.userId(request);
     }
 
     private static UserProfileResponse response(User user) {

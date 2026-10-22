@@ -12,7 +12,7 @@ import com.erudit.openapi.model.MobileReceiptRequest;
 import com.erudit.openapi.model.PageMetadataResponse;
 import com.erudit.openapi.model.PaymentListResponse;
 import com.erudit.openapi.model.SubscriptionResponse;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,12 +56,7 @@ public class PaymentController implements PaymentsApi {
     }
 
     private UUID currentUser() {
-        if (request.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
-        try {
-            return UUID.fromString(request.getUserPrincipal().getName());
-        } catch (IllegalArgumentException exception) {
-            throw new UnauthorizedException("Authenticated user id is invalid");
-        }
+        return com.erudit.user.config.LabOneRequestIdentity.userId(request);
     }
 }
 

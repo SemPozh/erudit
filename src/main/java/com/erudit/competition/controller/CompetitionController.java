@@ -9,7 +9,7 @@ import com.erudit.openapi.model.CompetitionCreateRequest;
 import com.erudit.openapi.model.CompetitionResponse;
 import com.erudit.openapi.model.FriendCreateRequest;
 import com.erudit.openapi.model.RatingListResponse;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,10 +87,7 @@ public class CompetitionController implements CompetitionsApi {   // check gener
     }
 
     private String currentUser() {
-        if (request.getUserPrincipal() == null) {
-            throw new UnauthorizedException("Authentication is required");
-        }
-        return request.getUserPrincipal().getName();
+        return com.erudit.user.config.LabOneRequestIdentity.name(request);
     }
 
     @Override

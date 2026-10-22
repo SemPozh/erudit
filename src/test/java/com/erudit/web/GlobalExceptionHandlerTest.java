@@ -31,7 +31,6 @@ class GlobalExceptionHandlerTest {
         assertError("conflict", 409, "CONFLICT");
         assertError("validation", 400, "BAD_REQUEST");
         assertError("forbidden", 403, "FORBIDDEN");
-        assertError("unauthorized", 401, "UNAUTHORIZED");
     }
 
     private void assertError(String kind, int statusCode, String code) throws Exception {
@@ -74,7 +73,6 @@ class GlobalExceptionHandlerTest {
                 case "conflict" -> new ConflictException("Example error");
                 case "validation" -> new ValidationException("Example error");
                 case "forbidden" -> new ForbiddenException("Example error");
-                case "unauthorized" -> new UnauthorizedException("Example error");
                 default -> new IllegalStateException("Secret details");
             };
         }

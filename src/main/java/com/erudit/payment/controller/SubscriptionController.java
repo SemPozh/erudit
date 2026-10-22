@@ -10,7 +10,7 @@ import com.erudit.openapi.api.SubscriptionsApi;
 import com.erudit.openapi.model.SubscriptionCreateRequest;
 import com.erudit.openapi.model.SubscriptionPlanListResponse;
 import com.erudit.openapi.model.SubscriptionResponse;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,11 +55,6 @@ public class SubscriptionController implements SubscriptionsApi {
     }
 
     private UUID currentUser() {
-        if (request.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
-        try {
-            return UUID.fromString(request.getUserPrincipal().getName());
-        } catch (IllegalArgumentException exception) {
-            throw new UnauthorizedException("Authenticated user id is invalid");
-        }
+        return com.erudit.user.config.LabOneRequestIdentity.userId(request);
     }
 }

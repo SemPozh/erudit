@@ -10,7 +10,7 @@ import com.erudit.notification.service.UserNotificationService;
 
 import com.erudit.openapi.api.NotificationsApi;
 import com.erudit.openapi.model.*;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,5 +31,7 @@ public class NotificationController implements NotificationsApi {
  @Override public ResponseEntity<CountResponse> getUnreadCount(){return ResponseEntity.ok(new CountResponse(new CountDataResponse(notificationService.unread(currentUser()))));}
  private static com.erudit.openapi.model.NotificationDataResponse model(UserNotification v){return new com.erudit.openapi.model.NotificationDataResponse(v.id(),v.title(),v.read()).body(v.body()).createdAt(v.createdAt().atOffset(ZoneOffset.UTC));}
  private static NotificationPreferencesResponse preferenceResponse(NotificationPreference v){var data=new NotificationPreferencesDataResponse().channels(v.channels().stream().map(c->NotificationPreferencesDataResponse.ChannelsEnum.fromValue(c.name())).collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new))).types(v.types().stream().map(t->NotificationPreferencesDataResponse.TypesEnum.fromValue(t.name())).collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new)));if(v.quietHoursStart()!=null){data.quietHoursStart(v.quietHoursStart().toString());data.quietHoursEnd(v.quietHoursEnd().toString());}return new NotificationPreferencesResponse(data);}
- private UUID currentUser(){if(servletRequest.getUserPrincipal()==null)throw new UnauthorizedException("Authentication is required");try{return UUID.fromString(servletRequest.getUserPrincipal().getName());}catch(IllegalArgumentException e){throw new UnauthorizedException("Authenticated user id is invalid");}}
+ private UUID currentUser() {
+        return com.erudit.user.config.LabOneRequestIdentity.userId(servletRequest);
+    }
 }

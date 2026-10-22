@@ -8,8 +8,7 @@ import com.erudit.openapi.api.AnalyticsApi;
 import com.erudit.openapi.model.MetricPointDataResponse;
 import com.erudit.openapi.model.MetricSeriesDataResponse;
 import com.erudit.openapi.model.MetricSeriesResponse;
-import com.erudit.web.exception.UnauthorizedException;
-import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,15 +20,10 @@ import java.time.ZoneOffset;
 @RequiredArgsConstructor
 public class AnalyticsController implements AnalyticsApi {
     private final AnalyticsService service;
-    private final HttpServletRequest request;
-
-
-
     @Override
     public ResponseEntity<MetricSeriesResponse> getActiveUsers(@Nullable OffsetDateTime from,
                                                                @Nullable OffsetDateTime to,
                                                                String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.activeUsers(instant(from), instant(to), granularity)));
     }
 
@@ -37,40 +31,28 @@ public class AnalyticsController implements AnalyticsApi {
     public ResponseEntity<MetricSeriesResponse> getSessionMetrics(@Nullable OffsetDateTime from,
                                                                   @Nullable OffsetDateTime to,
                                                                   String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.sessions(instant(from), instant(to), granularity)));
     }
 
     @Override public ResponseEntity<MetricSeriesResponse> getEngagementMetrics(
             OffsetDateTime from, OffsetDateTime to, String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.engagement(instant(from), instant(to), granularity)));
     }
     @Override public ResponseEntity<MetricSeriesResponse> getLearningMetrics(
             OffsetDateTime from, OffsetDateTime to, String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.learning(instant(from), instant(to), granularity)));
     }
     @Override public ResponseEntity<MetricSeriesResponse> getFunnelMetrics(
             OffsetDateTime from, OffsetDateTime to, String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.funnels(instant(from), instant(to), granularity)));
     }
     @Override public ResponseEntity<MetricSeriesResponse> getMonetizationMetrics(
             OffsetDateTime from, OffsetDateTime to, String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.monetization(instant(from), instant(to), granularity)));
     }
     @Override public ResponseEntity<MetricSeriesResponse> getNotificationMetrics(
             OffsetDateTime from, OffsetDateTime to, String granularity) {
-        requireAuthenticated();
         return ResponseEntity.ok(response(service.notifications(instant(from), instant(to), granularity)));
-    }
-
-    private void requireAuthenticated() {
-        if (request.getUserPrincipal() == null) {
-            throw new UnauthorizedException("Authentication is required");
-        }
     }
 
     private static MetricSeriesResponse response(AnalyticsMetricSeries value) {

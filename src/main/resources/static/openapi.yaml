@@ -608,7 +608,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/content/categories:
     get:
       tags:
@@ -757,7 +756,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
     delete:
       tags:
       - Content
@@ -781,7 +779,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/content/{id}/quiz-cards:
     get:
       tags:
@@ -980,7 +977,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/admin/content/{id}/approve:
     post:
       tags:
@@ -1015,7 +1011,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/admin/content/{id}/reject:
     post:
       tags:
@@ -1050,7 +1045,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/admin/content/reports:
     get:
       tags:
@@ -1074,7 +1068,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/admin/content/reports/{id}/resolve:
     post:
       tags:
@@ -1111,7 +1104,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/assessment/start:
     post:
       tags:
@@ -1980,7 +1972,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
     post:
       tags:
       - NotificationAdmin
@@ -2008,7 +1999,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/notifications/templates/{id}:
     put:
       tags:
@@ -2043,7 +2033,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/events:
     post:
       tags:
@@ -2311,7 +2300,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/admin/users/{id}/block:
     post:
       tags:
@@ -2336,7 +2324,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/admin/notifications/send-many:
     post:
       tags:
@@ -2365,7 +2352,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-      x-required-role: ADMIN
   /api/v1/subscriptions/plans:
     get:
       tags:
@@ -2398,7 +2384,6 @@ paths:
       description: Реализовано в задаче 58. В ЛР 1 доступен без проверки роли.
       x-task-id: 58
       x-implementation-status: implemented
-      x-required-role: ADMIN
       parameters:
       - name: page
         in: query

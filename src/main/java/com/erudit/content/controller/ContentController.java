@@ -39,8 +39,7 @@ public class ContentController implements ContentApi {
 
     @Override
     public ResponseEntity<ContentItemResponse> createContent(ContentUpsertRequest request) {
-        String authorId = servletRequest.getUserPrincipal() == null
-                ? "admin" : servletRequest.getUserPrincipal().getName();
+        String authorId = currentUser();
         return ResponseEntity.status(HttpStatus.CREATED).body(response(service.create(request, authorId)));
     }
 
@@ -108,9 +107,6 @@ public class ContentController implements ContentApi {
     }
     @Override
     public ResponseEntity<QuizCardListResponse> getContentQuizCards(UUID id) {
-        if (servletRequest.getUserPrincipal() == null) {
-            throw new com.erudit.web.exception.UnauthorizedException("Authentication is required");
-        }
         service.get(id, isAdmin(), currentUser());
         java.util.List<com.erudit.openapi.model.QuizCardDataResponse> cards = quizCardService.getForContent(id, isAdmin())
                 .stream().map(card -> new com.erudit.openapi.model.QuizCardDataResponse(
@@ -153,22 +149,15 @@ public class ContentController implements ContentApi {
     }
 
     private String currentUser() {
-        if (servletRequest.getUserPrincipal() == null) {
-            throw new com.erudit.web.exception.UnauthorizedException("Authentication is required");
-        }
-        return servletRequest.getUserPrincipal().getName();
+        return com.erudit.user.config.LabOneRequestIdentity.name(servletRequest);
     }
 
     private UUID currentUserId() {
-        try {
-            return UUID.fromString(currentUser());
-        } catch (IllegalArgumentException exception) {
-            throw new com.erudit.web.exception.UnauthorizedException("Authenticated user id is invalid");
-        }
+        return com.erudit.user.config.LabOneRequestIdentity.userId(servletRequest);
     }
 
     private String currentUserOrNull() {
-        return servletRequest.getUserPrincipal() == null ? null : servletRequest.getUserPrincipal().getName();
+        return currentUser();
     }
 
     private String sessionId() {

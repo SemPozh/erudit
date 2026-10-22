@@ -10,7 +10,7 @@ import com.erudit.quiz.service.QuizAttemptService;
 import com.erudit.assessment.model.SubmittedAnswer;
 import com.erudit.openapi.api.QuizzesApi;
 import com.erudit.openapi.model.*;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -91,9 +91,6 @@ public class QuizController implements QuizzesApi {
     }
 
     private String currentUser() {
-        if (request.getUserPrincipal() == null) {
-            throw new UnauthorizedException("Authentication is required");
-        }
-        return request.getUserPrincipal().getName();
+        return com.erudit.user.config.LabOneRequestIdentity.name(request);
     }
 }

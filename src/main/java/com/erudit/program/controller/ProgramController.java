@@ -11,7 +11,7 @@ import com.erudit.program.service.ProgramService;
 import com.erudit.openapi.api.ProgramsApi;
 import com.erudit.openapi.model.NextStepResponse;
 import com.erudit.openapi.model.ProgramResponse;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,7 +63,6 @@ public class ProgramController implements ProgramsApi {
     }
 
     private String currentUser() {
-        if (request.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
-        return request.getUserPrincipal().getName();
+        return com.erudit.user.config.LabOneRequestIdentity.name(request);
     }
 }

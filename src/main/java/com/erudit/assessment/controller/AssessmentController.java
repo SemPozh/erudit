@@ -11,7 +11,7 @@ import com.erudit.openapi.api.AssessmentApi;
 import com.erudit.openapi.model.AssessmentResultResponse;
 import com.erudit.openapi.model.AssessmentSessionResponse;
 import com.erudit.openapi.model.AssessmentSubmitRequest;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +62,6 @@ public class AssessmentController implements AssessmentApi {
     }
 
     private String currentUser() {
-        if (request.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
-        return request.getUserPrincipal().getName();
+        return com.erudit.user.config.LabOneRequestIdentity.name(request);
     }
 }

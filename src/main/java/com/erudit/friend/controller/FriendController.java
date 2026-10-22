@@ -6,7 +6,7 @@ import com.erudit.friend.service.FriendService;
 
 import com.erudit.openapi.api.FriendsApi;
 import com.erudit.openapi.model.*;
-import com.erudit.web.exception.UnauthorizedException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,5 +25,7 @@ public class FriendController implements FriendsApi {
     private FriendRequestListResponse requests(FriendPageResponse p){var r=new FriendRequestListResponse(p.items().stream().map(this::model).toList());r.setPagination(meta(p));return r;}
     private FriendDataResponse model(FriendRecord r){var m=new FriendDataResponse();m.setId(r.id());m.setName(r.name());m.setStatus(r.status());return m;}
     private PageMetadataResponse meta(FriendPageResponse p){var m=new PageMetadataResponse();m.setPage(p.page());m.setSize(p.size());m.setTotalElements(p.total());m.setTotalPages((int)Math.ceil(p.total()/(double)p.size()));return m;}
-    private UUID user(){if(request.getUserPrincipal()==null)throw new UnauthorizedException("Authentication is required");try{return UUID.fromString(request.getUserPrincipal().getName());}catch(IllegalArgumentException e){throw new UnauthorizedException("Invalid authenticated user");}}
+    private UUID user() {
+        return com.erudit.user.config.LabOneRequestIdentity.userId(request);
+    }
 }
