@@ -82,11 +82,10 @@ class MediaControllerIntegrationTest {
     }
 
     @Test
-    void requiresAuthenticatedPrincipal() throws Exception {
+    void acceptsDefaultLabIdentity() throws Exception {
         mvc.perform(multipart("/api/v1/media").file(
                         new MockMultipartFile("file", "picture.png", MediaType.IMAGE_PNG_VALUE, PNG)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error.code").value("UNAUTHORIZED"));
+                .andExpect(status().isCreated());
     }
 
     private static Path createStorage() {

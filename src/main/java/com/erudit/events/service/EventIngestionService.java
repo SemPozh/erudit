@@ -1,5 +1,6 @@
 package com.erudit.events.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.events.dto.EventIngestionResponse;
 import com.erudit.events.model.AnalyticsEvent;
 import com.erudit.events.repository.EventIngestionRepository;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class EventIngestionService {
     private static final int MAX_PAYLOAD_BYTES = 65_536;
     private final EventIngestionRepository repository;
@@ -25,12 +27,7 @@ public class EventIngestionService {
     private final Clock clock;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public EventIngestionService(EventIngestionRepository repository,
-                                 ObjectProvider<AnalyticsEventSink> sinkProvider, Clock clock) {
-        this.repository = repository;
-        this.sinkProvider = sinkProvider;
-        this.clock = clock;
-    }
+
 
     public EventIngestionResponse ingest(UUID eventId, String userId, String sessionId,
                                        String eventType, Instant occurredAt, Map<String, Object> payload) {

@@ -1,5 +1,6 @@
 package com.erudit.program.repository;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -8,12 +9,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Repository
+@RequiredArgsConstructor
 public class ProgramPreferenceRepository {
     private final JdbcTemplate jdbc;
 
-    public ProgramPreferenceRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public Map<String, Integer> favoriteTopics(UUID userId) {
         return jdbc.query("""

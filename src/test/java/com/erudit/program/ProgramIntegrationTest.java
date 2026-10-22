@@ -74,9 +74,9 @@ class ProgramIntegrationTest {
     }
 
     @Test
-    void requiresAuthenticationAndAssessmentResult() throws Exception {
+    void requiresAssessmentResult() throws Exception {
         mvc.perform(post("/api/v1/program/generate"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
         mvc.perform(post("/api/v1/program/generate").with(user("student-without-assessment")))
                 .andExpect(status().isNotFound());
     }

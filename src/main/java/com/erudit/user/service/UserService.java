@@ -5,14 +5,11 @@ import com.erudit.user.model.UserStatus;
 import com.erudit.user.dto.RegisterRequest;
 import com.erudit.user.dto.UserProfileResponse;
 import com.erudit.user.exception.EmailAlreadyExistsException;
-import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -22,8 +19,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final EmailVerificationService emailVerificationService;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final Clock clock;
 
 
     @Transactional
@@ -38,7 +33,7 @@ public class UserService {
                 .name(request.name())
                 .build();
 
-        User savedUser = userRepository.save(user);
+        User savedUser = userRepository.saveAndFlush(user);
 
         emailVerificationService.issueFor(savedUser);
 
@@ -62,11 +57,6 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         user.setStatus(UserStatus.DELETED);
-
-        refreshTokenRepository.revokeAllActiveForUser(
-                userId,
-                LocalDateTime.now(clock)
-        );
 
         userRepository.save(user);
     }

@@ -1,7 +1,7 @@
 package com.erudit.notification;
 
 import com.erudit.notification.controller.NotificationTemplateController;
-import com.erudit.notification.dto.NotificationTemplatePage;
+import com.erudit.notification.dto.NotificationTemplatePageResponse;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationTemplate;
 import com.erudit.notification.model.NotificationType;
@@ -39,7 +39,7 @@ class NotificationTemplateControllerTest {
         NotificationTemplate value = new NotificationTemplate(id, NotificationType.DAILY_QUIZ,
                 NotificationChannel.PUSH, "Quiz", "Hello {{name}}", Set.of("name"));
         when(service.create("DAILY_QUIZ", "PUSH", "Quiz", "Hello {{name}}")).thenReturn(value);
-        when(service.list(0, 20)).thenReturn(new NotificationTemplatePage(List.of(value), 1, 0, 20));
+        when(service.list(0, 20)).thenReturn(new NotificationTemplatePageResponse(List.of(value), 1, 0, 20));
         when(service.update(eq(id), eq("DAILY_QUIZ"), eq("PUSH"), eq("Quiz"), eq("Hello {{name}}")))
                 .thenReturn(value);
         String request = "{\"type\":\"DAILY_QUIZ\",\"channel\":\"PUSH\","
@@ -56,9 +56,10 @@ class NotificationTemplateControllerTest {
     }
 
     @Test
-    void nonAdminCannotManageTemplates() throws Exception {
+    void templateManagementIsOpenDuringLabOne() throws Exception {
+        when(service.list(0, 20)).thenReturn(new NotificationTemplatePageResponse(List.of(), 0, 0, 20));
         mvc.perform(get("/api/v1/notifications/templates"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     private org.springframework.mock.web.MockHttpServletRequest admin(

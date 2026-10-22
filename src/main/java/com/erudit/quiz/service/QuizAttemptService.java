@@ -1,5 +1,6 @@
 package com.erudit.quiz.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.quiz.model.Quiz;
 import com.erudit.quiz.model.QuizAnswerOption;
 import com.erudit.quiz.model.QuizAttempt;
@@ -13,7 +14,7 @@ import com.erudit.quiz.repository.QuizRepository;
 
 import com.erudit.assessment.model.SubmittedAnswer;
 import com.erudit.openapi.model.AssessmentSubmitRequestAnswersInner;
-import com.erudit.openapi.model.QuizResult;
+import com.erudit.openapi.model.QuizResultDataResponse;
 import com.erudit.openapi.model.QuizSubmitRequest;
 import com.erudit.rating.service.RatingService;
 import com.erudit.web.exception.NotFoundException;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class QuizAttemptService {
 
     // REQ 5.4 gives no formula, so this is our own choice:
@@ -46,19 +48,7 @@ public class QuizAttemptService {
     private final Clock clock;
     private final RatingService ratingService;
 
-    public QuizAttemptService(QuizRepository quizRepository,
-                              QuizAttemptRepository attemptRepository,
-                              QuizHintRepository hintRepository,
-                              DailyQuizRepository dailyRepository,
-                              Clock clock,
-                              RatingService ratingService) {
-        this.quizRepository = quizRepository;
-        this.attemptRepository = attemptRepository;
-        this.hintRepository = hintRepository;
-        this.dailyRepository = dailyRepository;
-        this.clock = clock;
-        this.ratingService = ratingService;
-    }
+
 
     // ---------- regular quiz ----------
 

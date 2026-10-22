@@ -1,5 +1,6 @@
 package com.erudit.events.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.events.model.AnalyticsGranularity;
 import com.erudit.events.model.AnalyticsMetricSeries;
 import com.erudit.events.model.AnalyticsPeriod;
@@ -15,16 +16,14 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Service
+@RequiredArgsConstructor
 public class AnalyticsService {
     private static final Duration DEFAULT_PERIOD = Duration.ofDays(30);
     private static final Duration MAX_PERIOD = Duration.ofDays(730);
     private final ObjectProvider<AnalyticsMetricsRepository> repositoryProvider;
     private final Clock clock;
 
-    public AnalyticsService(ObjectProvider<AnalyticsMetricsRepository> repositoryProvider, Clock clock) {
-        this.repositoryProvider = repositoryProvider;
-        this.clock = clock;
-    }
+
 
     public AnalyticsMetricSeries activeUsers(Instant from, Instant to, String granularity) {
         AnalyticsPeriod period = period(from, to, granularity);

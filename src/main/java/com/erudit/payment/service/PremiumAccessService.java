@@ -1,5 +1,6 @@
 package com.erudit.payment.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.payment.model.SubscriptionStatus;
 import com.erudit.payment.repository.SubscriptionRepository;
 
@@ -10,14 +11,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class PremiumAccessService {
     private final SubscriptionRepository repository;
     private final Clock clock;
 
-    public PremiumAccessService(SubscriptionRepository repository, Clock clock) {
-        this.repository = repository;
-        this.clock = clock;
-    }
+
 
     public boolean isPremiumActive(UUID userId) {
         expireIfNecessary(userId);

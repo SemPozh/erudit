@@ -4,7 +4,6 @@ import com.erudit.content.model.Category;
 import com.erudit.content.repository.ContentRepository;
 import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.JwtTokenService;
 import com.erudit.user.service.UserPreferenceProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,6 @@ class UserSettingsIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
     @Autowired private ContentRepository contentRepository;
-    @Autowired private JwtTokenService jwtTokenService;
     @Autowired private UserPreferenceProvider preferenceProvider;
 
     private User user;
@@ -42,12 +40,12 @@ class UserSettingsIntegrationTest {
         user = userRepository.save(User.builder()
                 .email("settings-" + UUID.randomUUID() + "@example.com")
                 .passwordHash("hash").name("Settings User").build());
-        accessToken = jwtTokenService.issueAccessToken(user);
+        accessToken = user.getId().toString();
     }
 
     @Test
     void returnsDefaultsAndImmediatelyPublishesUpdatedPreferences() throws Exception {
-        mvc.perform(get("/api/v1/users/me/settings").header(HttpHeaders.AUTHORIZATION, bearer()))
+        mvc.perform(get("/api/v1/users/me/settings").header("X-User-Id", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.language").value("ru"))
                 .andExpect(jsonPath("$.data.timeZone").value("UTC"))
@@ -56,7 +54,7 @@ class UserSettingsIntegrationTest {
 
         UUID categoryId = UUID.randomUUID();
         contentRepository.saveCategory(new Category(categoryId, "Settings " + categoryId));
-        mvc.perform(put("/api/v1/users/me/settings").header(HttpHeaders.AUTHORIZATION, bearer())
+        mvc.perform(put("/api/v1/users/me/settings").header("X-User-Id", bearer())
                         .contentType(MediaType.APPLICATION_JSON).content(request(categoryId, "Europe/Moscow", 30)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.favoriteCategories[0]").value(categoryId.toString()))
@@ -71,18 +69,18 @@ class UserSettingsIntegrationTest {
 
     @Test
     void rejectsUnknownCategoriesAndInvalidTimeZone() throws Exception {
-        mvc.perform(put("/api/v1/users/me/settings").header(HttpHeaders.AUTHORIZATION, bearer())
+        mvc.perform(put("/api/v1/users/me/settings").header("X-User-Id", bearer())
                         .contentType(MediaType.APPLICATION_JSON).content(request(UUID.randomUUID(), "UTC", 20)))
                 .andExpect(status().isBadRequest());
-        mvc.perform(put("/api/v1/users/me/settings").header(HttpHeaders.AUTHORIZATION, bearer())
+        mvc.perform(put("/api/v1/users/me/settings").header("X-User-Id", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestWithoutCategories("Invalid/Zone", 20)))
                 .andExpect(status().isBadRequest());
-        mvc.perform(get("/api/v1/users/me/settings")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/users/me/settings")).andExpect(status().isNotFound());
     }
 
     private String bearer() {
-        return "Bearer " + accessToken;
+        return accessToken;
     }
 
     private static String request(UUID categoryId, String timeZone, int goal) {

@@ -3,7 +3,7 @@ package com.erudit.notification.service;
 import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.EventType;
 import com.erudit.events.service.AnalyticsEventPublisher;
-import com.erudit.notification.dto.UserNotificationPage;
+import com.erudit.notification.dto.UserNotificationPageResponse;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationDeliveryStatus;
 import com.erudit.notification.model.NotificationPreference;
@@ -50,7 +50,7 @@ public class UserNotificationService {
   if(!repository.claim(userId,type,deduplicationKey,now))throw new ConflictException("Duplicate notification");
   RenderedNotification rendered=null;
   for(NotificationChannel channel: List.of(NotificationChannel.PUSH,NotificationChannel.EMAIL)) if(pref.allows(channel,type,now.atZone(zone).toLocalTime())) {rendered=render(type,channel,parameters);break;}
-  if(rendered==null){repository.release(userId,type,deduplicationKey);throw new ValidationException("Notification is blocked by preferences or quiet hours");}
+  if(rendered==null){repository.release(userId,type,deduplicationKey);throw new ValidationException("NotificationDataResponse is blocked by preferences or quiet hours");}
   UserNotification value=new UserNotification(UUID.randomUUID(),userId,type,rendered.title(),rendered.body(),null,now);
   repository.insert(value);
   for(NotificationChannel channel: List.of(NotificationChannel.PUSH,NotificationChannel.EMAIL)) {
@@ -71,8 +71,8 @@ public class UserNotificationService {
   return value;
  }
  private RenderedNotification render(NotificationType type,NotificationChannel channel,Map<String,String> parameters){try{return templates.render(type,channel,parameters);}catch(NotFoundException missing){return new RenderedNotification(type.name().replace('_',' '),"You have a new "+type.name().toLowerCase(java.util.Locale.ROOT).replace('_',' ')+" notification");}}
- @Transactional(readOnly=true) public UserNotificationPage list(UUID user,Integer p,Integer s){int page=p==null?0:p,size=s==null?20:s;if(page<0||size<1||size>50)throw new ValidationException("page must be non-negative and size between 1 and 50");return new UserNotificationPage(repository.list(user,page,size),repository.count(user),page,size);}
- @Transactional public void read(UUID user,UUID id){UserNotification n=repository.find(id,user).orElseThrow(()->new NotFoundException("Notification not found"));if(repository.markRead(id,user,clock.instant()))publish(EventType.NOTIFICATION_OPENED,n);}
+ @Transactional(readOnly=true) public UserNotificationPageResponse list(UUID user,Integer p,Integer s){int page=p==null?0:p,size=s==null?20:s;if(page<0||size<1||size>50)throw new ValidationException("page must be non-negative and size between 1 and 50");return new UserNotificationPageResponse(repository.list(user,page,size),repository.count(user),page,size);}
+ @Transactional public void read(UUID user,UUID id){UserNotification n=repository.find(id,user).orElseThrow(()->new NotFoundException("NotificationDataResponse not found"));if(repository.markRead(id,user,clock.instant()))publish(EventType.NOTIFICATION_OPENED,n);}
  @Transactional public void readAll(UUID user){repository.markAllRead(user,clock.instant());}
  @Transactional(readOnly=true) public long unread(UUID user){return repository.unread(user);}
  private void publish(EventType type,UserNotification n){AnalyticsEventPublisher p=publisher.getIfAvailable();if(p!=null)p.publish(new EventPublicationRequest(type,n.userId().toString(),"notification:"+n.id(),"{\"notificationId\":\""+n.id()+"\"}"));}

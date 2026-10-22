@@ -1,5 +1,6 @@
 package com.erudit.quiz.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.quiz.model.QuizAnswerOption;
 import com.erudit.quiz.model.QuizAttempt;
 import com.erudit.quiz.model.QuizQuestion;
@@ -21,15 +22,13 @@ import java.util.UUID;
 
 
 @RestController
+@RequiredArgsConstructor
 public class QuizController implements QuizzesApi {
 
     private final QuizAttemptService service;
     private final HttpServletRequest request;
 
-    public QuizController(QuizAttemptService service, HttpServletRequest request) {
-        this.service = service;
-        this.request = request;
-    }
+
 
     @Override
     public ResponseEntity<QuizAttemptResponse> startQuiz(UUID id) {
@@ -47,7 +46,7 @@ public class QuizController implements QuizzesApi {
     public ResponseEntity<QuizHintResponse> requestQuizHint(UUID id, UUID questionId, UUID attemptId) {
         String hint = service.requestHint(currentUser(), id, attemptId, questionId);
         return ResponseEntity.ok(new QuizHintResponse(
-                new com.erudit.openapi.model.QuizHint(questionId, hint)));
+                new com.erudit.openapi.model.QuizHintDataResponse(questionId, hint)));
     }
 
     @Override
@@ -70,24 +69,24 @@ public class QuizController implements QuizzesApi {
     private QuizAttemptResponse toAttemptResponse(StartedQuiz started) {
         var questions = started.quiz().questions().stream()
                 .sorted(Comparator.comparingInt(QuizQuestion::position))
-                .map(q -> new com.erudit.openapi.model.QuizAttemptQuestion(
+                .map(q -> new com.erudit.openapi.model.QuizAttemptQuestionDataResponse(
                         q.id(),
                         q.text(),
                         q.answers().stream()
                                 .sorted(Comparator.comparingInt(QuizAnswerOption::position))
-                                .map(a -> new com.erudit.openapi.model.QuizAttemptAnswerOption(
+                                .map(a -> new com.erudit.openapi.model.QuizAttemptAnswerOptionDataResponse(
                                         a.id(), a.text()))
                                 .toList()))
                 .toList();
 
         return new QuizAttemptResponse(
-                new com.erudit.openapi.model.QuizAttempt(
+                new com.erudit.openapi.model.QuizAttemptDataResponse(
                         started.attempt().id(), started.quiz().id(), questions));
     }
 
     private QuizResultResponse toResultResponse(QuizAttempt done) {
         return new QuizResultResponse(
-                new com.erudit.openapi.model.QuizResult(
+                new com.erudit.openapi.model.QuizResultDataResponse(
                         done.id(), done.correctAnswers(), done.score(), done.experience()));
     }
 

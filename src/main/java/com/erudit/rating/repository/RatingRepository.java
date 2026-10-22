@@ -1,5 +1,6 @@
 package com.erudit.rating.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.rating.model.RatingProfile;
 import com.erudit.rating.model.RatingRow;
 
@@ -13,12 +14,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class RatingRepository {
     private final JdbcTemplate jdbc;
 
-    public RatingRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public Optional<RatingProfile> findProfile(String userId) {
         return jdbc.query("SELECT user_id, points, er_score, grade_code FROM user_rating_profiles WHERE user_id = ?",

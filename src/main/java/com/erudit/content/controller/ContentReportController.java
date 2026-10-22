@@ -1,5 +1,6 @@
 package com.erudit.content.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.service.ContentReportService;
 
 import com.erudit.openapi.api.ContentReportsApi;
@@ -14,14 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 public class ContentReportController implements ContentReportsApi {
     private final ContentReportService service;
     private final HttpServletRequest servletRequest;
 
-    public ContentReportController(ContentReportService service, HttpServletRequest servletRequest) {
-        this.service = service;
-        this.servletRequest = servletRequest;
-    }
+
 
     @Override
     public ResponseEntity<ReportCreatedResponse> reportContent(UUID id, ContentReportRequest request) {

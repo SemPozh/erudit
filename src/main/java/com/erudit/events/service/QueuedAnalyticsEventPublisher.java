@@ -1,5 +1,6 @@
 package com.erudit.events.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.AnalyticsEvent;
 
@@ -8,16 +9,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@RequiredArgsConstructor
 public class QueuedAnalyticsEventPublisher implements AnalyticsEventPublisher {
     private final AnalyticsEventSink sink;
     private final Executor executor;
     private final Clock clock;
 
-    public QueuedAnalyticsEventPublisher(AnalyticsEventSink sink, Executor executor, Clock clock) {
-        this.sink = sink;
-        this.executor = executor;
-        this.clock = clock;
-    }
+
 
     @Override
     public CompletableFuture<UUID> publish(EventPublicationRequest publication) {

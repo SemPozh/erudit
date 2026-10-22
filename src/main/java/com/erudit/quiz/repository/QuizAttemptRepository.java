@@ -1,5 +1,6 @@
 package com.erudit.quiz.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.quiz.model.QuizAttempt;
 import com.erudit.quiz.model.QuizAttemptAnswer;
 
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 
 @Repository
+@RequiredArgsConstructor
 public class QuizAttemptRepository {
 
     private static final RowMapper<QuizAttempt> MAPPER = (rs, i) -> new QuizAttempt(
@@ -35,9 +37,7 @@ public class QuizAttemptRepository {
 
     private final JdbcTemplate jdbc;
 
-    public QuizAttemptRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void create(QuizAttempt a) {
         jdbc.update("""

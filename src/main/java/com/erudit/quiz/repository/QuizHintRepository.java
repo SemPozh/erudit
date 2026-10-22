@@ -1,5 +1,6 @@
 package com.erudit.quiz.repository;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,13 +11,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class QuizHintRepository {
 
     private final JdbcTemplate jdbc;
 
-    public QuizHintRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public Optional<String> findFact(UUID quizCardId) {
         return jdbc.query("SELECT fact FROM quiz_cards WHERE id = ?",

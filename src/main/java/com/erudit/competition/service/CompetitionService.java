@@ -1,5 +1,6 @@
 package com.erudit.competition.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.competition.model.Competition;
 import com.erudit.competition.repository.CompetitionRepository;
 import com.erudit.notification.model.NotificationType;
@@ -24,6 +25,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class CompetitionService {
 
     public record Details(Competition competition, String status, List<String> participantIds) {}
@@ -37,18 +39,7 @@ public class CompetitionService {
     private final FriendService friends;
     private final ObjectProvider<UserNotificationService> notifications;
 
-    public CompetitionService(CompetitionRepository repository,
-                              QuizRepository quizRepository,
-                              Clock clock,
-                              RatingService ratingService, FriendService friends,
-                              ObjectProvider<UserNotificationService> notifications) {
-        this.repository = repository;
-        this.quizRepository = quizRepository;
-        this.clock = clock;
-        this.ratingService = ratingService;
-        this.friends = friends;
-        this.notifications = notifications;
-    }
+
 
     @Transactional
     public Details addParticipant(String username, UUID id, UUID target) {

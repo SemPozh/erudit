@@ -4,6 +4,11 @@ import com.erudit.events.model.AnalyticsEvent;
 import com.erudit.events.model.EventGroup;
 import com.erudit.events.repository.ClickHouseEventStore;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.sql.DriverManager;
 import java.time.Instant;
@@ -11,7 +16,20 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 class ClickHouseEventStoreTest {
+    private static final String USERNAME = "erudit";
+    private static final String PASSWORD = "erudit";
+
+    @Container
+    static final GenericContainer<?> CLICKHOUSE = new GenericContainer<>(
+            DockerImageName.parse("clickhouse/clickhouse-server:25.8"))
+            .withEnv("CLICKHOUSE_DB", "erudit")
+            .withEnv("CLICKHOUSE_USER", USERNAME)
+            .withEnv("CLICKHOUSE_PASSWORD", PASSWORD)
+            .withEnv("CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT", "1")
+            .withExposedPorts(8123)
+            .waitingFor(Wait.forHttp("/ping").forPort(8123));
     @Test
     void appliesVersionedMigrationsIdempotently() throws Exception {
         ClickHouseEventStore store = clickHouseStore();
@@ -49,22 +67,15 @@ class ClickHouseEventStoreTest {
     }
 
     private static String url() {
-        return requiredEnvironmentVariable("CLICKHOUSE_TEST_URL");
+        return "jdbc:clickhouse:http://" + CLICKHOUSE.getHost() + ":"
+                + CLICKHOUSE.getMappedPort(8123) + "/erudit";
     }
 
     private static String username() {
-        return requiredEnvironmentVariable("CLICKHOUSE_TEST_USERNAME");
+        return USERNAME;
     }
 
     private static String password() {
-        return requiredEnvironmentVariable("CLICKHOUSE_TEST_PASSWORD");
-    }
-
-    private static String requiredEnvironmentVariable(String name) {
-        String value = System.getenv(name);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException(name + " must be configured to run ClickHouse integration tests");
-        }
-        return value;
+        return PASSWORD;
     }
 }

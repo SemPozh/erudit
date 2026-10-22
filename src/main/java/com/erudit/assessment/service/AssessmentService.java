@@ -1,6 +1,7 @@
 package com.erudit.assessment.service;
 
-import com.erudit.assessment.dto.AssessmentSubmission;
+import lombok.RequiredArgsConstructor;
+import com.erudit.assessment.dto.AssessmentSubmissionResponse;
 import com.erudit.assessment.model.AnswerOutcome;
 import com.erudit.assessment.model.AssessmentFeedback;
 import com.erudit.assessment.model.AssessmentFeedbackContext;
@@ -26,19 +27,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AssessmentService {
     private final AssessmentRepository repository;
     private final ErScoreCalculator scoreCalculator;
     private final GradeService gradeService;
     private final AssessmentFeedbackProvider feedbackProvider;
 
-    public AssessmentService(AssessmentRepository repository, ErScoreCalculator scoreCalculator,
-                             GradeService gradeService, AssessmentFeedbackProvider feedbackProvider) {
-        this.repository = repository;
-        this.scoreCalculator = scoreCalculator;
-        this.gradeService = gradeService;
-        this.feedbackProvider = feedbackProvider;
-    }
+
 
     @Transactional
     public AssessmentSession start(String userId) {
@@ -53,7 +49,7 @@ public class AssessmentService {
     }
 
     @Transactional
-    public AssessmentSubmission submit(String userId, UUID assessmentId, List<SubmittedAnswer> answers) {
+    public AssessmentSubmissionResponse submit(String userId, UUID assessmentId, List<SubmittedAnswer> answers) {
         AssessmentRepository.SessionState session = repository.findSession(assessmentId)
                 .orElseThrow(() -> new NotFoundException("Assessment not found"));
         if (!session.userId().equals(userId)) throw new NotFoundException("Assessment not found");
@@ -83,13 +79,13 @@ public class AssessmentService {
         Grade grade = gradeService.resolve(score.erScore());
         AssessmentFeedback feedback = feedbackProvider.generate(
                 new AssessmentFeedbackContext(score.erScore(), score.topics()));
-        AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), correct, questions.size(),
+        AssessmentSubmissionResponse result = new AssessmentSubmissionResponse(UUID.randomUUID(), correct, questions.size(),
                 score.erScore(), score.topics(), grade, feedback);
         repository.submit(assessmentId, userId, answers, options, Instant.now(), result);
         return result;
     }
 
-    public AssessmentSubmission latestResult(String userId) {
+    public AssessmentSubmissionResponse latestResult(String userId) {
         return repository.findLatestResult(userId)
                 .orElseThrow(() -> new NotFoundException("Assessment result not found"));
     }

@@ -41,7 +41,7 @@ class NotificationTemplateServiceTest {
 
     @Test
     void rejectsDuplicateKeyMissingParametersAndMalformedPlaceholder() {
-        service.create("SOCIAL", "EMAIL", "Friend update", "{{friend}} sent an update");
+        service.create("SOCIAL", "EMAIL", "FriendDataResponse update", "{{friend}} sent an update");
         assertThatThrownBy(() -> service.create("SOCIAL", "EMAIL", null, "Duplicate"))
                 .isInstanceOf(com.erudit.web.exception.ConflictException.class);
         assertThatThrownBy(() -> service.render(NotificationType.SOCIAL, NotificationChannel.EMAIL, Map.of()))

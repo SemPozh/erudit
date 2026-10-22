@@ -1,5 +1,6 @@
 package com.erudit.notification.model;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.notification.repository.NotificationTriggerRepository;
 import com.erudit.notification.service.UserNotificationService;
 import lombok.extern.slf4j.Slf4j;
@@ -11,16 +12,13 @@ import java.util.*;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class NotificationTriggerScheduler {
     private final NotificationTriggerRepository targets;
     private final UserNotificationService notifications;
     private final Clock clock;
 
-    public NotificationTriggerScheduler(NotificationTriggerRepository targets, UserNotificationService notifications, Clock clock) {
-        this.targets = targets;
-        this.notifications = notifications;
-        this.clock = clock;
-    }
+
 
     @Scheduled(cron = "${erudit.notifications.trigger-cron:0 0 * * * *}")
     public void run() {

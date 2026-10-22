@@ -2,15 +2,14 @@ openapi: 3.0.3
 info:
   title: Erudit API
   version: 1.0.0
-  description: Контракт всех реализованных и запланированных REST-эндпоинтов. Операции с пометкой «Запланировано»
-    появятся после выполнения соответствующих задач; Try it out для них пока вернёт 404.
+  description: Контракт реализованных REST-эндпоинтов ЛР 1. Авторизация появится в ЛР 3.
 servers:
 - url: /
 tags:
 - name: Diagnostics
   description: Проверка доступности приложения
 - name: Auth
-  description: Регистрация, вход и токены
+  description: Регистрация и подтверждение email
 - name: Users
   description: Профиль и настройки пользователя
 - name: Content
@@ -113,9 +112,9 @@ paths:
       - Auth
       operationId: register
       summary: Регистрация
-      description: Запланировано в задаче 6. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 6.
       x-task-id: 6
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       requestBody:
         required: true
@@ -142,9 +141,9 @@ paths:
       - Auth
       operationId: verifyEmail
       summary: Подтвердить email
-      description: Запланировано в задаче 7. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 7.
       x-task-id: 7
-      x-implementation-status: planned
+      x-implementation-status: implemented
       security: []
       requestBody:
         required: true
@@ -161,163 +160,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/auth/login:
-    post:
-      tags:
-      - Auth
-      operationId: login
-      summary: Войти
-      description: Проверяет email и пароль и выдаёт пару access/refresh токенов.
-      x-task-id: 8
-      x-implementation-status: implemented
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenPairResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/auth/refresh:
-    post:
-      tags:
-      - Auth
-      operationId: refreshToken
-      summary: Обновить access-токен
-      description: Одноразово обменивает действующий refresh-токен на новую пару токенов.
-      x-task-id: 8
-      x-implementation-status: implemented
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshRequest'
-      responses:
-        '200':
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenPairResponse'
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/auth/logout:
-    post:
-      tags:
-      - Auth
-      operationId: logout
-      summary: Выйти
-      description: Отзывает переданный refresh-токен текущего пользователя.
-      x-task-id: 8
-      x-implementation-status: implemented
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RefreshRequest'
-      responses:
-        '204':
-          description: Операция выполнена
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/auth/logout-all:
-    post:
-      tags:
-      - Auth
-      operationId: logoutAll
-      summary: Выйти на всех устройствах
-      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
-      x-task-id: 13
-      x-implementation-status: planned
-      responses:
-        '204':
-          description: Операция выполнена
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/auth/password/reset-request:
-    post:
-      tags:
-      - Auth
-      operationId: requestPasswordReset
-      summary: Запросить восстановление пароля
-      description: Отправляет одноразовую ссылку восстановления, если email зарегистрирован.
-      x-task-id: 10
-      x-implementation-status: implemented
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResetRequest'
-      responses:
-        '204':
-          description: Операция выполнена
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/auth/password/reset:
-    post:
-      tags:
-      - Auth
-      operationId: resetPassword
-      summary: Сменить пароль по токену
-      description: Меняет пароль по действующему одноразовому токену.
-      x-task-id: 10
-      x-implementation-status: implemented
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResetPasswordRequest'
-      responses:
-        '204':
-          description: Операция выполнена
-        default:
-          description: Ошибка
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/users/me:
     get:
       tags:
       - Users
       operationId: getMyProfile
       summary: Мой профиль
-      description: Возвращает полный профиль пользователя из access-токена.
+      description: Возвращает профиль пользователя из непроверяемого контекста X-User-Id ЛР 1.
       x-task-id: 11
       x-implementation-status: implemented
       responses:
@@ -365,9 +214,9 @@ paths:
       - Users
       operationId: deleteMyAccount
       summary: Удалить аккаунт
-      description: Запланировано в задаче 13. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 13.
       x-task-id: 13
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '204':
           description: Операция выполнена
@@ -737,7 +586,7 @@ paths:
       - Content
       operationId: createContent
       summary: Создать контент
-      description: Реализовано в задаче 15. Требуется роль ADMIN.
+      description: Реализовано в задаче 15. В ЛР 1 доступен без проверки роли.
       x-task-id: 15
       x-implementation-status: implemented
       requestBody:
@@ -806,7 +655,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormatList'
+                $ref: '#/components/schemas/FormatListResponse'
         default:
           description: Ошибка
           content:
@@ -880,7 +729,7 @@ paths:
       - Content
       operationId: updateContent
       summary: Обновить контент
-      description: Реализовано в задаче 15. Требуется роль ADMIN.
+      description: Реализовано в задаче 15. В ЛР 1 доступен без проверки роли.
       x-task-id: 15
       x-implementation-status: implemented
       parameters:
@@ -914,7 +763,7 @@ paths:
       - Content
       operationId: archiveContent
       summary: Архивировать контент
-      description: Реализовано в задаче 15. Выполняет мягкое удаление со статусом ARCHIVED. Требуется роль ADMIN.
+      description: Реализовано в задаче 15. Выполняет мягкое удаление со статусом ARCHIVED. В ЛР 1 доступен без проверки роли.
       x-task-id: 15
       x-implementation-status: implemented
       parameters:
@@ -1085,7 +934,7 @@ paths:
       - Media
       operationId: getMedia
       summary: Получить медиа
-      description: Реализовано в задаче 16. Требуется Bearer-токен.
+      description: Реализовано в задаче 16. В ЛР 1 авторизация отсутствует.
       x-task-id: 16
       x-implementation-status: implemented
       parameters:
@@ -1114,7 +963,7 @@ paths:
       - ContentModeration
       operationId: listModerationQueue
       summary: Очередь модерации
-      description: Возвращает ожидающий решения контент. Требуется роль ADMIN.
+      description: Возвращает ожидающий решения контент. В ЛР 1 доступен без проверки роли.
       x-task-id: 20
       x-implementation-status: implemented
       parameters: *id004
@@ -1138,7 +987,7 @@ paths:
       - ContentModeration
       operationId: approveContent
       summary: Одобрить контент
-      description: Публикует контент из очереди модерации. Требуется роль ADMIN.
+      description: Публикует контент из очереди модерации. В ЛР 1 доступен без проверки роли.
       x-task-id: 20
       x-implementation-status: implemented
       parameters:
@@ -1173,7 +1022,7 @@ paths:
       - ContentModeration
       operationId: rejectContent
       summary: Отклонить контент
-      description: Отклоняет контент из очереди модерации. Требуется роль ADMIN.
+      description: Отклоняет контент из очереди модерации. В ЛР 1 доступен без проверки роли.
       x-task-id: 20
       x-implementation-status: implemented
       parameters:
@@ -1208,7 +1057,7 @@ paths:
       - ContentModeration
       operationId: listContentReports
       summary: Жалобы на контент
-      description: Возвращает открытые жалобы в порядке поступления. Требуется роль ADMIN.
+      description: Возвращает открытые жалобы в порядке поступления. В ЛР 1 доступен без проверки роли.
       x-task-id: 61
       x-implementation-status: implemented
       parameters: *id004
@@ -1232,7 +1081,7 @@ paths:
       - ContentModeration
       operationId: resolveContentReport
       summary: Рассмотреть жалобу
-      description: Необратимо принимает или отклоняет открытую жалобу и записывает действие в аудит. Требуется роль ADMIN.
+      description: Необратимо принимает или отклоняет открытую жалобу и записывает действие в аудит. В ЛР 1 доступен без проверки роли.
       x-task-id: 61
       x-implementation-status: implemented
       parameters:
@@ -2027,9 +1876,9 @@ paths:
       - Notifications
       operationId: listNotifications
       summary: История уведомлений
-      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 51.
       x-task-id: 51
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters: *id004
       responses:
         '200':
@@ -2050,9 +1899,9 @@ paths:
       - Notifications
       operationId: markNotificationRead
       summary: Отметить уведомление прочитанным
-      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 51.
       x-task-id: 51
-      x-implementation-status: planned
+      x-implementation-status: implemented
       parameters:
       - name: id
         in: path
@@ -2074,9 +1923,9 @@ paths:
       - Notifications
       operationId: markAllNotificationsRead
       summary: Прочитать все уведомления
-      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 51.
       x-task-id: 51
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '204':
           description: Операция выполнена
@@ -2092,9 +1941,9 @@ paths:
       - Notifications
       operationId: getUnreadCount
       summary: Число непрочитанных
-      description: Запланировано в задаче 51. До реализации этот маршрут вернёт 404.
+      description: Реализовано в задаче 51.
       x-task-id: 51
-      x-implementation-status: planned
+      x-implementation-status: implemented
       responses:
         '200':
           description: Успешный ответ
@@ -2114,7 +1963,7 @@ paths:
       - NotificationAdmin
       operationId: listNotificationTemplates
       summary: Шаблоны уведомлений
-      description: Возвращает шаблоны уведомлений по типам и каналам. Требуется роль ADMIN.
+      description: Возвращает шаблоны уведомлений по типам и каналам. В ЛР 1 доступен без проверки роли.
       x-task-id: 47
       x-implementation-status: implemented
       parameters: *id004
@@ -2137,7 +1986,7 @@ paths:
       - NotificationAdmin
       operationId: createNotificationTemplate
       summary: Создать шаблон
-      description: Создаёт уникальный шаблон для пары тип и канал. Требуется роль ADMIN.
+      description: Создаёт уникальный шаблон для пары тип и канал. В ЛР 1 доступен без проверки роли.
       x-task-id: 47
       x-implementation-status: implemented
       requestBody:
@@ -2166,7 +2015,7 @@ paths:
       - NotificationAdmin
       operationId: updateNotificationTemplate
       summary: Изменить шаблон
-      description: Изменяет шаблон и заново вычисляет параметры вида {{parameter}}. Требуется роль ADMIN.
+      description: Изменяет шаблон и заново вычисляет параметры вида {{parameter}}. В ЛР 1 доступен без проверки роли.
       x-task-id: 47
       x-implementation-status: implemented
       parameters:
@@ -2438,7 +2287,7 @@ paths:
       - Admin
       operationId: listAdminUsers
       summary: Пользователи
-      description: Реализовано в задаче 57. Требуется роль ADMIN.
+      description: Реализовано в задаче 57. В ЛР 1 доступен без проверки роли.
       x-task-id: 57
       x-implementation-status: implemented
       parameters:
@@ -2469,7 +2318,7 @@ paths:
       - Admin
       operationId: blockUser
       summary: Заблокировать пользователя
-      description: Реализовано в задаче 57. Требуется роль ADMIN.
+      description: Реализовано в задаче 57. В ЛР 1 доступен без проверки роли.
       x-task-id: 57
       x-implementation-status: implemented
       parameters:
@@ -2494,7 +2343,7 @@ paths:
       - Admin
       operationId: sendManyNotifications
       summary: Массовое уведомление
-      description: Реализовано в задаче 57. Требуется роль ADMIN.
+      description: Реализовано в задаче 57. В ЛР 1 доступен без проверки роли.
       x-task-id: 57
       x-implementation-status: implemented
       requestBody:
@@ -2546,7 +2395,7 @@ paths:
       - Admin
       operationId: listAuditLog
       summary: Журнал действий администратора
-      description: Реализовано в задаче 58. Требуется роль ADMIN.
+      description: Реализовано в задаче 58. В ЛР 1 доступен без проверки роли.
       x-task-id: 58
       x-implementation-status: implemented
       x-required-role: ADMIN
@@ -2603,13 +2452,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
-    QuizHint:
+    QuizHintDataResponse:
       type: object
       required: [ questionId, hint ]
       properties:
@@ -2621,7 +2465,7 @@ components:
       required: [ data ]
       properties:
         data:
-          $ref: '#/components/schemas/QuizHint'
+          $ref: '#/components/schemas/QuizHintDataResponse'
     HelloResponse:
       type: object
       properties:
@@ -2647,7 +2491,7 @@ components:
         data: *id001
       required:
       - data
-    ApiError:
+    ApiErrorDetailResponse:
       type: object
       properties:
         code:
@@ -2661,10 +2505,10 @@ components:
       type: object
       properties:
         error:
-          $ref: '#/components/schemas/ApiError'
+          $ref: '#/components/schemas/ApiErrorDetailResponse'
       required:
       - error
-    PageMetadata:
+    PageMetadataResponse:
       type: object
       properties:
         page: &id007
@@ -2680,7 +2524,7 @@ components:
       - size
       - totalElements
       - totalPages
-    UserProfile:
+    UserProfileDataResponse:
       type: object
       properties:
         id: *id001
@@ -2698,7 +2542,7 @@ components:
       - id
       - email
       - name
-    UserSettings:
+    UserSettingsDataResponse:
       type: object
       properties:
         language:
@@ -2731,8 +2575,8 @@ components:
       - analyticsConsent
     UserSettingsRequest:
       allOf:
-      - $ref: '#/components/schemas/UserSettings'
-    ContentItem:
+      - $ref: '#/components/schemas/UserSettingsDataResponse'
+    ContentItemDataResponse:
       type: object
       properties:
         id: *id001
@@ -2768,7 +2612,7 @@ components:
       - type
       - title
       - status
-    Category:
+    CategoryDataResponse:
       type: object
       properties:
         id: *id001
@@ -2777,7 +2621,7 @@ components:
       required:
       - id
       - name
-    FormatList:
+    FormatListResponse:
       type: object
       properties:
         data:
@@ -2786,7 +2630,7 @@ components:
             type: string
       required:
       - data
-    ContentReportItem:
+    ContentReportItemDataResponse:
       type: object
       properties:
         id: *id001
@@ -2800,7 +2644,7 @@ components:
       - id
       - contentId
       - status
-    QuizCard:
+    QuizCardDataResponse:
       type: object
       properties:
         id: *id001
@@ -2818,7 +2662,7 @@ components:
       - fact
       - question
       - answers
-    ContentProgress:
+    ContentProgressDataResponse:
       type: object
       properties:
         contentId: *id001
@@ -2829,14 +2673,14 @@ components:
       required:
       - contentId
       - status
-    AssessmentAnswerOption:
+    AssessmentAnswerOptionDataResponse:
       type: object
       required: [id, text]
       properties:
         id: *id001
         text:
           type: string
-    AssessmentQuestion:
+    AssessmentQuestionDataResponse:
       type: object
       required: [id, topic, text, answers]
       properties:
@@ -2848,19 +2692,19 @@ components:
         answers:
           type: array
           items:
-            $ref: '#/components/schemas/AssessmentAnswerOption'
-    AssessmentSession:
+            $ref: '#/components/schemas/AssessmentAnswerOptionDataResponse'
+    AssessmentSessionDataResponse:
       type: object
       properties:
         id: *id001
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/AssessmentQuestion'
+            $ref: '#/components/schemas/AssessmentQuestionDataResponse'
       required:
       - id
       - questions
-    AssessmentResult:
+    AssessmentResultDataResponse:
       type: object
       properties:
         id: *id001
@@ -2872,7 +2716,7 @@ components:
         topicScores:
           type: array
           items:
-            $ref: '#/components/schemas/AssessmentTopicScore'
+            $ref: '#/components/schemas/AssessmentTopicScoreDataResponse'
         grade:
           type: string
           description: Текущая лига и подуровень, рассчитанные по ER-score.
@@ -2900,7 +2744,7 @@ components:
       - recommendations
       - correctAnswers
       - totalAnswers
-    AssessmentTopicScore:
+    AssessmentTopicScoreDataResponse:
       type: object
       properties:
         topic:
@@ -2921,14 +2765,14 @@ components:
       - correctAnswers
       - totalAnswers
       - erScore
-    Program:
+    ProgramDataResponse:
       type: object
       properties:
         id: *id001
         modules:
           type: array
           items:
-            $ref: '#/components/schemas/ProgramModule'
+            $ref: '#/components/schemas/ProgramModuleDataResponse'
         progressPercent:
           type: number
           format: double
@@ -2938,7 +2782,7 @@ components:
       - id
       - modules
       - progressPercent
-    ProgramModule:
+    ProgramModuleDataResponse:
       type: object
       properties:
         id: *id001
@@ -2954,9 +2798,9 @@ components:
         lessons:
           type: array
           items:
-            $ref: '#/components/schemas/ProgramLesson'
+            $ref: '#/components/schemas/ProgramLessonDataResponse'
       required: [id, topic, title, progressPercent, lessons]
-    ProgramLesson:
+    ProgramLessonDataResponse:
       type: object
       properties:
         id: *id001
@@ -2971,7 +2815,7 @@ components:
           minimum: 0
           maximum: 100
       required: [id, contentId, quizId, status, progressPercent]
-    NextStep:
+    NextStepDataResponse:
       type: object
       properties:
         contentId: *id001
@@ -2980,14 +2824,14 @@ components:
           type: string
         streakDays: *id007
         dailyGoalProgress: *id009
-    QuizAttemptAnswerOption:
+    QuizAttemptAnswerOptionDataResponse:
       type: object
       required: [ id, text ]
       properties:
         id: *id001
         text:
           type: string
-    QuizAttemptQuestion:
+    QuizAttemptQuestionDataResponse:
       type: object
       required: [ id, text, answers ]
       properties:
@@ -2997,8 +2841,8 @@ components:
         answers:
           type: array
           items:
-            $ref: '#/components/schemas/QuizAttemptAnswerOption'
-    QuizAttempt:
+            $ref: '#/components/schemas/QuizAttemptAnswerOptionDataResponse'
+    QuizAttemptDataResponse:
       type: object
       required: [ id, quizId, questions ]
       properties:
@@ -3007,8 +2851,8 @@ components:
         questions:
           type: array
           items:
-            $ref: '#/components/schemas/QuizAttemptQuestion'
-    QuizResult:
+            $ref: '#/components/schemas/QuizAttemptQuestionDataResponse'
+    QuizResultDataResponse:
       type: object
       required: [ attemptId, correctAnswers, score, experience ]
       properties:
@@ -3016,7 +2860,7 @@ components:
         correctAnswers: *id007
         score: *id007
         experience: *id007
-    Competition:
+    CompetitionDataResponse:
       type: object
       properties:
         id: *id001
@@ -3037,7 +2881,7 @@ components:
           items:
             type: string
       required: [ id, title, status, quizId, creatorId, startsAt, endsAt, participantIds ]
-    RatingEntry:
+    RatingEntryDataResponse:
       type: object
       properties:
         userId: *id001
@@ -3048,7 +2892,7 @@ components:
       required:
       - userId
       - rank
-    Friend:
+    FriendDataResponse:
       type: object
       properties:
         id: *id001
@@ -3059,7 +2903,7 @@ components:
       required:
       - id
       - name
-    Subscription:
+    SubscriptionDataResponse:
       type: object
       properties:
         id: *id001
@@ -3071,7 +2915,7 @@ components:
       required:
       - id
       - status
-    Payment:
+    PaymentDataResponse:
       type: object
       properties:
         id: *id001
@@ -3084,7 +2928,7 @@ components:
       required:
       - id
       - status
-    Notification:
+    NotificationDataResponse:
       type: object
       properties:
         id: *id001
@@ -3098,7 +2942,7 @@ components:
       - id
       - title
       - read
-    NotificationPreferences:
+    NotificationPreferencesDataResponse:
       type: object
       properties:
         channels:
@@ -3122,8 +2966,8 @@ components:
       required: [channels, types]
     NotificationPreferencesRequest:
       allOf:
-      - $ref: '#/components/schemas/NotificationPreferences'
-    NotificationTemplate:
+      - $ref: '#/components/schemas/NotificationPreferencesDataResponse'
+    NotificationTemplateDataResponse:
       type: object
       properties:
         id: *id001
@@ -3149,8 +2993,8 @@ components:
       - body
     NotificationTemplateRequest:
       allOf:
-      - $ref: '#/components/schemas/NotificationTemplate'
-    EventReceipt:
+      - $ref: '#/components/schemas/NotificationTemplateDataResponse'
+    EventReceiptDataResponse:
       type: object
       properties:
         eventId: *id001
@@ -3158,7 +3002,7 @@ components:
       required:
       - eventId
       - accepted
-    MetricPoint:
+    MetricPointDataResponse:
       type: object
       properties:
         time: *id005
@@ -3175,7 +3019,7 @@ components:
       required:
       - time
       - value
-    MetricSeries:
+    MetricSeriesDataResponse:
       type: object
       properties:
         metric:
@@ -3183,11 +3027,11 @@ components:
         points:
           type: array
           items:
-            $ref: '#/components/schemas/MetricPoint'
+            $ref: '#/components/schemas/MetricPointDataResponse'
       required:
       - metric
       - points
-    Count:
+    CountDataResponse:
       type: object
       properties:
         count:
@@ -3195,7 +3039,7 @@ components:
           format: int64
       required:
       - count
-    MediaFile:
+    MediaFileDataResponse:
       type: object
       properties:
         id: *id001
@@ -3211,22 +3055,6 @@ components:
       - url
       - contentType
       - size
-    TokenPair:
-      type: object
-      properties:
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-        tokenType:
-          type: string
-          example: Bearer
-        expiresIn: *id007
-      required:
-      - accessToken
-      - refreshToken
-      - tokenType
-      - expiresIn
     RegisterRequest:
       type: object
       properties:
@@ -3249,50 +3077,6 @@ components:
           type: string
       required:
       - token
-    LoginRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          format: password
-          minLength: 8
-          maxLength: 128
-      required:
-      - email
-      - password
-    RefreshRequest:
-      type: object
-      properties:
-        refreshToken:
-          type: string
-          minLength: 32
-      required:
-      - refreshToken
-    ResetRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-      required:
-      - email
-    ResetPasswordRequest:
-      type: object
-      properties:
-        token:
-          type: string
-          minLength: 32
-        newPassword:
-          type: string
-          format: password
-          minLength: 8
-          maxLength: 128
-      required:
-      - token
-      - newPassword
     ProfileUpdateRequest:
       type: object
       minProperties: 1
@@ -3489,21 +3273,21 @@ components:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/UserProfile'
+          $ref: '#/components/schemas/UserProfileDataResponse'
       required:
       - data
     UserSettingsResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/UserSettings'
+          $ref: '#/components/schemas/UserSettingsDataResponse'
       required:
       - data
     ContentItemResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/ContentItem'
+          $ref: '#/components/schemas/ContentItemDataResponse'
       required:
       - data
     ContentListResponse:
@@ -3512,9 +3296,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ContentItem'
+            $ref: '#/components/schemas/ContentItemDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     CategoryListResponse:
@@ -3523,9 +3307,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Category'
+            $ref: '#/components/schemas/CategoryDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     QuizCardListResponse:
@@ -3534,65 +3318,65 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/QuizCard'
+            $ref: '#/components/schemas/QuizCardDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     ContentProgressResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/ContentProgress'
+          $ref: '#/components/schemas/ContentProgressDataResponse'
       required:
       - data
     AssessmentSessionResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/AssessmentSession'
+          $ref: '#/components/schemas/AssessmentSessionDataResponse'
       required:
       - data
     AssessmentResultResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/AssessmentResult'
+          $ref: '#/components/schemas/AssessmentResultDataResponse'
       required:
       - data
     ProgramResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/Program'
+          $ref: '#/components/schemas/ProgramDataResponse'
       required:
       - data
     NextStepResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/NextStep'
+          $ref: '#/components/schemas/NextStepDataResponse'
       required:
       - data
     QuizAttemptResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/QuizAttempt'
+          $ref: '#/components/schemas/QuizAttemptDataResponse'
       required:
       - data
     QuizResultResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/QuizResult'
+          $ref: '#/components/schemas/QuizResultDataResponse'
       required:
       - data
     CompetitionResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/Competition'
+          $ref: '#/components/schemas/CompetitionDataResponse'
       required:
       - data
     RatingListResponse:
@@ -3601,16 +3385,16 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/RatingEntry'
+            $ref: '#/components/schemas/RatingEntryDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     RatingEntryResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/RatingEntry'
+          $ref: '#/components/schemas/RatingEntryDataResponse'
       required:
       - data
     FriendListResponse:
@@ -3619,9 +3403,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Friend'
+            $ref: '#/components/schemas/FriendDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     FriendRequestListResponse:
@@ -3630,16 +3414,16 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Friend'
+            $ref: '#/components/schemas/FriendDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     SubscriptionResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/Subscription'
+          $ref: '#/components/schemas/SubscriptionDataResponse'
       required:
       - data
     PaymentListResponse:
@@ -3648,9 +3432,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Payment'
+            $ref: '#/components/schemas/PaymentDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     NotificationListResponse:
@@ -3659,23 +3443,23 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/Notification'
+            $ref: '#/components/schemas/NotificationDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     NotificationPreferencesResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/NotificationPreferences'
+          $ref: '#/components/schemas/NotificationPreferencesDataResponse'
       required:
       - data
     NotificationTemplateResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/NotificationTemplate'
+          $ref: '#/components/schemas/NotificationTemplateDataResponse'
       required:
       - data
     NotificationTemplateListResponse:
@@ -3684,16 +3468,16 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/NotificationTemplate'
+            $ref: '#/components/schemas/NotificationTemplateDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     EventReceiptResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/EventReceipt'
+          $ref: '#/components/schemas/EventReceiptDataResponse'
       required:
       - data
     EventReceiptListResponse:
@@ -3702,37 +3486,30 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/EventReceipt'
+            $ref: '#/components/schemas/EventReceiptDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     MetricSeriesResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/MetricSeries'
+          $ref: '#/components/schemas/MetricSeriesDataResponse'
       required:
       - data
     CountResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/Count'
+          $ref: '#/components/schemas/CountDataResponse'
       required:
       - data
     MediaFileResponse:
       type: object
       properties:
         data:
-          $ref: '#/components/schemas/MediaFile'
-      required:
-      - data
-    TokenPairResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/TokenPair'
+          $ref: '#/components/schemas/MediaFileDataResponse'
       required:
       - data
     AdminUserListResponse:
@@ -3741,9 +3518,9 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/UserProfile'
+            $ref: '#/components/schemas/UserProfileDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
     ContentReportListResponse:
@@ -3752,12 +3529,12 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ContentReportItem'
+            $ref: '#/components/schemas/ContentReportItemDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
+          $ref: '#/components/schemas/PageMetadataResponse'
       required:
       - data
-    SubscriptionPlan:
+    SubscriptionPlanDataResponse:
       type: object
       required:
       - code
@@ -3785,8 +3562,8 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/SubscriptionPlan'
-    AuditRecord:
+            $ref: '#/components/schemas/SubscriptionPlanDataResponse'
+    AuditRecordDataResponse:
       type: object
       required:
       - id
@@ -3821,8 +3598,6 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/AuditRecord'
+            $ref: '#/components/schemas/AuditRecordDataResponse'
         pagination:
-          $ref: '#/components/schemas/PageMetadata'
-security:
-- bearerAuth: []
+          $ref: '#/components/schemas/PageMetadataResponse'

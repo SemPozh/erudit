@@ -1,5 +1,6 @@
 package com.erudit.program.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.program.model.LearningProgram;
 import com.erudit.program.model.LessonStatus;
 import com.erudit.program.model.ProgramCandidate;
@@ -18,12 +19,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class ProgramRepository {
     private final JdbcTemplate jdbc;
 
-    public ProgramRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public List<ProgramCandidate> findCandidates() {
         return jdbc.query("""

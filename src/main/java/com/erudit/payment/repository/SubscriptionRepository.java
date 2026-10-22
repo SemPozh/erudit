@@ -1,5 +1,6 @@
 package com.erudit.payment.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.payment.model.Subscription;
 import com.erudit.payment.model.SubscriptionStatus;
 
@@ -16,12 +17,11 @@ import java.util.List;
 import org.springframework.dao.DuplicateKeyException;
 
 @Repository
+@RequiredArgsConstructor
 public class SubscriptionRepository {
     private final JdbcTemplate jdbc;
 
-    public SubscriptionRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void save(Subscription subscription) {
         jdbc.update("""

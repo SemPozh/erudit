@@ -1,6 +1,7 @@
 package com.erudit.payment.service;
 
-import com.erudit.payment.dto.PaymentPage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.payment.dto.PaymentPageResponse;
 import com.erudit.payment.model.BillingPeriod;
 import com.erudit.payment.model.Payment;
 import com.erudit.payment.model.PaymentStatus;
@@ -26,6 +27,7 @@ import java.util.Locale;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class SubscriptionService {
     private final SubscriptionRepository subscriptions;
     private final SubscriptionPlanRepository plans;
@@ -35,18 +37,7 @@ public class SubscriptionService {
     private final PremiumAccessService premiumAccess;
     private final Clock clock;
 
-    public SubscriptionService(SubscriptionRepository subscriptions, SubscriptionPlanRepository plans,
-                               PaymentRepository payments, PaymentProvider paymentProvider,
-                               List<MobileReceiptVerifier> receiptVerifiers,
-                               PremiumAccessService premiumAccess, Clock clock) {
-        this.subscriptions = subscriptions;
-        this.plans = plans;
-        this.payments = payments;
-        this.paymentProvider = paymentProvider;
-        this.receiptVerifiers = receiptVerifiers;
-        this.premiumAccess = premiumAccess;
-        this.clock = clock;
-    }
+
 
     @Transactional
     public Subscription create(UUID userId, String planCode, String paymentMethodId) {
@@ -86,7 +77,7 @@ public class SubscriptionService {
                 .orElseThrow(() -> new NotFoundException("Subscription not found"));
     }
 
-    public PaymentPage payments(UUID userId, int page, int size) {
+    public PaymentPageResponse payments(UUID userId, int page, int size) {
         return payments.findByUser(userId, page, size);
     }
 

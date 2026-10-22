@@ -91,9 +91,9 @@ class ContentProgressIntegrationTest {
     }
 
     @Test
-    void requiresAuthentication() throws Exception {
+    void usesDefaultLabIdentityWhenHeaderIsMissing() throws Exception {
         mvc.perform(post("/api/v1/content/{id}/view", contentId))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
     }
 
     private org.mockito.ArgumentMatcher<EventPublicationRequest> event(EventType type) {

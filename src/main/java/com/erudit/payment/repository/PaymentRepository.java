@@ -1,6 +1,7 @@
 package com.erudit.payment.repository;
 
-import com.erudit.payment.dto.PaymentPage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.payment.dto.PaymentPageResponse;
 import com.erudit.payment.model.Payment;
 import com.erudit.payment.model.PaymentStatus;
 
@@ -18,12 +19,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class PaymentRepository {
     private final JdbcTemplate jdbc;
 
-    public PaymentRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void save(Payment payment) {
         jdbc.update("""
@@ -35,7 +35,7 @@ public class PaymentRepository {
                 payment.externalId(), Timestamp.from(payment.createdAt()), timestamp(payment.paidAt()));
     }
 
-    public PaymentPage findByUser(UUID userId, int page, int size) {
+    public PaymentPageResponse findByUser(UUID userId, int page, int size) {
         if (page < 0 || size < 1 || size > 50) {
             throw new ValidationException("size must be between 1 and 50");
         }
@@ -44,7 +44,7 @@ public class PaymentRepository {
                 ORDER BY created_at DESC, id LIMIT ? OFFSET ?
                 """, this::map, userId, size, page * size);
         Long count = jdbc.queryForObject("SELECT COUNT(*) FROM payments WHERE user_id = ?", Long.class, userId);
-        return new PaymentPage(items, count == null ? 0 : count, page, size);
+        return new PaymentPageResponse(items, count == null ? 0 : count, page, size);
     }
 
     public boolean registerEvent(String provider, String eventId, Instant receivedAt) {

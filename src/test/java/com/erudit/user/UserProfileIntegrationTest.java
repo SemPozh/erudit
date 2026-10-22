@@ -4,7 +4,6 @@ import com.erudit.media.model.MediaAsset;
 import com.erudit.media.repository.MediaRepository;
 import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,6 @@ class UserProfileIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
     @Autowired private MediaRepository mediaRepository;
-    @Autowired private JwtTokenService jwtTokenService;
 
     private User currentUser;
     private User otherUser;
@@ -45,7 +43,7 @@ class UserProfileIntegrationTest {
         otherUser = userRepository.save(User.builder()
                 .email("other-" + UUID.randomUUID() + "@example.com")
                 .passwordHash("hash").name("Other User").build());
-        accessToken = jwtTokenService.issueAccessToken(currentUser);
+        accessToken = currentUser.getId().toString();
     }
 
     @Test
@@ -54,13 +52,13 @@ class UserProfileIntegrationTest {
         mediaRepository.save(new MediaAsset(avatarId, "avatars/" + avatarId, "avatar.png",
                 "image/png", 128, Instant.now()));
 
-        mvc.perform(get("/api/v1/users/me").header(HttpHeaders.AUTHORIZATION, bearer()))
+        mvc.perform(get("/api/v1/users/me").header("X-User-Id", bearer()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value(currentUser.getId().toString()))
                 .andExpect(jsonPath("$.data.email").value(currentUser.getEmail()))
                 .andExpect(jsonPath("$.data.name").value("Initial Name"));
 
-        mvc.perform(put("/api/v1/users/me").header(HttpHeaders.AUTHORIZATION, bearer())
+        mvc.perform(put("/api/v1/users/me").header("X-User-Id", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\" Updated Name \",\"avatarId\":\"%s\"}".formatted(avatarId)))
                 .andExpect(status().isOk())
@@ -71,19 +69,19 @@ class UserProfileIntegrationTest {
     }
 
     @Test
-    void requiresAuthenticationAndRejectsNonImageAvatar() throws Exception {
-        mvc.perform(get("/api/v1/users/me")).andExpect(status().isUnauthorized());
+    void usesDefaultLabIdentityAndRejectsNonImageAvatar() throws Exception {
+        mvc.perform(get("/api/v1/users/me")).andExpect(status().isNotFound());
 
         UUID audioId = UUID.randomUUID();
         mediaRepository.save(new MediaAsset(audioId, "audio/" + audioId, "sound.mp3",
                 "audio/mpeg", 128, Instant.now()));
-        mvc.perform(put("/api/v1/users/me").header(HttpHeaders.AUTHORIZATION, bearer())
+        mvc.perform(put("/api/v1/users/me").header("X-User-Id", bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"avatarId\":\"%s\"}".formatted(audioId)))
                 .andExpect(status().isBadRequest());
     }
 
     private String bearer() {
-        return "Bearer " + accessToken;
+        return accessToken;
     }
 }

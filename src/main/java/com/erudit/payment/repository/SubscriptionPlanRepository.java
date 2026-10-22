@@ -1,5 +1,6 @@
 package com.erudit.payment.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.payment.model.BillingPeriod;
 import com.erudit.payment.model.SubscriptionPlan;
 
@@ -11,12 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class SubscriptionPlanRepository {
     private final JdbcTemplate jdbc;
 
-    public SubscriptionPlanRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public List<SubscriptionPlan> findAll(int page, int size) {
         validatePage(page, size);

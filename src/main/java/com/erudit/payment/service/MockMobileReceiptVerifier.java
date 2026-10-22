@@ -1,5 +1,6 @@
 package com.erudit.payment.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.web.exception.ValidationException;
 
 import java.time.Instant;
@@ -7,12 +8,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class MockMobileReceiptVerifier implements MobileReceiptVerifier {
     private final String provider;
 
-    public MockMobileReceiptVerifier(String provider) {
-        this.provider = provider;
-    }
+
 
     @Override public String provider() { return provider; }
 

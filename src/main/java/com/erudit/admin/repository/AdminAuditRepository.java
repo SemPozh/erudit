@@ -1,6 +1,7 @@
 package com.erudit.admin.repository;
 
-import com.erudit.admin.dto.AdminAuditPage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.admin.dto.AdminAuditPageResponse;
 import com.erudit.admin.model.AdminAuditRecord;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,13 +13,12 @@ import java.time.*;
 import java.util.*;
 
 @Repository
+@RequiredArgsConstructor
 public class AdminAuditRepository {
     private final JdbcTemplate jdbc;
     private final ObjectMapper json = new ObjectMapper();
 
-    public AdminAuditRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void record(String actor, String action, String targetType, String targetId, Map<String, Object> metadata, Instant at) {
         try {
@@ -28,7 +28,7 @@ public class AdminAuditRepository {
         }
     }
 
-    public AdminAuditPage list(int page, int size, UUID actor, String action, Instant from, Instant to) {
+    public AdminAuditPageResponse list(int page, int size, UUID actor, String action, Instant from, Instant to) {
         var clauses = new ArrayList<String>();
         var filter = new ArrayList<Object>();
         if (actor != null) {
@@ -54,7 +54,7 @@ public class AdminAuditRepository {
         args.add(page * size);
         var rows = jdbc.query("SELECT * FROM admin_audit_log" + where + " ORDER BY occurred_at DESC,id DESC LIMIT ? OFFSET ?", (rs, n) -> map(rs), args.toArray());
         long total = jdbc.queryForObject("SELECT count(*) FROM admin_audit_log" + where, Long.class, filter.toArray());
-        return new AdminAuditPage(rows, total, page, size);
+        return new AdminAuditPageResponse(rows, total, page, size);
     }
 
     private AdminAuditRecord map(ResultSet r) throws SQLException {
