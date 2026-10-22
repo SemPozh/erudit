@@ -586,15 +586,26 @@ paths:
       - Content
       operationId: createContent
       summary: Создать контент
-      description: Реализовано в задаче 15. В ЛР 1 доступен без проверки роли.
+      description: Реализовано в задаче 15. В ЛР 1 доступен без проверки роли. categoryId нужно получить через GET /api/v1/content/categories.
       x-task-id: 15
       x-implementation-status: implemented
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/ContentUpsertRequest'
+            example:
+              categoryId: 10000000-0000-0000-0000-000000000001
+              type: ARTICLE
+              title: Почему небо голубое
+              description: Краткое объяснение рассеяния света
+              body: Солнечный свет рассеивается в атмосфере Земли.
+              difficulty: BEGINNER
+              estimatedMinutes: 5
+              premiumLocked: false
+              tags: [наука, физика]
       responses:
         '201':
           description: Успешный ответ
