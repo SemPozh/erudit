@@ -1,5 +1,6 @@
 package com.erudit.notification.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationPreference;
 import com.erudit.notification.model.NotificationType;
@@ -20,14 +21,12 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationPreferenceService {
     private final NotificationPreferenceRepository repository;
     private final Clock clock;
 
-    public NotificationPreferenceService(NotificationPreferenceRepository repository, Clock clock) {
-        this.repository = repository;
-        this.clock = clock;
-    }
+
 
     @Transactional(readOnly = true)
     public NotificationPreference get(UUID userId) {

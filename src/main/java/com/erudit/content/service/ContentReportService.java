@@ -1,6 +1,7 @@
 package com.erudit.content.service;
 
-import com.erudit.content.dto.ContentReportPage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.content.dto.ContentReportPageResponse;
 import com.erudit.content.model.Content;
 import com.erudit.content.model.ContentReport;
 import com.erudit.content.model.ReportDecision;
@@ -19,19 +20,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ContentReportService {
     private final ContentRepository contentRepository;
     private final ContentReportRepository reportRepository;
     private final ContentModerationAuditRepository auditRepository;
     private final Clock clock;
 
-    public ContentReportService(ContentRepository contentRepository, ContentReportRepository reportRepository,
-                                ContentModerationAuditRepository auditRepository, Clock clock) {
-        this.contentRepository = contentRepository;
-        this.reportRepository = reportRepository;
-        this.auditRepository = auditRepository;
-        this.clock = clock;
-    }
+
 
     public ContentReport report(UUID contentId, String reason) {
         if (contentRepository.findById(contentId).isEmpty()) {
@@ -46,13 +42,13 @@ public class ContentReportService {
     }
 
     @Transactional(readOnly = true)
-    public ContentReportPage openReports(Integer requestedPage, Integer requestedSize) {
+    public ContentReportPageResponse openReports(Integer requestedPage, Integer requestedSize) {
         int page = requestedPage == null ? 0 : requestedPage;
         int size = requestedSize == null ? 20 : requestedSize;
         if (page < 0 || size < 1 || size > 50) {
             throw new ValidationException("page must be non-negative and size must be between 1 and 50");
         }
-        return new ContentReportPage(reportRepository.findOpen(page, size), reportRepository.countOpen(), page, size);
+        return new ContentReportPageResponse(reportRepository.findOpen(page, size), reportRepository.countOpen(), page, size);
     }
 
     @Transactional

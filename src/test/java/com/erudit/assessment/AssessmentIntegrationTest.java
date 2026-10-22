@@ -108,9 +108,9 @@ class AssessmentIntegrationTest {
     }
 
     @Test
-    void rejectsIncompleteAndUnauthenticatedSubmission() throws Exception {
+    void rejectsIncompleteSubmissionAndUsesDefaultLabIdentity() throws Exception {
         mvc.perform(post("/api/v1/assessment/start"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isCreated());
         String started = mvc.perform(post("/api/v1/assessment/start").with(user("student-2")))
                 .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
         String assessmentId = objectMapper.readTree(started).at("/data/id").asText();
@@ -126,7 +126,7 @@ class AssessmentIntegrationTest {
                         "Exactly one answer is required for every assessment question"));
 
         mvc.perform(get("/api/v1/assessment/me/result"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/assessment/me/result").with(user("student-without-result")))
                 .andExpect(status().isNotFound());
     }

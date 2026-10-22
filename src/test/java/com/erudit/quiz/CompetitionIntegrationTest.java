@@ -184,7 +184,7 @@ class CompetitionIntegrationTest {
         mvc.perform(post("/api/v1/competition")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("Cup", quiz.id(), start, start.plus(1, ChronoUnit.HOURS))))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -198,8 +198,8 @@ class CompetitionIntegrationTest {
                 .andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/competition/{id}", UUID.randomUUID()).with(user("comp-private-owner")))
                 .andExpect(status().isNotFound());
-        mvc.perform(get("/api/v1/competition/{id}", id)).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/v1/competition/{id}/leaderboard", id)).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/competition/{id}", id)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/competition/{id}/leaderboard", id)).andExpect(status().isNotFound());
     }
 
     @Test

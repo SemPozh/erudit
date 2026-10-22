@@ -1,5 +1,6 @@
 package com.erudit.media.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.media.model.MediaAsset;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,12 +11,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class MediaRepository {
     private final JdbcTemplate jdbc;
 
-    public MediaRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void save(MediaAsset media) {
         jdbc.update("""

@@ -1,6 +1,6 @@
 package com.erudit.assessment.repository;
 
-import com.erudit.assessment.dto.AssessmentSubmission;
+import com.erudit.assessment.dto.AssessmentSubmissionResponse;
 import com.erudit.assessment.model.AssessmentFeedback;
 import com.erudit.assessment.model.AssessmentOption;
 import com.erudit.assessment.model.AssessmentQuestion;
@@ -70,7 +70,7 @@ public class AssessmentRepository {
 
     public void submit(UUID assessmentId, String userId, List<SubmittedAnswer> answers,
                        Map<UUID, AssessmentOption> selectedOptions, Instant submittedAt,
-                       AssessmentSubmission result) {
+                       AssessmentSubmissionResponse result) {
         for (SubmittedAnswer answer : answers) {
             AssessmentOption selected = selectedOptions.get(answer.answerId());
             jdbc.update("""
@@ -112,7 +112,7 @@ public class AssessmentRepository {
         }
     }
 
-    public Optional<AssessmentSubmission> findLatestResult(String userId) {
+    public Optional<AssessmentSubmissionResponse> findLatestResult(String userId) {
         List<ResultRow> results = jdbc.query("""
                 SELECT r.id, r.correct_answers, r.total_answers, r.er_score, r.feedback,
                        g.code grade_code, g.title grade_title, g.min_score, g.max_score
@@ -135,7 +135,7 @@ public class AssessmentRepository {
                 SELECT text FROM assessment_result_recommendations
                 WHERE result_id = ? ORDER BY position
                 """, (rs, row) -> rs.getString("text"), result.id());
-        return Optional.of(new AssessmentSubmission(result.id(), result.correctAnswers(), result.totalAnswers(),
+        return Optional.of(new AssessmentSubmissionResponse(result.id(), result.correctAnswers(), result.totalAnswers(),
                 result.erScore(), topics, result.grade(), new AssessmentFeedback(result.feedback(), recommendations)));
     }
 

@@ -1,7 +1,8 @@
 package com.erudit.content.repository;
 
-import com.erudit.content.dto.ContentCatalogQuery;
-import com.erudit.content.dto.ContentPage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.content.dto.ContentCatalogRequest;
+import com.erudit.content.dto.ContentPageResponse;
 import com.erudit.content.model.Content;
 import com.erudit.content.model.ContentSlice;
 import com.erudit.content.model.ContentStatus;
@@ -15,14 +16,13 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
+@RequiredArgsConstructor
 public class ContentCatalogRepository {
     private final NamedParameterJdbcTemplate jdbc;
 
-    public ContentCatalogRepository(NamedParameterJdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
 
-    public ContentPage find(ContentCatalogQuery query) {
+
+    public ContentPageResponse find(ContentCatalogRequest query) {
         StringBuilder where = new StringBuilder(" WHERE c.status = 'PUBLISHED'");
         MapSqlParameterSource parameters = new MapSqlParameterSource();
         addFilters(query, where, parameters);
@@ -37,7 +37,7 @@ public class ContentCatalogRepository {
                         rs.getInt("estimated_minutes"), rs.getString("author_id"),
                         ContentStatus.valueOf(rs.getString("status")), rs.getTimestamp("created_at").toInstant(),
                         List.of(), rs.getBoolean("premium_locked")));
-        return new ContentPage(withTags(rows), total == null ? 0 : total, query.page(), query.size());
+        return new ContentPageResponse(withTags(rows), total == null ? 0 : total, query.page(), query.size());
     }
 
     public ContentSlice personalizedFeed(UUID userId, Set<UUID> favoriteCategories, int page, int size) {
@@ -98,7 +98,7 @@ public class ContentCatalogRepository {
                 List.copyOf(tags.getOrDefault(content.id(), List.of())), content.premiumLocked())).toList();
     }
 
-    private static void addFilters(ContentCatalogQuery query, StringBuilder where,
+    private static void addFilters(ContentCatalogRequest query, StringBuilder where,
                                    MapSqlParameterSource parameters) {
         if (query.categoryId() != null) { where.append(" AND c.category_id = :categoryId"); parameters.addValue("categoryId", query.categoryId()); }
         if (query.type() != null) { where.append(" AND c.type = :type"); parameters.addValue("type", query.type().name()); }

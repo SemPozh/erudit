@@ -6,6 +6,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import java.security.Principal;
 import java.util.Arrays;
 
+import static com.erudit.user.config.LabOneRequestIdentityFilter.USER_ID_HEADER;
+
 public final class TestUserRequestPostProcessors {
     private TestUserRequestPostProcessors() {
         throw new UnsupportedOperationException("Utility class");
@@ -30,6 +32,7 @@ public final class TestUserRequestPostProcessors {
 
         @Override
         public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
+            request.addHeader(USER_ID_HEADER, principal.getName());
             request.setUserPrincipal(principal);
             Arrays.stream(roles).forEach(request::addUserRole);
             return request;

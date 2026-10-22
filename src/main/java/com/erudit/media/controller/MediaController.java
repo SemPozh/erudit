@@ -1,11 +1,12 @@
 package com.erudit.media.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.media.model.LoadedMedia;
 import com.erudit.media.model.MediaAsset;
 import com.erudit.media.service.MediaService;
 
 import com.erudit.openapi.api.MediaApi;
-import com.erudit.openapi.model.MediaFile;
+import com.erudit.openapi.model.MediaFileDataResponse;
 import com.erudit.openapi.model.MediaFileResponse;
 import com.erudit.web.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,20 +25,18 @@ import java.time.Duration;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 public class MediaController implements MediaApi {
     private final MediaService service;
     private final HttpServletRequest request;
 
-    public MediaController(MediaService service, HttpServletRequest request) {
-        this.service = service;
-        this.request = request;
-    }
+
 
     @Override
     public ResponseEntity<MediaFileResponse> uploadMedia(MultipartFile file) {
         requireAuthenticated();
         MediaAsset media = service.upload(file);
-        MediaFile data = new MediaFile(media.id(), "/api/v1/media/" + media.id(),
+        MediaFileDataResponse data = new MediaFileDataResponse(media.id(), "/api/v1/media/" + media.id(),
                 media.contentType(), media.size());
         return ResponseEntity.status(HttpStatus.CREATED).body(new MediaFileResponse(data));
     }

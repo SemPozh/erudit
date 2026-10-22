@@ -1,5 +1,6 @@
 package com.erudit.content.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.Content;
 import com.erudit.content.model.ContentProgress;
 import com.erudit.content.model.ContentProgressStatus;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ContentProgressService {
     private static final Logger log = LoggerFactory.getLogger(ContentProgressService.class);
     private final ContentProgressRepository repository;
@@ -31,14 +33,7 @@ public class ContentProgressService {
     private final ObjectProvider<AnalyticsEventPublisher> publisherProvider;
     private final ObjectProvider<UserPreferenceProvider> preferenceProvider;
 
-    public ContentProgressService(ContentProgressRepository repository, ContentService contentService,
-                                  ObjectProvider<AnalyticsEventPublisher> publisherProvider,
-                                  ObjectProvider<UserPreferenceProvider> preferenceProvider) {
-        this.repository = repository;
-        this.contentService = contentService;
-        this.publisherProvider = publisherProvider;
-        this.preferenceProvider = preferenceProvider;
-    }
+
 
     @Transactional(readOnly = true)
     public ContentProgress get(String userId, UUID contentId) {

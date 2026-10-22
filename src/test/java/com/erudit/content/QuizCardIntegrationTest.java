@@ -62,22 +62,21 @@ class QuizCardIntegrationTest {
     }
 
     @Test
-    void hidesDraftFromUserButAllowsAdminAndRequiresAuthentication() throws Exception {
+    void hidesDraftUntilModerationPublishesIt() throws Exception {
         UUID categoryId = UUID.randomUUID();
         contentRepository.saveCategory(new Category(categoryId, "Draft category " + categoryId));
         Content draft = contentService.create(new ContentUpsertRequest(
                 categoryId, ContentUpsertRequest.TypeEnum.FACT_CARD, "Факт"), "author-1");
 
         mvc.perform(get("/api/v1/content/{id}/quiz-cards", draft.id()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
 
         mvc.perform(get("/api/v1/content/{id}/quiz-cards", draft.id())
                         .with(user("user-1")))
                 .andExpect(status().isNotFound());
 
         mvc.perform(get("/api/v1/content/{id}/quiz-cards", draft.id())
-                        .with(user("admin-1").roles("ADMIN")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(1));
+                        .with(user("author-1")))
+                .andExpect(status().isNotFound());
     }
 }

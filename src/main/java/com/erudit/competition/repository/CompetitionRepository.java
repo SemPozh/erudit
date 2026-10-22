@@ -1,5 +1,6 @@
 package com.erudit.competition.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.competition.model.Competition;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class CompetitionRepository {
 
     /** A participant's submitted quiz attempt that falls inside the competition window. */
@@ -20,9 +22,7 @@ public class CompetitionRepository {
 
     private final JdbcTemplate jdbc;
 
-    public CompetitionRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void create(Competition c) {
         jdbc.update("""

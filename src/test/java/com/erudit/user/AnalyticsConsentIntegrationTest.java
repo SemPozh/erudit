@@ -9,7 +9,6 @@ import com.erudit.content.model.Difficulty;
 import com.erudit.events.service.AnalyticsEventPublisher;
 import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,7 +38,6 @@ class AnalyticsConsentIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
     @Autowired private ContentRepository contentRepository;
-    @Autowired private JwtTokenService jwtTokenService;
     @MockitoBean private AnalyticsEventPublisher publisher;
 
     @Test
@@ -47,17 +45,17 @@ class AnalyticsConsentIntegrationTest {
         User user = userRepository.save(User.builder()
                 .email("consent-" + UUID.randomUUID() + "@example.com")
                 .passwordHash("hash").name("Consent User").build());
-        String bearer = "Bearer " + jwtTokenService.issueAccessToken(user);
+        String bearer = user.getId().toString();
         UUID categoryId = UUID.randomUUID();
         contentRepository.saveCategory(new Category(categoryId, "Consent " + categoryId));
         UUID firstContent = content(categoryId, "First");
 
         mvc.perform(post("/api/v1/content/{id}/view", firstContent)
-                        .header(HttpHeaders.AUTHORIZATION, bearer))
+                        .header("X-User-Id", bearer))
                 .andExpect(status().isOk());
         verify(publisher, never()).publish(any());
 
-        mvc.perform(put("/api/v1/users/me/settings").header(HttpHeaders.AUTHORIZATION, bearer)
+        mvc.perform(put("/api/v1/users/me/settings").header("X-User-Id", bearer)
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content("""
                                 {"language":"ru","timeZone":"UTC","favoriteCategories":[],
@@ -69,7 +67,7 @@ class AnalyticsConsentIntegrationTest {
         UUID secondContent = content(categoryId, "Second");
 
         mvc.perform(post("/api/v1/content/{id}/view", secondContent)
-                        .header(HttpHeaders.AUTHORIZATION, bearer))
+                        .header("X-User-Id", bearer))
                 .andExpect(status().isOk());
         verify(publisher, org.mockito.Mockito.times(2)).publish(any());
     }

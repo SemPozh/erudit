@@ -1,5 +1,6 @@
 package com.erudit.content.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.ContentProgress;
 import com.erudit.content.model.ContentProgressStatus;
 
@@ -14,12 +15,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class ContentProgressRepository {
     private final JdbcTemplate jdbc;
 
-    public ContentProgressRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public Optional<ContentProgress> find(String userId, UUID contentId) {
         return jdbc.query("SELECT * FROM content_progress WHERE user_id = ? AND content_id = ?",

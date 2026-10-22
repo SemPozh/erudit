@@ -1,5 +1,6 @@
 package com.erudit.content.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.QuizCard;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -9,12 +10,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class QuizCardRepository {
     private final JdbcTemplate jdbc;
 
-    public QuizCardRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void replaceForContent(UUID contentId, List<QuizCard> cards) {
         jdbc.update("DELETE FROM quiz_cards WHERE content_id = ?", contentId);

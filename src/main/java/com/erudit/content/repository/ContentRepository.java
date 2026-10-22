@@ -1,5 +1,6 @@
 package com.erudit.content.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.Category;
 import com.erudit.content.model.Content;
 import com.erudit.content.model.ContentStatus;
@@ -15,12 +16,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class ContentRepository {
     private final JdbcTemplate jdbc;
 
-    public ContentRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void saveCategory(Category category) {
         jdbc.update("INSERT INTO categories (id, name) VALUES (?, ?)", category.id(), category.name());

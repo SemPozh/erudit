@@ -1,5 +1,6 @@
 package com.erudit.notification.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationTemplate;
 import com.erudit.notification.model.NotificationType;
@@ -18,12 +19,11 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class NotificationTemplateRepository {
     private final JdbcTemplate jdbc;
 
-    public NotificationTemplateRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void insert(NotificationTemplate value, Instant updatedAt) {
         jdbc.update("INSERT INTO notification_templates "

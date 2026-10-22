@@ -85,8 +85,6 @@ class AnalyticsControllerTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.metric").value("notifications"))
                 .andExpect(jsonPath("$.data.points[0].dimensions.clickThroughRate").value(25.0));
 
-        mvc.perform(get("/api/v1/analytics/active-users"))
-                .andExpect(status().isUnauthorized());
     }
 }
 

@@ -1,5 +1,6 @@
 package com.erudit.program.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.program.model.ProgramPreferences;
 import com.erudit.program.repository.ProgramPreferenceRepository;
 
@@ -13,12 +14,11 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ProgramPreferenceService {
     private final ProgramPreferenceRepository repository;
 
-    public ProgramPreferenceService(ProgramPreferenceRepository repository) {
-        this.repository = repository;
-    }
+
 
     public ProgramPreferences aggregate(String userId, List<TopicAssessmentScore> assessment) {
         Map<String, Integer> weights = new HashMap<>();

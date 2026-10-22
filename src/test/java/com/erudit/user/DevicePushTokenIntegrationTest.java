@@ -5,7 +5,6 @@ import com.erudit.user.model.PushPlatform;
 import com.erudit.user.model.User;
 import com.erudit.user.repository.DevicePushTokenRepository;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,6 @@ class DevicePushTokenIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
     @Autowired private DevicePushTokenRepository tokenRepository;
-    @Autowired private JwtTokenService jwtTokenService;
 
     private User user;
     private User otherUser;
@@ -42,7 +40,7 @@ class DevicePushTokenIntegrationTest {
         tokenRepository.deleteAll();
         user = createUser("push");
         otherUser = createUser("other-push");
-        accessToken = jwtTokenService.issueAccessToken(user);
+        accessToken = user.getId().toString();
     }
 
     @Test
@@ -57,7 +55,7 @@ class DevicePushTokenIntegrationTest {
         assertThat(saved.isActive()).isTrue();
 
         mvc.perform(delete("/api/v1/users/me/push-tokens/{id}", saved.getId())
-                        .header(HttpHeaders.AUTHORIZATION, bearer()))
+                        .header("X-User-Id", bearer()))
                 .andExpect(status().isNoContent());
         assertThat(tokenRepository.findById(saved.getId()).orElseThrow().isActive()).isFalse();
 
@@ -73,7 +71,7 @@ class DevicePushTokenIntegrationTest {
                 .createdAt(Instant.now()).updatedAt(Instant.now()).build());
 
         mvc.perform(delete("/api/v1/users/me/push-tokens/{id}", foreign.getId())
-                        .header(HttpHeaders.AUTHORIZATION, bearer()))
+                        .header("X-User-Id", bearer()))
                 .andExpect(status().isNotFound());
         assertThat(tokenRepository.findById(foreign.getId()).orElseThrow().isActive()).isTrue();
 
@@ -82,12 +80,12 @@ class DevicePushTokenIntegrationTest {
         mvc.perform(post("/api/v1/users/me/push-tokens")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"token\":\"token\",\"platform\":\"ANDROID\"}"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
     }
 
     private org.springframework.test.web.servlet.ResultActions register(String token, String platform) throws Exception {
         return mvc.perform(post("/api/v1/users/me/push-tokens")
-                .header(HttpHeaders.AUTHORIZATION, bearer())
+                .header("X-User-Id", bearer())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"token\":\"%s\",\"platform\":\"%s\"}".formatted(token, platform)));
     }
@@ -99,6 +97,6 @@ class DevicePushTokenIntegrationTest {
     }
 
     private String bearer() {
-        return "Bearer " + accessToken;
+        return accessToken;
     }
 }

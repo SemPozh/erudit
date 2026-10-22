@@ -10,6 +10,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,19 +34,25 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserPreferences {
     @Id
+    @NotNull
     @Column(name = "user_id")
     private UUID userId;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @NotNull
     @JoinColumn(name = "user_id")
     private User user;
 
     @Column(nullable = false, length = 20)
+    @NotBlank
+    @Size(max = 20)
     @Builder.Default
     private String language = "ru";
 
     @Column(name = "time_zone", nullable = false, length = 50)
+    @NotBlank
+    @Size(max = 50)
     @Builder.Default
     private String timeZone = "UTC";
 
@@ -52,6 +63,8 @@ public class UserPreferences {
     private Set<UUID> favoriteCategories = new LinkedHashSet<>();
 
     @Column(name = "daily_goal_minutes", nullable = false)
+    @Min(1)
+    @Max(1440)
     @Builder.Default
     private int dailyGoalMinutes = 15;
 

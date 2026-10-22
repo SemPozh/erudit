@@ -1,5 +1,6 @@
 package com.erudit.assessment.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.assessment.model.Grade;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,12 +9,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class GradeRepository {
     private final JdbcTemplate jdbc;
 
-    public GradeRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public Optional<Grade> findByScore(int erScore) {
         return jdbc.query("""

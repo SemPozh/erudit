@@ -1,6 +1,6 @@
 package com.erudit.content;
 
-import com.erudit.content.dto.CategoryPage;
+import com.erudit.content.dto.CategoryPageResponse;
 import com.erudit.content.model.Category;
 import com.erudit.content.repository.ContentRepository;
 import com.erudit.content.service.ContentCatalogService;
@@ -32,7 +32,7 @@ class ContentCatalogPostgresTest {
         UUID id = UUID.randomUUID();
         contentRepository.saveCategory(new Category(id, "Postgres category"));
 
-        CategoryPage page = catalogService.categories(0, 50);
+        CategoryPageResponse page = catalogService.categories(0, 50);
 
         assertThat(page.items()).extracting(Category::id).contains(id);
         assertThat(page.total()).isPositive();

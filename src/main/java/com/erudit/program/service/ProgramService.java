@@ -1,5 +1,6 @@
 package com.erudit.program.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.program.model.LearningProgram;
 import com.erudit.program.model.LessonStatus;
 import com.erudit.program.model.NextStep;
@@ -10,7 +11,7 @@ import com.erudit.program.model.ProgramPreferences;
 import com.erudit.program.repository.ProgramRepository;
 
 import com.erudit.assessment.service.AssessmentService;
-import com.erudit.assessment.dto.AssessmentSubmission;
+import com.erudit.assessment.dto.AssessmentSubmissionResponse;
 import com.erudit.assessment.model.TopicAssessmentScore;
 import com.erudit.content.model.Difficulty;
 import com.erudit.web.exception.NotFoundException;
@@ -32,6 +33,7 @@ import java.time.ZoneId;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class ProgramService {
     private static final Map<String, String> TOPIC_TITLES = Map.of(
             "SCIENCE", "Наука", "HISTORY", "История", "TECHNOLOGY", "Технологии", "CULTURE", "Культура");
@@ -41,19 +43,11 @@ public class ProgramService {
     private final ObjectProvider<UserPreferenceProvider> userPreferences;
     private final Clock clock;
 
-    public ProgramService(ProgramRepository repository, AssessmentService assessmentService,
-                          ProgramPreferenceService preferenceService,
-                          ObjectProvider<UserPreferenceProvider> userPreferences, Clock clock) {
-        this.repository = repository;
-        this.assessmentService = assessmentService;
-        this.preferenceService = preferenceService;
-        this.userPreferences = userPreferences;
-        this.clock = clock;
-    }
+
 
     @Transactional
     public LearningProgram generate(String userId) {
-        AssessmentSubmission assessment = assessmentService.latestResult(userId);
+        AssessmentSubmissionResponse assessment = assessmentService.latestResult(userId);
         ProgramPreferences preferences = preferenceService.aggregate(userId, assessment.topicScores());
         Map<String, List<ProgramCandidate>> candidates = repository.findCandidates().stream()
                 .collect(Collectors.groupingBy(candidate -> normalizeTopic(candidate.category())));

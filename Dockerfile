@@ -25,10 +25,6 @@ FROM eclipse-temurin:25-jre AS runtime
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install --yes --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
-
 RUN useradd --system --uid 10001 appuser
 
 # Copy the generated JAR
@@ -38,12 +34,5 @@ COPY --from=build /app/build/libs/*.jar /app/app.jar
 USER appuser
 
 EXPOSE 8080
-
-HEALTHCHECK \
-    --interval=30s \
-    --timeout=3s \
-    --start-period=10s \
-    --retries=3 \
-    CMD curl --fail --silent http://localhost:8080/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

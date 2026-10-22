@@ -1,6 +1,7 @@
 package com.erudit.content.service;
 
-import com.erudit.content.dto.ContentPage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.content.dto.ContentPageResponse;
 import com.erudit.content.model.Content;
 import com.erudit.content.model.ContentStatus;
 import com.erudit.content.model.ContentType;
@@ -22,17 +23,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ContentService {
     private final ContentRepository repository;
     private final QuizCardService quizCardService;
     private final ObjectProvider<PremiumAccessService> premiumAccess;
 
-    public ContentService(ContentRepository repository, QuizCardService quizCardService,
-                          ObjectProvider<PremiumAccessService> premiumAccess) {
-        this.repository = repository;
-        this.quizCardService = quizCardService;
-        this.premiumAccess = premiumAccess;
-    }
+
 
     @Transactional
     public Content create(ContentUpsertRequest request, String authorId) {
@@ -92,14 +89,14 @@ public class ContentService {
     }
 
     @Transactional(readOnly = true)
-    public ContentPage moderationQueue(Integer requestedPage, Integer requestedSize) {
+    public ContentPageResponse moderationQueue(Integer requestedPage, Integer requestedSize) {
         int page = requestedPage == null ? 0 : requestedPage;
         int size = requestedSize == null ? 20 : requestedSize;
-        if (page < 0 || size < 1 || size > 100) {
-            throw new ValidationException("page must be non-negative and size must be between 1 and 100");
+        if (page < 0 || size < 1 || size > 50) {
+            throw new ValidationException("page must be non-negative and size must be between 1 and 50");
         }
         long total = repository.countByStatus(ContentStatus.PENDING_MODERATION);
-        return new ContentPage(repository.findByStatus(ContentStatus.PENDING_MODERATION, page, size),
+        return new ContentPageResponse(repository.findByStatus(ContentStatus.PENDING_MODERATION, page, size),
                 total, page, size);
     }
 

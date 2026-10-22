@@ -8,6 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -28,7 +29,8 @@ class OpenApiDocumentationTest {
                 .andExpect(content().string(containsString("/hello")))
                 .andExpect(content().string(containsString("/api/v1/events/batch")))
                 .andExpect(content().string(containsString("/api/v1/analytics/notifications")))
-                .andExpect(content().string(containsString("x-implementation-status: planned")));
+                .andExpect(content().string(containsString("x-implementation-status: implemented")))
+                .andExpect(content().string(not(containsString("x-implementation-status: planned"))));
         mvc.perform(get("/swagger-ui/index.html"))
                 .andExpect(status().isOk());
         mvc.perform(get("/v3/api-docs/swagger-config"))

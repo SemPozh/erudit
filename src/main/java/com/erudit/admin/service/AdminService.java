@@ -1,6 +1,6 @@
 package com.erudit.admin.service;
 
-import com.erudit.admin.dto.AdminAuditPage;
+import com.erudit.admin.dto.AdminAuditPageResponse;
 import com.erudit.admin.repository.AdminAuditRepository;
 import com.erudit.notification.model.NotificationTemplate;
 import com.erudit.notification.service.NotificationTemplateService;
@@ -57,7 +57,7 @@ public class AdminService {
         return sent;
     }
 
-    public AdminAuditPage audit(Integer page, Integer size, UUID actor, String action, Instant from, Instant to) {
+    public AdminAuditPageResponse audit(Integer page, Integer size, UUID actor, String action, Instant from, Instant to) {
         int p = page == null ? 0 : page, s = size == null ? 20 : size;
         if (p < 0 || s < 1 || s > 50 || from != null && to != null && from.isAfter(to))
             throw new ValidationException("Invalid audit filter");

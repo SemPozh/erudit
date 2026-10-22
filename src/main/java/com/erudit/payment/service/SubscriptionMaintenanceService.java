@@ -1,5 +1,6 @@
 package com.erudit.payment.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.payment.repository.SubscriptionRepository;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,17 +11,13 @@ import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 
 @Service
+@RequiredArgsConstructor
 public class SubscriptionMaintenanceService {
     private final SubscriptionRepository subscriptions;
     private final SubscriptionExpiryNotifier notifier;
     private final Clock clock;
 
-    public SubscriptionMaintenanceService(SubscriptionRepository subscriptions,
-                                          SubscriptionExpiryNotifier notifier, Clock clock) {
-        this.subscriptions = subscriptions;
-        this.notifier = notifier;
-        this.clock = clock;
-    }
+
 
     @Scheduled(fixedDelayString = "${erudit.payments.maintenance-interval:PT1H}",
             initialDelayString = "${erudit.payments.maintenance-initial-delay:PT1M}")

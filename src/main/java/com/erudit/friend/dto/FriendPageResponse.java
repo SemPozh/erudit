@@ -4,4 +4,4 @@ import com.erudit.friend.model.FriendRecord;
 
 import java.util.List;
 
-public record FriendPage(List<FriendRecord> items, long total, int page, int size) {}
+public record FriendPageResponse(List<FriendRecord> items, long total, int page, int size) {}

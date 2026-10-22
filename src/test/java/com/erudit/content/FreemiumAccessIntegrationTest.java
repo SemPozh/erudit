@@ -13,7 +13,6 @@ import com.erudit.payment.repository.SubscriptionRepository;
 import com.erudit.payment.model.SubscriptionStatus;
 import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,6 @@ class FreemiumAccessIntegrationTest {
     @Autowired private ContentProgressRepository progressRepository;
     @Autowired private SubscriptionRepository subscriptionRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private JwtTokenService jwtTokenService;
 
     private User user;
     private String bearer;
@@ -53,7 +51,7 @@ class FreemiumAccessIntegrationTest {
     void setUp() {
         user = userRepository.save(User.builder().email("premium-" + UUID.randomUUID() + "@example.com")
                 .passwordHash("hash").name("Premium learner").build());
-        bearer = "Bearer " + jwtTokenService.issueAccessToken(user);
+        bearer = user.getId().toString();
         UUID categoryId = UUID.randomUUID();
         contentRepository.saveCategory(new Category(categoryId, "Premium " + categoryId));
         premium = contentService.create(new ContentUpsertRequest(categoryId,
@@ -76,12 +74,12 @@ class FreemiumAccessIntegrationTest {
         Subscription active = activeSubscription();
         subscriptionRepository.save(active);
         mvc.perform(get("/api/v1/content").param("premium", "true")
-                        .header(HttpHeaders.AUTHORIZATION, bearer))
+                        .header("X-User-Id", bearer))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].body").value("Premium body"))
                 .andExpect(jsonPath("$.data[0].mediaUrl").value("https://example.test/premium.mp4"));
         mvc.perform(get("/api/v1/content/{id}", premium.id())
-                        .header(HttpHeaders.AUTHORIZATION, bearer))
+                        .header("X-User-Id", bearer))
                 .andExpect(status().isOk());
     }
 
@@ -90,13 +88,13 @@ class FreemiumAccessIntegrationTest {
         Subscription active = activeSubscription();
         subscriptionRepository.save(active);
         mvc.perform(post("/api/v1/content/{id}/view", premium.id())
-                        .header(HttpHeaders.AUTHORIZATION, bearer))
+                        .header("X-User-Id", bearer))
                 .andExpect(status().isOk());
 
         subscriptionRepository.updateStatus(active.id(), SubscriptionStatus.EXPIRED);
         assertThat(progressRepository.find(user.getId().toString(), premium.id())).isPresent();
         mvc.perform(get("/api/v1/content/{id}", premium.id())
-                        .header(HttpHeaders.AUTHORIZATION, bearer))
+                        .header("X-User-Id", bearer))
                 .andExpect(status().isForbidden());
     }
 

@@ -1,5 +1,6 @@
 package com.erudit.quiz.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.quiz.model.Quiz;
 import com.erudit.quiz.model.QuizAnswerOption;
 import com.erudit.quiz.model.QuizQuestion;
@@ -14,12 +15,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class QuizRepository {
     private final JdbcTemplate jdbc;
 
-    public QuizRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     @Transactional
     public void save(Quiz quiz) {

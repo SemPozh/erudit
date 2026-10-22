@@ -1,11 +1,12 @@
 package com.erudit.events.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.events.model.AnalyticsMetricSeries;
 import com.erudit.events.service.AnalyticsService;
 
 import com.erudit.openapi.api.AnalyticsApi;
-import com.erudit.openapi.model.MetricPoint;
-import com.erudit.openapi.model.MetricSeries;
+import com.erudit.openapi.model.MetricPointDataResponse;
+import com.erudit.openapi.model.MetricSeriesDataResponse;
 import com.erudit.openapi.model.MetricSeriesResponse;
 import com.erudit.web.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,14 +18,12 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 @RestController
+@RequiredArgsConstructor
 public class AnalyticsController implements AnalyticsApi {
     private final AnalyticsService service;
     private final HttpServletRequest request;
 
-    public AnalyticsController(AnalyticsService service, HttpServletRequest request) {
-        this.service = service;
-        this.request = request;
-    }
+
 
     @Override
     public ResponseEntity<MetricSeriesResponse> getActiveUsers(@Nullable OffsetDateTime from,
@@ -76,9 +75,9 @@ public class AnalyticsController implements AnalyticsApi {
 
     private static MetricSeriesResponse response(AnalyticsMetricSeries value) {
         var points = value.points().stream().map(point ->
-                new MetricPoint(point.time().atOffset(ZoneOffset.UTC), point.value())
+                new MetricPointDataResponse(point.time().atOffset(ZoneOffset.UTC), point.value())
                         .dimensions(point.dimensions())).toList();
-        return new MetricSeriesResponse(new MetricSeries(value.metric(), points));
+        return new MetricSeriesResponse(new MetricSeriesDataResponse(value.metric(), points));
     }
 
     private static java.time.Instant instant(OffsetDateTime value) {

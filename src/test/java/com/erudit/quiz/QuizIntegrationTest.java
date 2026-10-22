@@ -231,7 +231,7 @@ class QuizIntegrationTest {
         Quiz quiz = saveQuiz();
 
         mvc.perform(post("/api/v1/quiz/{id}/start", quiz.id()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isCreated());
         mvc.perform(post("/api/v1/quiz/{id}/start", UUID.randomUUID()).with(user("quiz-user-8")))
                 .andExpect(status().isNotFound());
     }
@@ -311,7 +311,7 @@ class QuizIntegrationTest {
         mvc.perform(post("/api/v1/quiz/{id}/hint", quiz.id())
                         .param("attemptId", attemptId.toString())
                         .param("questionId", q1.id().toString()))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
 
         // hint after the attempt is submitted
         submit(quiz.id(), "hint-user-4", submitBody(attemptId, quiz, true)).andExpect(status().isOk());
@@ -428,11 +428,11 @@ class QuizIntegrationTest {
         submitDaily("daily-owner", submitBody(regular, quiz, true))
                 .andExpect(status().isBadRequest());
 
-        // not authenticated
-        mvc.perform(get("/api/v1/quiz/daily")).andExpect(status().isUnauthorized());
+        // missing identity header uses the public Lab 1 placeholder identity
+        mvc.perform(get("/api/v1/quiz/daily")).andExpect(status().isOk());
         mvc.perform(post("/api/v1/quiz/daily/submit")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(submitBody(dailyAttempt, quiz, true)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isNotFound());
     }
 }

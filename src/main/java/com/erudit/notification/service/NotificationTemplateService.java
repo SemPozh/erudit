@@ -1,6 +1,7 @@
 package com.erudit.notification.service;
 
-import com.erudit.notification.dto.NotificationTemplatePage;
+import lombok.RequiredArgsConstructor;
+import com.erudit.notification.dto.NotificationTemplatePageResponse;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationTemplate;
 import com.erudit.notification.model.NotificationType;
@@ -24,15 +25,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationTemplateService {
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{\\{([A-Za-z][A-Za-z0-9_.-]{0,49})\\}\\}");
     private final NotificationTemplateRepository repository;
     private final Clock clock;
 
-    public NotificationTemplateService(NotificationTemplateRepository repository, Clock clock) {
-        this.repository = repository;
-        this.clock = clock;
-    }
+
 
     @Transactional
     public NotificationTemplate create(String type, String channel, String title, String body) {
@@ -50,7 +49,7 @@ public class NotificationTemplateService {
 
     @Transactional
     public NotificationTemplate update(UUID id, String type, String channel, String title, String body) {
-        repository.find(id).orElseThrow(() -> new NotFoundException("Notification template not found"));
+        repository.find(id).orElseThrow(() -> new NotFoundException("NotificationDataResponse template not found"));
         NotificationTemplate value = value(id, type, channel, title, body);
         repository.find(value.type(), value.channel()).filter(existing -> !existing.id().equals(id))
                 .ifPresent(existing -> { throw new ConflictException("Template for this type and channel already exists"); });
@@ -63,25 +62,25 @@ public class NotificationTemplateService {
     }
 
     @Transactional(readOnly = true)
-    public NotificationTemplatePage list(Integer requestedPage, Integer requestedSize) {
+    public NotificationTemplatePageResponse list(Integer requestedPage, Integer requestedSize) {
         int page = requestedPage == null ? 0 : requestedPage;
         int size = requestedSize == null ? 20 : requestedSize;
         if (page < 0 || size < 1 || size > 50) {
             throw new ValidationException("page must be non-negative and size must be between 1 and 50");
         }
-        return new NotificationTemplatePage(repository.list(page, size), repository.count(), page, size);
+        return new NotificationTemplatePageResponse(repository.list(page, size), repository.count(), page, size);
     }
 
     @Transactional(readOnly = true)
     public NotificationTemplate get(UUID id) {
-        return repository.find(id).orElseThrow(() -> new NotFoundException("Notification template not found"));
+        return repository.find(id).orElseThrow(() -> new NotFoundException("NotificationDataResponse template not found"));
     }
 
     @Transactional(readOnly = true)
     public RenderedNotification render(NotificationType type, NotificationChannel channel,
                                        Map<String, String> parameters) {
         NotificationTemplate template = repository.find(type, channel)
-                .orElseThrow(() -> new NotFoundException("Notification template not found"));
+                .orElseThrow(() -> new NotFoundException("NotificationDataResponse template not found"));
         Set<String> missing = new LinkedHashSet<>(template.parameters());
         missing.removeAll(parameters.keySet());
         if (!missing.isEmpty()) throw new ValidationException("Missing template parameters: " + missing);

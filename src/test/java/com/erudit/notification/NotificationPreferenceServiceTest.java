@@ -54,7 +54,7 @@ class NotificationPreferenceServiceTest {
     private UUID user() {
         UUID id = UUID.randomUUID();
         jdbc.update("INSERT INTO users (id, email, password_hash, name, status) VALUES (?, ?, ?, ?, ?)",
-                id, id + "@example.test", "hash", "Notification user", "ACTIVE");
+                id, id + "@example.test", "hash", "NotificationDataResponse user", "ACTIVE");
         return id;
     }
 }

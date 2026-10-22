@@ -1,5 +1,6 @@
 package com.erudit.quiz.repository;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -7,13 +8,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class DailyQuizRepository {
 
     private final JdbcTemplate jdbc;
 
-    public DailyQuizRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     /** Quizzes whose content the user has completed, in a stable order. */
     public List<UUID> quizIdsForCompletedContent(String userId) {

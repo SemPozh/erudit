@@ -1,5 +1,6 @@
 package com.erudit.events.repository;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -9,12 +10,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class EventIngestionRepository {
     private final JdbcTemplate jdbc;
 
-    public EventIngestionRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public boolean claim(UUID eventId, Instant receivedAt) {
         try {

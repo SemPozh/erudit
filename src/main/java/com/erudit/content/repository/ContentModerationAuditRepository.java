@@ -1,5 +1,6 @@
 package com.erudit.content.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.ReportDecision;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,12 +11,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class ContentModerationAuditRepository {
     private final JdbcTemplate jdbc;
 
-    public ContentModerationAuditRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void recordReportResolution(UUID reportId, String adminId, ReportDecision decision, Instant occurredAt) {
         jdbc.update("""

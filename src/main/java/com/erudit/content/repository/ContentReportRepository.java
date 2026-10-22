@@ -1,5 +1,6 @@
 package com.erudit.content.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.ContentReport;
 import com.erudit.content.model.ContentReportStatus;
 import com.erudit.content.model.ReportDecision;
@@ -16,12 +17,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class ContentReportRepository {
     private final JdbcTemplate jdbc;
 
-    public ContentReportRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public void save(ContentReport report) {
         jdbc.update("""

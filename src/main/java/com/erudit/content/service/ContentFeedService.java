@@ -1,5 +1,6 @@
 package com.erudit.content.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.content.model.ContentSlice;
 import com.erudit.content.repository.ContentCatalogRepository;
 
@@ -11,14 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ContentFeedService {
     private final ContentCatalogRepository repository;
     private final UserPreferenceProvider preferences;
 
-    public ContentFeedService(ContentCatalogRepository repository, UserPreferenceProvider preferences) {
-        this.repository = repository;
-        this.preferences = preferences;
-    }
+
 
     @Transactional(readOnly = true)
     public ContentSlice feed(UUID userId, Integer requestedPage, Integer requestedSize) {

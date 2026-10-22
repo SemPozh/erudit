@@ -64,15 +64,6 @@ class ContentReportControllerTest {
         verifyNoInteractions(service);
     }
 
-    @Test
-    void requiresAuthentication() throws Exception {
-        mvc.perform(post("/api/v1/content/{id}/report", UUID.randomUUID())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"reason\":\"A sufficiently detailed reason\"}"))
-                .andExpect(status().isUnauthorized());
-        verifyNoInteractions(service);
-    }
-
     private void assertInvalid(UUID contentId, String reason) throws Exception {
         mvc.perform(post("/api/v1/content/{id}/report", contentId)
                         .with(user("reporter"))

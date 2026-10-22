@@ -10,7 +10,7 @@ import com.erudit.program.service.ProgramService;
 
 import com.erudit.assessment.model.AssessmentFeedback;
 import com.erudit.assessment.service.AssessmentService;
-import com.erudit.assessment.dto.AssessmentSubmission;
+import com.erudit.assessment.dto.AssessmentSubmissionResponse;
 import com.erudit.assessment.model.Grade;
 import com.erudit.assessment.model.TopicAssessmentScore;
 import com.erudit.content.model.Difficulty;
@@ -77,8 +77,8 @@ class ProgramServiceTest {
         return new ProgramCandidate(UUID.randomUUID(), UUID.randomUUID(), topic, difficulty);
     }
 
-    private AssessmentSubmission assessment(List<TopicAssessmentScore> topics) {
-        return new AssessmentSubmission(UUID.randomUUID(), 1, 2, 1000, topics,
+    private AssessmentSubmissionResponse assessment(List<TopicAssessmentScore> topics) {
+        return new AssessmentSubmissionResponse(UUID.randomUUID(), 1, 2, 1000, topics,
                 new Grade("ERUDITE_I", "Эрудит I", 900, 1049),
                 new AssessmentFeedback("Feedback", List.of("Recommendation")));
     }

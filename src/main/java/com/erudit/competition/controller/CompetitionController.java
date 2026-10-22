@@ -1,5 +1,6 @@
 package com.erudit.competition.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.competition.model.Competition;
 import com.erudit.competition.service.CompetitionService;
 
@@ -19,15 +20,13 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 public class CompetitionController implements CompetitionsApi {   // check generated name
 
     private final CompetitionService service;
     private final HttpServletRequest request;
 
-    public CompetitionController(CompetitionService service, HttpServletRequest request) {
-        this.service = service;
-        this.request = request;
-    }
+
 
     @Override
     public ResponseEntity<CompetitionResponse> createCompetition(CompetitionCreateRequest body) {
@@ -48,14 +47,14 @@ public class CompetitionController implements CompetitionsApi {   // check gener
         var result = service.leaderboard(currentUser(), id, p, s);
 
         var entries = result.rows().stream().map(row -> {
-            var entry = new com.erudit.openapi.model.RatingEntry();
+            var entry = new com.erudit.openapi.model.RatingEntryDataResponse();
             entry.setUserId(UUID.fromString(row.userId()));
             entry.setScore((double) row.score());
             entry.setRank(row.rank());
             return entry;
         }).toList();
 
-        var meta = new com.erudit.openapi.model.PageMetadata();
+        var meta = new com.erudit.openapi.model.PageMetadataResponse();
         meta.setPage(p);
         meta.setSize(s);
         meta.setTotalElements(result.total());
@@ -74,7 +73,7 @@ public class CompetitionController implements CompetitionsApi {   // check gener
 
     private CompetitionResponse toResponse(CompetitionService.Details details) {
         Competition c = details.competition();
-        var model = new com.erudit.openapi.model.Competition();
+        var model = new com.erudit.openapi.model.CompetitionDataResponse();
         model.setId(c.id());
         model.setTitle(c.title());
         model.setStatus(details.status());

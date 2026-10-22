@@ -1,6 +1,6 @@
 package com.erudit.assessment;
 
-import com.erudit.assessment.dto.AssessmentSubmission;
+import com.erudit.assessment.dto.AssessmentSubmissionResponse;
 import com.erudit.assessment.model.AssessmentFeedback;
 import com.erudit.assessment.model.AssessmentOption;
 import com.erudit.assessment.model.AssessmentQuestion;
@@ -39,7 +39,7 @@ class AssessmentPostgresTest {
         AssessmentOption correct = question.answers().stream().filter(AssessmentOption::correct).findFirst().orElseThrow();
         UUID assessmentId = UUID.randomUUID();
         repository.createSession(assessmentId, "postgres-student", Instant.now(), List.of(question));
-        AssessmentSubmission result = new AssessmentSubmission(UUID.randomUUID(), 1, 1, 2000,
+        AssessmentSubmissionResponse result = new AssessmentSubmissionResponse(UUID.randomUUID(), 1, 1, 2000,
                 List.of(new TopicAssessmentScore(question.topic(), 1, 1, 2000)),
                 new Grade("LEGEND_III", "Легенда III", 2000, 2000),
                 new AssessmentFeedback("Высокий результат.", List.of("Продолжайте обучение.")));

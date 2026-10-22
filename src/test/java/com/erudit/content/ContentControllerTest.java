@@ -65,22 +65,23 @@ class ContentControllerTest {
     }
 
     @Test
-    void nonAdminCannotMutateContent() throws Exception {
+    void contentMutationIsOpenDuringLabOne() throws Exception {
         UUID categoryId = UUID.randomUUID();
+        Content draft = content(UUID.randomUUID(), categoryId, ContentStatus.DRAFT, "Title");
+        when(service.create(any(ContentUpsertRequest.class), any())).thenReturn(draft);
         mvc.perform(post("/api/v1/content").contentType(MediaType.APPLICATION_JSON)
                         .content(request(categoryId, "Title")))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error.code").value("FORBIDDEN"));
+                .andExpect(status().isCreated());
     }
 
     @Test
     void readsContentUsingCallerVisibility() throws Exception {
         UUID id = UUID.randomUUID();
         Content published = content(id, UUID.randomUUID(), ContentStatus.PUBLISHED, "Published");
-        when(service.get(id, false, null)).thenReturn(published);
+        when(service.get(eq(id), eq(false), any())).thenReturn(published);
         mvc.perform(get("/api/v1/content/{id}", id)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Published"));
-        verify(service).get(id, false, null);
+        verify(service).get(eq(id), eq(false), any());
     }
 
     @Test

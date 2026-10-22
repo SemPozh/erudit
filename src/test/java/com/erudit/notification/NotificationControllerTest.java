@@ -1,7 +1,7 @@
 package com.erudit.notification;
 
 import com.erudit.notification.controller.NotificationController;
-import com.erudit.notification.dto.UserNotificationPage;
+import com.erudit.notification.dto.UserNotificationPageResponse;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationPreference;
 import com.erudit.notification.model.NotificationType;
@@ -40,8 +40,8 @@ class NotificationControllerTest {
     void listsReadsAndCountsNotifications() throws Exception {
         UUID userId = UUID.randomUUID();
         UUID notificationId = UUID.randomUUID();
-        when(notificationService.list(userId, 0, 20)).thenReturn(new UserNotificationPage(List.of(
-                new UserNotification(notificationId, userId, NotificationType.SOCIAL, "Friend", "Update", null,
+        when(notificationService.list(userId, 0, 20)).thenReturn(new UserNotificationPageResponse(List.of(
+                new UserNotification(notificationId, userId, NotificationType.SOCIAL, "FriendDataResponse", "Update", null,
                         Instant.parse("2026-10-08T10:00:00Z"))), 1, 0, 20));
         when(notificationService.unread(userId)).thenReturn(1L);
 
@@ -82,8 +82,7 @@ class NotificationControllerTest {
     }
 
     @Test
-    void requiresAuthenticationAndValidatesContract() throws Exception {
-        mvc.perform(get("/api/v1/notifications/preferences")).andExpect(status().isUnauthorized());
+    void validatesContract() throws Exception {
         mvc.perform(put("/api/v1/notifications/preferences")
                         .with(request -> authenticated(request, UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)

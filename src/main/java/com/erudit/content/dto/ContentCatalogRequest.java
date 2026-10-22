@@ -5,7 +5,7 @@ import com.erudit.content.model.Difficulty;
 
 import java.util.UUID;
 
-public record ContentCatalogQuery(int page, int size, UUID categoryId, ContentType type,
+public record ContentCatalogRequest(int page, int size, UUID categoryId, ContentType type,
                                   Difficulty difficulty, Boolean premium, String query, Sort sort) {
     public enum Sort {
         CREATED_DESC("c.created_at DESC"), CREATED_ASC("c.created_at ASC"),

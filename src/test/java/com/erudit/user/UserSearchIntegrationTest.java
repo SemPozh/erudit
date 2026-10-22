@@ -2,7 +2,6 @@ package com.erudit.user;
 
 import com.erudit.user.model.User;
 import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.JwtTokenService;
 import com.erudit.user.service.UserPreferencesService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +25,6 @@ class UserSearchIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
     @Autowired private UserPreferencesService preferencesService;
-    @Autowired private JwtTokenService jwtTokenService;
 
     private String bearer;
     private String marker;
@@ -35,7 +33,7 @@ class UserSearchIntegrationTest {
     void setUp() {
         marker = UUID.randomUUID().toString().substring(0, 8);
         User viewer = create("Viewer " + marker, "viewer-" + marker + "@example.com");
-        bearer = "Bearer " + jwtTokenService.issueAccessToken(viewer);
+        bearer = viewer.getId().toString();
     }
 
     @Test
@@ -47,7 +45,7 @@ class UserSearchIntegrationTest {
                 false, true, false);
 
         mvc.perform(get("/api/v1/users/search")
-                        .header(HttpHeaders.AUTHORIZATION, bearer)
+                        .header("X-User-Id", bearer)
                         .param("query", "ALICE").param("page", "0").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "2"))
@@ -58,15 +56,15 @@ class UserSearchIntegrationTest {
     }
 
     @Test
-    void validatesPaginationAndRequiresAuthentication() throws Exception {
-        mvc.perform(get("/api/v1/users/search").header(HttpHeaders.AUTHORIZATION, bearer)
+    void validatesPaginationAndAllowsRequestsWithoutCredentials() throws Exception {
+        mvc.perform(get("/api/v1/users/search").header("X-User-Id", bearer)
                         .param("query", " "))
                 .andExpect(status().isBadRequest());
-        mvc.perform(get("/api/v1/users/search").header(HttpHeaders.AUTHORIZATION, bearer)
+        mvc.perform(get("/api/v1/users/search").header("X-User-Id", bearer)
                         .param("query", marker).param("size", "51"))
                 .andExpect(status().isBadRequest());
         mvc.perform(get("/api/v1/users/search").param("query", marker))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isOk());
     }
 
     private User create(String name, String email) {

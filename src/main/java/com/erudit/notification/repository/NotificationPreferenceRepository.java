@@ -1,5 +1,6 @@
 package com.erudit.notification.repository;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.notification.model.NotificationChannel;
 import com.erudit.notification.model.NotificationPreference;
 import com.erudit.notification.model.NotificationType;
@@ -17,12 +18,11 @@ import java.util.Set;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class NotificationPreferenceRepository {
     private final JdbcTemplate jdbc;
 
-    public NotificationPreferenceRepository(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
-    }
+
 
     public Optional<NotificationPreference> find(UUID userId) {
         return jdbc.query("SELECT * FROM notification_preferences WHERE user_id = ?", (rs, row) -> {

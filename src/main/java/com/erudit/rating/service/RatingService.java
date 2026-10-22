@@ -1,8 +1,9 @@
 package com.erudit.rating.service;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.notification.model.NotificationType;
 import com.erudit.notification.service.UserNotificationService;
-import com.erudit.rating.dto.RatingUpdate;
+import com.erudit.rating.dto.RatingUpdateResponse;
 import com.erudit.rating.model.RatingProfile;
 import com.erudit.rating.repository.RatingRepository;
 
@@ -25,6 +26,7 @@ import java.util.UUID;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class RatingService {
     private final RatingRepository repository;
     private final GradeService gradeService;
@@ -32,22 +34,14 @@ public class RatingService {
     private final Clock clock;
     private final ObjectProvider<UserNotificationService> notifications;
 
-    public RatingService(RatingRepository repository, GradeService gradeService,
-                         ObjectProvider<AnalyticsEventPublisher> publisherProvider, Clock clock,
-                         ObjectProvider<UserNotificationService> notifications) {
-        this.repository = repository;
-        this.gradeService = gradeService;
-        this.publisherProvider = publisherProvider;
-        this.clock = clock;
-        this.notifications = notifications;
-    }
+
 
     @Transactional
-    public RatingUpdate recordQuizResult(Quiz quiz, QuizAttempt attempt) {
+    public RatingUpdateResponse recordQuizResult(Quiz quiz, QuizAttempt attempt) {
         // Completion experience drives rating points; only demonstrated knowledge changes ER-score.
         int points = attempt.experience();
         int erDelta = attempt.score();
-        RatingUpdate update = award(attempt.userId(), "QUIZ", attempt.id(), quiz.id(), points, erDelta);
+        RatingUpdateResponse update = award(attempt.userId(), "QUIZ", attempt.id(), quiz.id(), points, erDelta);
         if (update.awarded()) {
             publishAfterCommit(EventType.QUIZ_COMPLETED, attempt.userId(), attempt.id(), points, update.erScore());
         }
@@ -55,26 +49,26 @@ public class RatingService {
     }
 
     @Transactional
-    public RatingUpdate recordCompetitionResult(String userId, UUID competitionId, UUID quizId,
+    public RatingUpdateResponse recordCompetitionResult(String userId, UUID competitionId, UUID quizId,
                                                 int score, int rank, int participantCount) {
         // Better placement increases both rating points and ER-score; a finisher gets at least one point.
         int placementBonus = Math.max(1, participantCount - rank + 1);
         int points = Math.max(0, score) + placementBonus;
-        RatingUpdate update = award(userId, "COMPETITION", competitionId, quizId, points, placementBonus);
+        RatingUpdateResponse update = award(userId, "COMPETITION", competitionId, quizId, points, placementBonus);
         if (update.awarded()) {
             publishAfterCommit(EventType.COMPETITION_COMPLETED, userId, competitionId, points, update.erScore());
         }
         return update;
     }
 
-    private RatingUpdate award(String userId, String sourceType, UUID sourceId, UUID quizId,
+    private RatingUpdateResponse award(String userId, String sourceType, UUID sourceId, UUID quizId,
                                int points, int erDelta) {
         RatingProfile current = repository.findProfile(userId).orElseGet(() -> {
             int baseline = repository.assessmentErScore(userId);
             return new RatingProfile(userId, 0, baseline, gradeService.resolve(baseline).code());
         });
         if (repository.eventExists(userId, sourceType, sourceId)) {
-            return new RatingUpdate(false, current.points(), current.erScore(), current.gradeCode());
+            return new RatingUpdateResponse(false, current.points(), current.erScore(), current.gradeCode());
         }
         int erScore = Math.min(ErScoreCalculator.MAX_SCORE, current.erScore() + Math.max(0, erDelta));
         RatingProfile updated = new RatingProfile(userId, current.points() + Math.max(0, points),
@@ -85,7 +79,7 @@ public class RatingService {
         repository.saveProfile(updated, now);
         var overtaken=repository.friendsOvertaken(userId,current.points(),updated.points());
         if(!overtaken.isEmpty()) publishOvertakes(userId,sourceId,overtaken);
-        return new RatingUpdate(true, updated.points(), updated.erScore(), updated.gradeCode());
+        return new RatingUpdateResponse(true, updated.points(), updated.erScore(), updated.gradeCode());
     }
 
     private void publishOvertakes(String winner,UUID sourceId,java.util.List<String> overtaken) {

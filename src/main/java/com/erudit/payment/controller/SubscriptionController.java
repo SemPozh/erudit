@@ -1,5 +1,6 @@
 package com.erudit.payment.controller;
 
+import lombok.RequiredArgsConstructor;
 import com.erudit.payment.model.Subscription;
 import com.erudit.payment.model.SubscriptionPlan;
 import com.erudit.payment.service.SubscriptionPlanCatalogService;
@@ -18,22 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 public class SubscriptionController implements SubscriptionsApi {
     private final SubscriptionPlanCatalogService planCatalog;
     private final SubscriptionService subscriptions;
     private final HttpServletRequest request;
 
-    public SubscriptionController(SubscriptionPlanCatalogService planCatalog,
-                                  SubscriptionService subscriptions, HttpServletRequest request) {
-        this.planCatalog = planCatalog;
-        this.subscriptions = subscriptions;
-        this.request = request;
-    }
+
 
     @Override
     public ResponseEntity<SubscriptionPlanListResponse> listSubscriptionPlans() {
         var plans = planCatalog.availablePlans().stream().map(plan ->
-                new com.erudit.openapi.model.SubscriptionPlan(
+                new com.erudit.openapi.model.SubscriptionPlanDataResponse(
                         plan.code(), plan.name(), plan.price().toPlainString(),
                         plan.currency().getCurrencyCode(), plan.period().name()))
                 .toList();
@@ -52,7 +49,7 @@ public class SubscriptionController implements SubscriptionsApi {
     }
 
     static SubscriptionResponse response(Subscription value) {
-        var data = new com.erudit.openapi.model.Subscription(value.id(), value.status().name())
+        var data = new com.erudit.openapi.model.SubscriptionDataResponse(value.id(), value.status().name())
                 .plan(value.planCode()).expiresAt(value.endDate().atOffset(java.time.ZoneOffset.UTC));
         return new SubscriptionResponse(data);
     }

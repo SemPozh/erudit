@@ -4,9 +4,9 @@ import com.erudit.openapi.api.UsersApi;
 import com.erudit.openapi.model.AdminUserListResponse;
 import com.erudit.openapi.model.ProfileUpdateRequest;
 import com.erudit.openapi.model.PushTokenRequest;
-import com.erudit.openapi.model.UserProfile;
+import com.erudit.openapi.model.UserProfileDataResponse;
 import com.erudit.openapi.model.UserProfileResponse;
-import com.erudit.openapi.model.UserSettings;
+import com.erudit.openapi.model.UserSettingsDataResponse;
 import com.erudit.openapi.model.UserSettingsRequest;
 import com.erudit.openapi.model.UserSettingsResponse;
 import com.erudit.user.model.User;
@@ -79,7 +79,7 @@ public class UserController implements UsersApi {
     @Override
     public ResponseEntity<AdminUserListResponse> searchUsers(String query, Integer page, Integer size) {
         var result = userSearchService.search(currentUserId(), query, page, size);
-        var pagination = new com.erudit.openapi.model.PageMetadata(
+        var pagination = new com.erudit.openapi.model.PageMetadataResponse(
                 result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages());
         var body = new AdminUserListResponse(result.getContent().stream()
                 .map(UserController::profile).toList()).pagination(pagination);
@@ -101,15 +101,15 @@ public class UserController implements UsersApi {
         return new UserProfileResponse(profile(user));
     }
 
-    private static UserProfile profile(User user) {
-        return new UserProfile(user.getId(), user.getEmail(), user.getName())
+    private static UserProfileDataResponse profile(User user) {
+        return new UserProfileDataResponse(user.getId(), user.getEmail(), user.getName())
                 .avatarUrl(user.getAvatar())
                 .registeredAt(user.getCreatedAt().atOffset(ZoneOffset.UTC))
                 .status(user.getStatus().name());
     }
 
     private static UserSettingsResponse settingsResponse(UserPreferenceSnapshot value) {
-        UserSettings data = new UserSettings()
+        UserSettingsDataResponse data = new UserSettingsDataResponse()
                 .language(value.language())
                 .timeZone(value.timeZone())
                 .favoriteCategories(

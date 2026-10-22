@@ -59,7 +59,7 @@ class EventIngestionIntegrationTest {
     }
 
     @Test
-    void validatesEventTypeOwnershipAndAuthentication() throws Exception {
+    void validatesEventTypeAndAcceptsUnverifiedLabIdentity() throws Exception {
         UUID userId = UUID.randomUUID();
         String invalid = event(UUID.randomUUID(), userId, "unknown_event");
         mvc.perform(post("/api/v1/events").with(user(userId.toString()))
@@ -69,11 +69,11 @@ class EventIngestionIntegrationTest {
         mvc.perform(post("/api/v1/events").with(user(userId.toString()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(event(UUID.randomUUID(), UUID.randomUUID(), "content_viewed")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isAccepted());
 
         mvc.perform(post("/api/v1/events").contentType(MediaType.APPLICATION_JSON)
                         .content(event(UUID.randomUUID(), userId, "content_viewed")))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isAccepted());
     }
 
     private static String event(UUID eventId, UUID userId, String type) {

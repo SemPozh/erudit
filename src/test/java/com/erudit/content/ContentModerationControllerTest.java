@@ -1,8 +1,8 @@
 package com.erudit.content;
 
 import com.erudit.content.controller.ContentModerationController;
-import com.erudit.content.dto.ContentPage;
-import com.erudit.content.dto.ContentReportPage;
+import com.erudit.content.dto.ContentPageResponse;
+import com.erudit.content.dto.ContentReportPageResponse;
 import com.erudit.content.model.Content;
 import com.erudit.content.model.ContentReport;
 import com.erudit.content.model.ContentStatus;
@@ -41,7 +41,7 @@ class ContentModerationControllerTest {
         UUID secondId = UUID.randomUUID();
         Content first = content(firstId, ContentStatus.PENDING_MODERATION);
         Content second = content(secondId, ContentStatus.PENDING_MODERATION);
-        when(service.moderationQueue(0, 20)).thenReturn(new ContentPage(List.of(first, second), 2, 0, 20));
+        when(service.moderationQueue(0, 20)).thenReturn(new ContentPageResponse(List.of(first, second), 2, 0, 20));
         when(service.moderate(firstId, ContentStatus.PUBLISHED)).thenReturn(content(firstId, ContentStatus.PUBLISHED));
         when(service.moderate(secondId, ContentStatus.REJECTED)).thenReturn(content(secondId, ContentStatus.REJECTED));
 
@@ -57,9 +57,10 @@ class ContentModerationControllerTest {
     }
 
     @Test
-    void nonAdminCannotModerate() throws Exception {
+    void moderationApiIsOpenDuringLabOne() throws Exception {
+        when(service.moderationQueue(0, 20)).thenReturn(new ContentPageResponse(List.of(), 0, 0, 20));
         mvc.perform(get("/api/v1/admin/content/moderation"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -69,7 +70,7 @@ class ContentModerationControllerTest {
         ContentReport report = new ContentReport(reportId, contentId, "Incorrect fact",
                 Instant.parse("2026-10-06T12:00:00Z"));
         when(reportService.openReports(0, 20))
-                .thenReturn(new ContentReportPage(List.of(report), 1, 0, 20));
+                .thenReturn(new ContentReportPageResponse(List.of(report), 1, 0, 20));
 
         mvc.perform(get("/api/v1/admin/content/reports").param("page", "0").param("size", "20")
                         .with(this::admin))
