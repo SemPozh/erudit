@@ -119,7 +119,8 @@ public class ContentService {
 
     private void requireCategory(UUID categoryId) {
         if (repository.findCategory(categoryId).isEmpty()) {
-            throw new ValidationException("Unknown categoryId");
+            throw new ValidationException(
+                    "Unknown categoryId: " + categoryId + ". Use an id returned by GET /api/v1/content/categories");
         }
     }
 

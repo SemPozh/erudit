@@ -26,6 +26,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @SpringBootTest
 @ActiveProfiles("test")
 class ContentPersistenceTest {
+    private static final UUID SEEDED_SCIENCE_CATEGORY_ID =
+            UUID.fromString("10000000-0000-0000-0000-000000000001");
+
     @Autowired
     private ContentRepository contentRepository;
 
@@ -34,6 +37,12 @@ class ContentPersistenceTest {
 
     @Autowired
     private ContentReportService reportService;
+
+    @Test
+    void providesSeedCategoryForContentCreation() {
+        assertThat(contentRepository.findCategory(SEEDED_SCIENCE_CATEGORY_ID))
+                .contains(new Category(SEEDED_SCIENCE_CATEGORY_ID, "Наука"));
+    }
 
     @Test
     void savesContentWithMetadataAndReports() {
