@@ -10,7 +10,7 @@ import com.erudit.openapi.model.EventReceiptListResponse;
 import com.erudit.openapi.model.EventReceiptResponse;
 import com.erudit.openapi.model.EventBatchRequest;
 import com.erudit.openapi.model.EventIngestionRequest;
-import com.erudit.web.exception.UnauthorizedException;
+
 import com.erudit.web.exception.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -52,12 +52,7 @@ public class EventController implements EventsApi {
     }
 
     private UUID currentUser() {
-        if (servletRequest.getUserPrincipal() == null) throw new UnauthorizedException("Authentication is required");
-        try {
-            return UUID.fromString(servletRequest.getUserPrincipal().getName());
-        } catch (IllegalArgumentException exception) {
-            throw new UnauthorizedException("Authenticated user id is invalid");
-        }
+        return com.erudit.user.config.LabOneRequestIdentity.userId(servletRequest);
     }
 
     private static EventReceiptDataResponse receipt(EventIngestionResponse result) {

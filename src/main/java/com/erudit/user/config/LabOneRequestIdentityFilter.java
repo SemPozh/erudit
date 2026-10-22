@@ -17,21 +17,13 @@ import java.security.Principal;
  */
 @Component
 public class LabOneRequestIdentityFilter extends OncePerRequestFilter {
-    public static final String USER_ID_HEADER = "X-User-Id";
-    public static final String DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
+    public static final String USER_ID_HEADER = LabOneRequestIdentity.USER_ID_HEADER;
+    public static final String DEFAULT_USER_ID = LabOneRequestIdentity.DEFAULT_USER_ID.toString();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        chain.doFilter(new RequestIdentity(request, requestUserId(request)), response);
-    }
-
-    private static String requestUserId(HttpServletRequest request) {
-        String value = request.getHeader(USER_ID_HEADER);
-        if (value == null || value.isBlank()) {
-            return request.getUserPrincipal() == null ? DEFAULT_USER_ID : request.getUserPrincipal().getName();
-        }
-        return value.strip();
+        chain.doFilter(new RequestIdentity(request, LabOneRequestIdentity.name(request)), response);
     }
 
     private static final class RequestIdentity extends HttpServletRequestWrapper {

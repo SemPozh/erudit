@@ -8,8 +8,7 @@ import com.erudit.media.service.MediaService;
 import com.erudit.openapi.api.MediaApi;
 import com.erudit.openapi.model.MediaFileDataResponse;
 import com.erudit.openapi.model.MediaFileResponse;
-import com.erudit.web.exception.UnauthorizedException;
-import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.ContentDisposition;
@@ -28,13 +27,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MediaController implements MediaApi {
     private final MediaService service;
-    private final HttpServletRequest request;
-
-
-
     @Override
     public ResponseEntity<MediaFileResponse> uploadMedia(MultipartFile file) {
-        requireAuthenticated();
         MediaAsset media = service.upload(file);
         MediaFileDataResponse data = new MediaFileDataResponse(media.id(), "/api/v1/media/" + media.id(),
                 media.contentType(), media.size());
@@ -43,7 +37,6 @@ public class MediaController implements MediaApi {
 
     @Override
     public ResponseEntity<Resource> getMedia(UUID id) {
-        requireAuthenticated();
         LoadedMedia media = service.load(id);
         MediaAsset metadata = media.metadata();
         return ResponseEntity.ok()
@@ -55,9 +48,4 @@ public class MediaController implements MediaApi {
                 .body(media.resource());
     }
 
-    private void requireAuthenticated() {
-        if (request.getUserPrincipal() == null) {
-            throw new UnauthorizedException("Authentication is required");
-        }
-    }
 }
