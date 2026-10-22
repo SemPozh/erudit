@@ -17,6 +17,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static com.erudit.support.TestUserRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +39,7 @@ class ContentReportControllerTest {
                 .thenReturn(new ContentReport(reportId, contentId, reason, Instant.now()));
 
         mvc.perform(post("/api/v1/content/{id}/report", contentId)
+                        .with(user("reporter"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":\"" + reason + "\"}"))
                 .andExpect(status().isCreated())
@@ -62,8 +64,18 @@ class ContentReportControllerTest {
         verifyNoInteractions(service);
     }
 
+    @Test
+    void requiresAuthentication() throws Exception {
+        mvc.perform(post("/api/v1/content/{id}/report", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"reason\":\"A sufficiently detailed reason\"}"))
+                .andExpect(status().isUnauthorized());
+        verifyNoInteractions(service);
+    }
+
     private void assertInvalid(UUID contentId, String reason) throws Exception {
         mvc.perform(post("/api/v1/content/{id}/report", contentId)
+                        .with(user("reporter"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"reason\":\"" + reason + "\"}"))
                 .andExpect(status().isBadRequest())

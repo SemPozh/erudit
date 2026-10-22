@@ -9,7 +9,7 @@ import com.erudit.rating.repository.RatingRepository;
 import com.erudit.assessment.service.ErScoreCalculator;
 import com.erudit.assessment.service.GradeService;
 import com.erudit.events.service.AnalyticsEventPublisher;
-import com.erudit.events.dto.EventPublication;
+import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.EventType;
 import com.erudit.quiz.model.Quiz;
 import com.erudit.quiz.model.QuizAttempt;
@@ -89,7 +89,7 @@ public class RatingService {
     }
 
     private void publishOvertakes(String winner,UUID sourceId,java.util.List<String> overtaken) {
-        Runnable action=()->overtaken.forEach(value->{try{UUID target=UUID.fromString(value);UserNotificationService service=notifications.getIfAvailable();if(service!=null)service.send(target,NotificationType.SOCIAL,Map.of("friendId",winner),java.time.ZoneId.of("UTC"),"overtaken:"+winner+":"+sourceId);}catch(RuntimeException ignored){}AnalyticsEventPublisher publisher=publisherProvider.getIfAvailable();if(publisher!=null)publisher.publish(new EventPublication(EventType.FRIEND_OVERTAKEN,value,"rating:"+sourceId,"{\"friendId\":\""+winner+"\"}"));});
+        Runnable action=()->overtaken.forEach(value->{try{UUID target=UUID.fromString(value);UserNotificationService service=notifications.getIfAvailable();if(service!=null)service.send(target,NotificationType.SOCIAL,Map.of("friendId",winner),java.time.ZoneId.of("UTC"),"overtaken:"+winner+":"+sourceId);}catch(RuntimeException ignored){}AnalyticsEventPublisher publisher=publisherProvider.getIfAvailable();if(publisher!=null)publisher.publish(new EventPublicationRequest(EventType.FRIEND_OVERTAKEN,value,"rating:"+sourceId,"{\"friendId\":\""+winner+"\"}"));});
         if(TransactionSynchronizationManager.isActualTransactionActive())TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){@Override public void afterCommit(){action.run();}});else action.run();
     }
 
@@ -97,7 +97,7 @@ public class RatingService {
         Runnable publish = () -> {
             AnalyticsEventPublisher publisher = publisherProvider.getIfAvailable();
             if (publisher != null) {
-                publisher.publish(new EventPublication(type, userId, "rating:" + sourceId,
+                publisher.publish(new EventPublicationRequest(type, userId, "rating:" + sourceId,
                         "{\"sourceId\":\"" + sourceId + "\",\"points\":" + points
                                 + ",\"erScore\":" + erScore + "}"));
             }

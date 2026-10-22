@@ -16,7 +16,7 @@ import java.util.UUID;
 public class FriendController implements FriendsApi {
     private final FriendService service; private final HttpServletRequest request;
     public FriendController(FriendService service,HttpServletRequest request){this.service=service;this.request=request;}
-    public ResponseEntity<FriendRequestListResponse> sendFriendRequest(FriendRequestCreate body){UUID id=service.send(user(),body.getUserId());var item=new Friend();item.setId(id);item.setName("");item.setStatus("PENDING");return ResponseEntity.status(201).body(new FriendRequestListResponse(java.util.List.of(item)));}
+    public ResponseEntity<FriendRequestListResponse> sendFriendRequest(FriendCreateRequest body){UUID id=service.send(user(),body.getUserId());var item=new Friend();item.setId(id);item.setName("");item.setStatus("PENDING");return ResponseEntity.status(201).body(new FriendRequestListResponse(java.util.List.of(item)));}
     public ResponseEntity<FriendRequestListResponse> listFriendRequests(Integer page,Integer size){var p=service.requests(user(),page,size);return ResponseEntity.ok(requests(p));}
     public ResponseEntity<FriendListResponse> listFriends(Integer page,Integer size){var p=service.friends(user(),page,size);var response=new FriendListResponse(p.items().stream().map(this::model).toList());response.setPagination(meta(p));return ResponseEntity.ok(response);}
     public ResponseEntity<Void> acceptFriendRequest(UUID id){service.accept(user(),id);return ResponseEntity.noContent().build();}

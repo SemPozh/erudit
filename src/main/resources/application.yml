@@ -7,14 +7,14 @@ spring:
     password: ${DB_PASSWORD:erudit}
   flyway:
     enabled: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
   servlet:
     multipart:
       max-file-size: ${MEDIA_MAX_FILE_SIZE:50MB}
       max-request-size: ${MEDIA_MAX_FILE_SIZE:50MB}
-  security:
-    csrf:
-      enabled: false
-
 server:
   port: ${SERVER_PORT:8080}
 

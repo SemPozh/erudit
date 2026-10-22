@@ -25,9 +25,9 @@ Gradle используют ту же конфигурацию. Первый з�
 при старте. Для своих учётных данных задайте `POSTGRES_DB`, `POSTGRES_USER` и
 `POSTGRES_PASSWORD` в окружении или в локальном `.env` (файл не коммитить).
 
-Compose также запускает ClickHouse. Скрипт
-`src/main/resources/clickhouse/events.sql` создаёт таблицу событий при первом
-запуске контейнера; приложение применяет тот же идемпотентный скрипт при старте.
+Compose также запускает ClickHouse. Версионные миграции из
+`src/main/resources/db/clickhouse/migration` применяются приложением при старте;
+выполненные версии фиксируются в таблице `erudit_schema_migrations`.
 Настройки подключения: `CLICKHOUSE_URL`, `CLICKHOUSE_USERNAME`,
 `CLICKHOUSE_PASSWORD` для приложения вне Docker; `CLICKHOUSE_DB`,
 `CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` для Compose. Тестовый профиль отключает
@@ -38,9 +38,10 @@ Compose также запускает ClickHouse. Скрипт
 [`docs/event-types.md`](docs/event-types.md).
 
 При запуске приложения вне Docker задайте `DB_URL`, `DB_USERNAME` и `DB_PASSWORD`.
-Быстрые тесты используют профиль `test` и H2; совместимость SQL и миграций
-дополнительно проверяется PostgreSQL через Testcontainers, когда доступен Docker:
-`./gradlew test`. JaCoCo требует не менее 70% покрытия прикладного кода.
+Тестовый профиль запускает PostgreSQL через Testcontainers, поэтому для
+`./gradlew test` нужен доступный Docker. Образ PostgreSQL задаётся в
+`gradle.properties` свойством `postgresTestImage`. JaCoCo требует не менее 70%
+покрытия прикладного кода.
 
 ## OpenAPI и Swagger UI
 

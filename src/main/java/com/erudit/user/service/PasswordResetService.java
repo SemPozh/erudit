@@ -9,7 +9,6 @@ import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.web.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,7 @@ public class PasswordResetService {
     private final PasswordResetTokenRepository resetTokenRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final VerificationTokenService tokenService;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final EmailSender emailSender;
     private final PasswordResetProperties properties;
     private final Clock clock;
@@ -45,7 +44,7 @@ public class PasswordResetService {
                 .orElseThrow(() -> new ValidationException("Password reset token is invalid or expired"));
 
         User user = token.getUser();
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordHash(passwordHasher.encode(newPassword));
         userRepository.save(user);
         token.setUsedAt(now);
         resetTokenRepository.save(token);

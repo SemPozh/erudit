@@ -17,6 +17,7 @@ public final class EventTypeCatalog {
     private static final Map<EventGroup, List<EventType>> BY_GROUP = groupTypes();
 
     private EventTypeCatalog() {
+        throw new UnsupportedOperationException("Utility class");
     }
 
     public static EventType require(String value) {

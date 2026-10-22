@@ -47,6 +47,7 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<Void> logout(RefreshRequest request) {
+        requireAuthenticated();
         authenticationService.logout(request.getRefreshToken());
         return ResponseEntity.noContent().build();
     }
@@ -70,15 +71,19 @@ public class AuthController implements AuthApi {
 
     @Override
     public ResponseEntity<Void> logoutAll() {
-        if (request.getUserPrincipal() == null) {
-            throw new UnauthorizedException("Authentication is required");
-        }
+        requireAuthenticated();
 
         UUID userId = UUID.fromString(request.getUserPrincipal().getName());
 
         authenticationService.logoutAll(userId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private void requireAuthenticated() {
+        if (request.getUserPrincipal() == null) {
+            throw new UnauthorizedException("Authentication is required");
+        }
     }
 
     @Override

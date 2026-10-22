@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class QuizPostgresTest {
     @Container
     @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine");
+    static final PostgreSQLContainer POSTGRES = com.erudit.support.PostgresTestContainer.create();
 
     @Autowired private QuizRepository repository;
     @Autowired private JdbcTemplate jdbc;

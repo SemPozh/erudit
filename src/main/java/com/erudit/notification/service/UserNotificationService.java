@@ -1,6 +1,6 @@
 package com.erudit.notification.service;
 
-import com.erudit.events.dto.EventPublication;
+import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.EventType;
 import com.erudit.events.service.AnalyticsEventPublisher;
 import com.erudit.notification.dto.UserNotificationPage;
@@ -75,6 +75,6 @@ public class UserNotificationService {
  @Transactional public void read(UUID user,UUID id){UserNotification n=repository.find(id,user).orElseThrow(()->new NotFoundException("Notification not found"));if(repository.markRead(id,user,clock.instant()))publish(EventType.NOTIFICATION_OPENED,n);}
  @Transactional public void readAll(UUID user){repository.markAllRead(user,clock.instant());}
  @Transactional(readOnly=true) public long unread(UUID user){return repository.unread(user);}
- private void publish(EventType type,UserNotification n){AnalyticsEventPublisher p=publisher.getIfAvailable();if(p!=null)p.publish(new EventPublication(type,n.userId().toString(),"notification:"+n.id(),"{\"notificationId\":\""+n.id()+"\"}"));}
+ private void publish(EventType type,UserNotification n){AnalyticsEventPublisher p=publisher.getIfAvailable();if(p!=null)p.publish(new EventPublicationRequest(type,n.userId().toString(),"notification:"+n.id(),"{\"notificationId\":\""+n.id()+"\"}"));}
 }
 

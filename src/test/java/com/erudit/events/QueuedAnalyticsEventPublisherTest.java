@@ -1,6 +1,6 @@
 package com.erudit.events;
 
-import com.erudit.events.dto.EventPublication;
+import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.AnalyticsEvent;
 import com.erudit.events.model.EventType;
 import com.erudit.events.service.QueuedAnalyticsEventPublisher;
@@ -24,7 +24,7 @@ class QueuedAnalyticsEventPublisherTest {
         var publisher = new QueuedAnalyticsEventPublisher(written::set, Runnable::run,
                 Clock.fixed(NOW, ZoneOffset.UTC));
 
-        var eventId = publisher.publish(new EventPublication(
+        var eventId = publisher.publish(new EventPublicationRequest(
                 EventType.CONTENT_COMPLETED, "user-1", "session-1", "{\"contentId\":\"42\"}"))
                 .join();
 
@@ -38,7 +38,7 @@ class QueuedAnalyticsEventPublisherTest {
             throw new IllegalStateException("ClickHouse unavailable");
         }, Runnable::run, Clock.systemUTC());
 
-        var result = publisher.publish(new EventPublication(
+        var result = publisher.publish(new EventPublicationRequest(
                 EventType.QUIZ_COMPLETED, null, "session-1", "{}"));
 
         assertThatThrownBy(result::join).hasRootCauseMessage("ClickHouse unavailable");
@@ -46,7 +46,7 @@ class QueuedAnalyticsEventPublisherTest {
 
     @Test
     void rejectsInvalidPublicationBeforeQueueing() {
-        assertThatThrownBy(() -> new EventPublication(EventType.SCREEN_OPENED, null, " ", "{}"))
+        assertThatThrownBy(() -> new EventPublicationRequest(EventType.SCREEN_OPENED, null, " ", "{}"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("sessionId is required");
     }

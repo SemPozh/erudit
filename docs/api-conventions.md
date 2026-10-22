@@ -13,3 +13,8 @@ for each endpoint and convert them explicitly in the application or web layer.
 Never expose an entity directly. Mapping must copy only fields intended for the
 API; do not bind client input directly into an entity. API changes that alter
 existing fields or semantics require a versioned endpoint.
+
+The API version is part of every business route (`/api/v1/...`) and therefore
+stays in the OpenAPI `paths`, which is the routing source of truth. Unversioned
+diagnostic routes such as `/hello` are the exception. Versioning is not hidden in
+an environment-specific servlet context path.

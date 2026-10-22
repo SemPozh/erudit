@@ -6,6 +6,7 @@ import com.erudit.notification.service.NotificationTemplateService;
 
 import com.erudit.openapi.api.NotificationAdminApi;
 import com.erudit.openapi.model.NotificationTemplateListResponse;
+import com.erudit.openapi.model.NotificationTemplateRequest;
 import com.erudit.openapi.model.NotificationTemplateResponse;
 import com.erudit.openapi.model.PageMetadata;
 import com.erudit.web.exception.ForbiddenException;
@@ -39,7 +40,7 @@ public class NotificationTemplateController implements NotificationAdminApi {
 
     @Override
     public ResponseEntity<NotificationTemplateResponse> createNotificationTemplate(
-            com.erudit.openapi.model.NotificationTemplate request) {
+            NotificationTemplateRequest request) {
         requireAdmin();
         NotificationTemplate created = service.create(request.getType(), request.getChannel(),
                 request.getTitle(), request.getBody());
@@ -48,7 +49,7 @@ public class NotificationTemplateController implements NotificationAdminApi {
 
     @Override
     public ResponseEntity<NotificationTemplateResponse> updateNotificationTemplate(
-            UUID id, com.erudit.openapi.model.NotificationTemplate request) {
+            UUID id, NotificationTemplateRequest request) {
         requireAdmin();
         return ResponseEntity.ok(new NotificationTemplateResponse(model(service.update(id, request.getType(),
                 request.getChannel(), request.getTitle(), request.getBody()))));

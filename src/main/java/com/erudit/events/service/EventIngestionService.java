@@ -1,6 +1,6 @@
 package com.erudit.events.service;
 
-import com.erudit.events.dto.EventIngestionResult;
+import com.erudit.events.dto.EventIngestionResponse;
 import com.erudit.events.model.AnalyticsEvent;
 import com.erudit.events.repository.EventIngestionRepository;
 
@@ -32,23 +32,21 @@ public class EventIngestionService {
         this.clock = clock;
     }
 
-    public EventIngestionResult ingest(UUID eventId, String userId, String sessionId,
+    public EventIngestionResponse ingest(UUID eventId, String userId, String sessionId,
                                        String eventType, Instant occurredAt, Map<String, Object> payload) {
         String serializedPayload = validate(eventId, sessionId, eventType, occurredAt, payload);
-        if (!repository.claim(eventId, clock.instant())) return new EventIngestionResult(eventId, false);
+        if (!repository.claim(eventId, clock.instant())) return new EventIngestionResponse(eventId, false);
         AnalyticsEvent event = new AnalyticsEvent(eventId, userId == null ? "" : userId,
                 sessionId, eventType, occurredAt, serializedPayload);
         try {
             AnalyticsEventSink sink = sinkProvider.getIfAvailable();
             if (sink == null) throw new ServiceUnavailableException("Analytics storage is unavailable");
             sink.write(event);
-            return new EventIngestionResult(eventId, true);
-        } catch (ServiceUnavailableException exception) {
-            repository.release(eventId);
-            throw exception;
+            return new EventIngestionResponse(eventId, true);
         } catch (Exception exception) {
             repository.release(eventId);
-            throw new ServiceUnavailableException("Analytics event could not be stored");
+            if (exception instanceof ServiceUnavailableException unavailable) throw unavailable;
+            throw new ServiceUnavailableException("Analytics event could not be stored", exception);
         }
     }
 

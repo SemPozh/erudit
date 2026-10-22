@@ -8,7 +8,6 @@ import com.erudit.user.repository.RefreshTokenRepository;
 import com.erudit.user.repository.UserRepository;
 import com.erudit.web.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +27,7 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final JwtTokenService jwtTokenService;
     private final AuthProperties properties;
     private final Clock clock;
@@ -37,7 +36,7 @@ public class AuthenticationService {
     public IssuedTokenPair login(String email, String password) {
         User user = userRepository.findByEmailIgnoreCase(email)
                 .filter(candidate -> candidate.getStatus() == UserStatus.ACTIVE)
-                .filter(candidate -> passwordEncoder.matches(password, candidate.getPasswordHash()))
+                .filter(candidate -> passwordHasher.matches(password, candidate.getPasswordHash()))
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
         return issuePair(user);
     }

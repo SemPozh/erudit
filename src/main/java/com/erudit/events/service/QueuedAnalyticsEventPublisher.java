@@ -1,6 +1,6 @@
 package com.erudit.events.service;
 
-import com.erudit.events.dto.EventPublication;
+import com.erudit.events.dto.EventPublicationRequest;
 import com.erudit.events.model.AnalyticsEvent;
 
 import java.time.Clock;
@@ -20,7 +20,7 @@ public class QueuedAnalyticsEventPublisher implements AnalyticsEventPublisher {
     }
 
     @Override
-    public CompletableFuture<UUID> publish(EventPublication publication) {
+    public CompletableFuture<UUID> publish(EventPublicationRequest publication) {
         UUID eventId = UUID.randomUUID();
         AnalyticsEvent event = new AnalyticsEvent(eventId, publication.userId(), publication.sessionId(),
                 publication.eventType().value(), clock.instant(), publication.payload());

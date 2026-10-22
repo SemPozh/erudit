@@ -7,6 +7,7 @@ import com.erudit.openapi.model.PushTokenRequest;
 import com.erudit.openapi.model.UserProfile;
 import com.erudit.openapi.model.UserProfileResponse;
 import com.erudit.openapi.model.UserSettings;
+import com.erudit.openapi.model.UserSettingsRequest;
 import com.erudit.openapi.model.UserSettingsResponse;
 import com.erudit.user.model.User;
 import com.erudit.user.service.UserProfileService;
@@ -69,7 +70,7 @@ public class UserController implements UsersApi {
     }
 
     @Override
-    public ResponseEntity<UserSettingsResponse> updateMySettings(UserSettings settings) {
+    public ResponseEntity<UserSettingsResponse> updateMySettings(UserSettingsRequest settings) {
         return ResponseEntity.ok(settingsResponse(preferencesService.update(currentUserId(),
                 settings.getLanguage(), settings.getTimeZone(), settings.getFavoriteCategories(),
                 settings.getDailyGoalMinutes(), settings.getVisibleInSearch(),

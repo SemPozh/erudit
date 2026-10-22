@@ -9,7 +9,8 @@ import com.erudit.events.service.AnalyticsEventSink;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -23,15 +24,21 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @ConditionalOnProperty(name = "clickhouse.enabled", havingValue = "true", matchIfMissing = true)
 public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetricsRepository {
+    private static final String MIGRATION_PATTERN = "classpath*:db/clickhouse/migration/V*__*.sql";
+    private static final Pattern MIGRATION_NAME = Pattern.compile("V([0-9]+(?:_[0-9]+)*)__.+\\.sql");
     private final String url;
     private final String username;
     private final String password;
@@ -47,15 +54,66 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
 
     @PostConstruct
     public void initializeSchema() throws SQLException, IOException {
-        String sql;
-        try (var stream = new ClassPathResource("clickhouse/events.sql").getInputStream()) {
-            sql = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-        }
         try (Connection connection = connect(); Statement statement = connection.createStatement()) {
-            for (String command : sql.split(";")) {
-                if (!command.isBlank()) statement.execute(command);
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS erudit_schema_migrations (
+                        version String,
+                        description String,
+                        installed_at DateTime64(3, 'UTC') DEFAULT now64(3)
+                    ) ENGINE = ReplacingMergeTree
+                    ORDER BY version
+                    """);
+            var applied = new HashSet<String>();
+            try (ResultSet result = statement.executeQuery("SELECT version FROM erudit_schema_migrations FINAL")) {
+                while (result.next()) applied.add(result.getString(1));
+            }
+
+            Resource[] migrations = new PathMatchingResourcePatternResolver().getResources(MIGRATION_PATTERN);
+            Arrays.sort(migrations, (left, right) -> compareVersions(
+                    migrationName(left).version(), migrationName(right).version()));
+            for (Resource migration : migrations) {
+                MigrationName name = migrationName(migration);
+                if (applied.contains(name.version())) continue;
+                executeMigration(statement, migration);
+                try (PreparedStatement record = connection.prepareStatement(
+                        "INSERT INTO erudit_schema_migrations (version, description) VALUES (?, ?)")) {
+                    record.setString(1, name.version());
+                    record.setString(2, name.description());
+                    record.executeUpdate();
+                }
             }
         }
+    }
+
+    private static void executeMigration(Statement statement, Resource migration) throws IOException, SQLException {
+        String sql;
+        try (var stream = migration.getInputStream()) {
+            sql = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        for (String command : sql.split(";")) {
+            if (!command.isBlank()) statement.execute(command);
+        }
+    }
+
+    private static MigrationName migrationName(Resource migration) {
+        String filename = migration.getFilename();
+        Matcher matcher = MIGRATION_NAME.matcher(filename == null ? "" : filename);
+        if (!matcher.matches()) {
+            throw new IllegalStateException("Invalid ClickHouse migration name: " + filename);
+        }
+        return new MigrationName(matcher.group(1), filename.substring(filename.indexOf("__") + 2, filename.length() - 4));
+    }
+
+    private static int compareVersions(String left, String right) {
+        int[] leftParts = Arrays.stream(left.split("_")).mapToInt(Integer::parseInt).toArray();
+        int[] rightParts = Arrays.stream(right.split("_")).mapToInt(Integer::parseInt).toArray();
+        for (int index = 0; index < Math.max(leftParts.length, rightParts.length); index++) {
+            int leftPart = index < leftParts.length ? leftParts[index] : 0;
+            int rightPart = index < rightParts.length ? rightParts[index] : 0;
+            int comparison = Integer.compare(leftPart, rightPart);
+            if (comparison != 0) return comparison;
+        }
+        return 0;
     }
 
     @Override
@@ -318,6 +376,9 @@ public class ClickHouseEventStore implements AnalyticsEventSink, AnalyticsMetric
             double total = result.getDouble(denominator);
             values.put(name, total == 0 ? 0 : round(result.getDouble(numerator) * 100 / total));
         }
+    }
+
+    private record MigrationName(String version, String description) {
     }
 
     private Connection connect() throws SQLException {

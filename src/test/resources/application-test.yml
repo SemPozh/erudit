@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: ${TEST_DATABASE_URL:${test.database.url}}
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    username: erudit
+    password: erudit
+clickhouse:
+  enabled: false

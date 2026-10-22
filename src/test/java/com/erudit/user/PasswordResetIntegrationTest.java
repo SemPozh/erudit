@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.erudit.user.service.PasswordHasher;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PasswordResetIntegrationTest {
     @Autowired private MockMvc mvc;
     @Autowired private UserRepository userRepository;
-    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private PasswordHasher passwordHasher;
     @MockitoBean private EmailSender emailSender;
 
     private String email;
@@ -39,7 +39,7 @@ class PasswordResetIntegrationTest {
     void createUser() {
         email = "reset-" + UUID.randomUUID() + "@example.com";
         userRepository.save(User.builder().email(email)
-                .passwordHash(passwordEncoder.encode("old-password"))
+                .passwordHash(passwordHasher.encode("old-password"))
                 .name("Reset Student").build());
     }
 
