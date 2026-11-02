@@ -1,4 +1,22 @@
 services:
+  config-server:
+    build:
+      context: .
+      dockerfile: infrastructure/erudit-config-server/Dockerfile
+    ports:
+      - "127.0.0.1:${CONFIG_SERVER_PORT:-8888}:8888"
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      CONFIG_REPOSITORY_LOCATION: file:/config-repository/
+    volumes:
+      - ./config-repository:/config-repository:ro
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
   app:
     build:
       context: .

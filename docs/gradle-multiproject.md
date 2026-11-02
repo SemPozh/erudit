@@ -6,8 +6,9 @@ Docker Compose и позволяет мигрировать домены пос�
 
 `infrastructure/` содержит `erudit-config-server`, `erudit-discovery-server` и
 `erudit-gateway`; `services/` — восемь бизнес-сервисов из
-`lab2-architecture.md`. Пока это независимые запускаемые Spring Boot каркасы
-без HTTP API, БД, discovery и бизнес-логики. Их реализация — следующие задачи.
+`lab2-architecture.md`. Config Server реализован в задаче 68; остальные
+приложения пока являются каркасами с Config Client, без бизнес-логики и БД.
+Порядок запуска описан в `config-server.md`.
 Промежуточные Gradle-проекты `:infrastructure` и `:services` — только каталоги.
 
 ## Версии и соглашения
@@ -34,6 +35,8 @@ Docker Compose и позволяет мигрировать домены пос�
 
 # Один сервис, без сборки монолита и других сервисов
 ./gradlew :services:erudit-ai-platform:build
+# Перед запуском клиента поднять Config Server в другом терминале:
+./gradlew :infrastructure:erudit-config-server:bootRun
 ./gradlew :services:erudit-ai-platform:bootRun
 java -jar services/erudit-ai-platform/build/libs/erudit-ai-platform.jar
 
