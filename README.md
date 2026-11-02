@@ -14,6 +14,9 @@
 
 ## Локальный запуск
 
+Структура Gradle multi-project и команды независимой сборки сервисов ЛР2:
+[`docs/gradle-multiproject.md`](docs/gradle-multiproject.md).
+
 Для сборки нужен JDK 25. Достаточно запустить Gradle на любой установленной JDK
 версии 17 или новее: при первом `./gradlew build` Gradle автоматически скачает
 JDK 25 в свой локальный кэш и будет использовать её как toolchain. В IntelliJ IDEA

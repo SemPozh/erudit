@@ -10,3 +10,17 @@ plugins {
 }
 
 rootProject.name = "erudit"
+
+include(
+    "infrastructure:erudit-config-server",
+    "infrastructure:erudit-discovery-server",
+    "infrastructure:erudit-gateway",
+    "services:erudit-admin",
+    "services:erudit-user",
+    "services:erudit-content",
+    "services:erudit-quiz",
+    "services:erudit-event-receiver",
+    "services:erudit-ai-platform",
+    "services:erudit-payment",
+    "services:erudit-notificator"
+)

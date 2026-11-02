@@ -6,6 +6,8 @@ WORKDIR /app
 # Copy Gradle wrapper and build configuration
 COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle ./gradle
+COPY infrastructure ./infrastructure
+COPY services ./services
 
 # Convert Windows line endings and make Gradle wrapper executable
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
@@ -17,7 +19,7 @@ RUN ./gradlew dependencies --no-daemon || true
 COPY src ./src
 
 # Build the executable Spring Boot JAR
-RUN ./gradlew bootJar --no-daemon
+RUN ./gradlew :bootJar --no-daemon
 
 
 # ---- Runtime stage ----
