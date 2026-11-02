@@ -1,6 +1,7 @@
 apply(from = rootProject.file("gradle/service-conventions.gradle"))
 
 dependencies {
+    "implementation"("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
     "implementation"("org.springframework.cloud:spring-cloud-config-server")
     "implementation"("org.springframework.boot:spring-boot-starter-actuator")
     "testImplementation"("org.springframework.boot:spring-boot-starter-test")
@@ -11,6 +12,8 @@ dependencies {
 }
 
 tasks.withType<Test>().configureEach {
+    inputs.dir(rootProject.file("config-repository"))
+    systemProperty("eureka.client.enabled", "false")
     systemProperty("config.repository", rootProject.file("config-repository").absolutePath)
 }
 

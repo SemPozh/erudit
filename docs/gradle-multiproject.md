@@ -45,9 +45,8 @@ java -jar services/erudit-ai-platform/build/libs/erudit-ai-platform.jar
 docker compose up --build
 ```
 
-Каркасы используют обычный starter без web-сервера: после успешной
-инициализации контекста процесс завершается. HTTP starter, Actuator и
-контейнеры сервисов добавляются в соответствующих задачах миграции.
+С задачи 69 каркасы запускают HTTP-сервер и Actuator и регистрируются в Eureka.
+Порядок запуска и smoke-проверка описаны в `discovery.md`.
 
 ## Добавление сервиса
 

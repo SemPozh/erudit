@@ -1,0 +1,20 @@
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /app
+ARG MODULE
+COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY gradle ./gradle
+COPY infrastructure ./infrastructure
+COPY services ./services
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
+RUN ./gradlew ${MODULE}:bootJar --no-daemon && \
+    module_dir=$(echo "${MODULE}" | sed 's/^://;s/:/\//g') && \
+    cp "${module_dir}"/build/libs/*.jar /app/service.jar
+
+FROM eclipse-temurin:25-jre
+WORKDIR /app
+RUN useradd --system --uid 10001 appuser && apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /app/service.jar app.jar
+USER appuser
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

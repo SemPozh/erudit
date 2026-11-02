@@ -8,6 +8,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: native
       CONFIG_REPOSITORY_LOCATION: file:/config-repository/
+      EUREKA_URL: http://discovery-server:8761/eureka/
     volumes:
       - ./config-repository:/config-repository:ro
     healthcheck:
@@ -16,6 +17,54 @@ services:
       timeout: 3s
       retries: 20
       start_period: 20s
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :infrastructure:erudit-discovery-server
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    ports:
+      - "127.0.0.1:${DISCOVERY_PORT:-8761}:8761"
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8761/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  gateway:
+    profiles: [discovery-smoke]
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :infrastructure:erudit-gateway
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+
+  ai-platform:
+    profiles: [discovery-smoke]
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :services:erudit-ai-platform
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
 
   app:
     build:
