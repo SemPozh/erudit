@@ -1,0 +1,58 @@
+openapi: 3.0.3
+info: {title: Erudit AI Internal API, version: 2.0.0}
+paths:
+  /internal/v1/ai/quiz-generations:
+    post:
+      tags: [AiGeneration]
+      operationId: generateQuiz
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/GenerationRequest'}}}
+      responses:
+        '200': {description: Generated quiz, content: {application/json: {schema: {$ref: '#/components/schemas/QuizGenerationResponse'}}}}
+        '422': {$ref: '#/components/responses/GenerationError'}
+        '429': {$ref: '#/components/responses/GenerationError'}
+        '504': {$ref: '#/components/responses/GenerationError'}
+  /internal/v1/ai/content-cards:
+    post:
+      tags: [AiGeneration]
+      operationId: generateContentCard
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/GenerationRequest'}}}
+      responses:
+        '200': {description: Generated card, content: {application/json: {schema: {$ref: '#/components/schemas/ContentCardResponse'}}}}
+        '422': {$ref: '#/components/responses/GenerationError'}
+        '429': {$ref: '#/components/responses/GenerationError'}
+        '504': {$ref: '#/components/responses/GenerationError'}
+components:
+  responses:
+    GenerationError:
+      description: Structured generation error
+      content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}
+  schemas:
+    GenerationRequest:
+      type: object
+      required: [seed, sourceText]
+      properties:
+        seed: {type: string, minLength: 1, maxLength: 100}
+        sourceText: {type: string, minLength: 10, maxLength: 10000}
+    QuizGenerationResponse:
+      type: object
+      required: [question, options, correctOption]
+      properties:
+        question: {type: string}
+        options: {type: array, minItems: 2, maxItems: 6, items: {type: string}}
+        correctOption: {type: integer, minimum: 0}
+    ContentCardResponse:
+      type: object
+      required: [title, summary]
+      properties:
+        title: {type: string}
+        summary: {type: string}
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code: {type: string}
+        message: {type: string}

@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Erudit Content API
+  version: 2.0.0
+servers:
+  - url: /
+tags:
+  - name: Categories
+    description: Content category management
+paths:
+  /api/v1/content/categories:
+    get:
+      tags: [Categories]
+      operationId: listCategories
+      parameters:
+        - {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}
+        - {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}
+      responses:
+        '200':
+          description: Category page
+          headers:
+            X-Total-Count: {schema: {type: integer, format: int64}}
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryListResponse'}}
+    post:
+      tags: [Categories]
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CategoryRequest'}
+            example: {name: Astronomy}
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryResponse'}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /api/v1/content/categories/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    get:
+      tags: [Categories]
+      operationId: getCategory
+      responses:
+        '200':
+          description: Category
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryResponse'}}
+        '404': {$ref: '#/components/responses/NotFound'}
+    put:
+      tags: [Categories]
+      operationId: updateCategory
+      requestBody:
+        required: true
+        content:
+          application/json: {schema: {$ref: '#/components/schemas/CategoryRequest'}}
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryResponse'}}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    delete:
+      tags: [Categories]
+      operationId: deleteCategory
+      responses:
+        '204': {description: Category deleted}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+components:
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}
+    Conflict:
+      description: Conflict
+      content:
+        application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}
+  schemas:
+    CategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 100, pattern: '.*\S.*', example: Astronomy}
+    CategoryDataResponse:
+      type: object
+      required: [id, name]
+      properties:
+        id: {type: string, format: uuid, example: 10000000-0000-0000-0000-000000000001}
+        name: {type: string, example: Science}
+    CategoryResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/CategoryDataResponse'}
+    CategoryListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/CategoryDataResponse'}}
+        pagination: {$ref: '#/components/schemas/PageMetadataResponse'}
+    PageMetadataResponse:
+      type: object
+      required: [page, size, total]
+      properties:
+        page: {type: integer, minimum: 0}
+        size: {type: integer, minimum: 1, maximum: 50}
+        total: {type: integer, format: int64, minimum: 0}
+    ErrorResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status: {type: integer}
+        message: {type: string}
