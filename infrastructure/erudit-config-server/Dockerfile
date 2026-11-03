@@ -4,6 +4,7 @@ COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle ./gradle
 COPY infrastructure ./infrastructure
 COPY services ./services
+COPY platform ./platform
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew :infrastructure:erudit-config-server:bootJar --no-daemon
 
