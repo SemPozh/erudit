@@ -1,0 +1,71 @@
+// Build conventions only: domain classes and runtime dependencies stay local.
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.openapi.generator'
+
+group = 'com.erudit'
+version = rootProject.version
+
+repositories { mavenCentral() }
+java { toolchain { languageVersion = JavaLanguageVersion.of(25) } }
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${property('springCloudVersion')}"
+    }
+}
+
+tasks.named('bootJar') { archiveFileName = "${project.name}.jar" }
+tasks.named('jar') { enabled = false }
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    finalizedBy tasks.named('jacocoTestReport')
+    systemProperty 'test.postgres.image', project.property('postgresTestImage')
+    afterSuite { descriptor, result ->
+        if (descriptor.parent == null && result.skippedTestCount > 0) {
+            throw new GradleException("Skipped tests are not allowed: ${result.skippedTestCount}")
+        }
+    }
+    testLogging { events 'failed', 'skipped' }
+}
+
+def applicationClasses = sourceSets.main.output.asFileTree.matching {
+    exclude '**/openapi/**', '**/*Application.class'
+}
+tasks.named('jacocoTestReport') {
+    dependsOn tasks.named('test')
+    classDirectories.setFrom(applicationClasses)
+    reports { xml.required = true; html.required = true }
+}
+tasks.named('jacocoTestCoverageVerification') {
+    dependsOn tasks.named('test')
+    classDirectories.setFrom(applicationClasses)
+    violationRules { rule { limit { counter = 'LINE'; minimum = 0.70 } } }
+}
+tasks.named('check') { dependsOn tasks.named('jacocoTestCoverageVerification') }
+
+// A skeleton has no HTTP API. Add a local contract when introducing endpoints.
+def contract = file('src/main/resources/static/openapi.yaml')
+if (contract.exists()) {
+    def namespace = "com.erudit.${project.name.replace('erudit-', '').replace('-', '')}.openapi"
+    openApiGenerate {
+        generatorName = 'spring'
+        inputSpec = contract.path
+        outputDir = layout.buildDirectory.dir('generated/openapi').get().asFile.path
+        apiPackage = "${namespace}.api"
+        modelPackage = "${namespace}.model"
+        configOptions = [interfaceOnly: 'true', skipDefaultInterface: 'true',
+                         useSpringBoot4: 'true', useJackson3: 'true',
+                         openApiNullable: 'false', useTags: 'true']
+    }
+    openApiValidate { inputSpec = contract.path }
+    sourceSets.main.java.srcDir layout.buildDirectory.dir('generated/openapi/src/main/java')
+    tasks.named('compileJava') { dependsOn tasks.named('openApiGenerate') }
+    tasks.named('check') { dependsOn tasks.named('openApiValidate') }
+} else {
+    tasks.named('openApiGenerate') { enabled = false }
+    tasks.named('openApiValidate') { enabled = false }
+}
