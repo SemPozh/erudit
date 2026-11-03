@@ -62,7 +62,7 @@ PostgreSQL хранит транзакционные данные. ClickHouse х
 - JaCoCo проверяет общий порог покрытия 70%, исключая сгенерированный OpenAPI-код.
 - CI выполняет `openApiValidate`, тесты, проверку покрытия и сборку.
 - Локальный полный прогон: `./gradlew test openApiValidate build`.
-- Полное окружение: `docker compose up --build`.
+- Переходный монолит: `docker compose --profile legacy up --build`.
 
 ## REST и ошибки
 

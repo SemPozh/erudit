@@ -43,7 +43,7 @@ java -jar services/erudit-ai-platform/build/libs/erudit-ai-platform.jar
 
 # Только legacy, например для существующего Dockerfile
 ./gradlew :bootJar
-docker compose up --build
+docker compose --profile legacy up --build
 ```
 
 С задачи 69 каркасы запускают HTTP-сервер и Actuator и регистрируются в Eureka.
