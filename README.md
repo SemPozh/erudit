@@ -16,6 +16,8 @@
 
 Структура Gradle multi-project и команды независимой сборки сервисов ЛР2:
 [`docs/gradle-multiproject.md`](docs/gradle-multiproject.md).
+Config Server и загрузка конфигурации сервисами:
+[`docs/config-server.md`](docs/config-server.md).
 
 Для сборки нужен JDK 25. Достаточно запустить Gradle на любой установленной JDK
 версии 17 или новее: при первом `./gradlew build` Gradle автоматически скачает

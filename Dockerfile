@@ -8,6 +8,7 @@ COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle ./gradle
 COPY infrastructure ./infrastructure
 COPY services ./services
+COPY platform ./platform
 
 # Convert Windows line endings and make Gradle wrapper executable
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew

@@ -3,7 +3,7 @@ package com.erudit.discoveryserver;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest(properties = {"eureka.client.register-with-eureka=false", "eureka.client.fetch-registry=false", "eureka.server.wait-time-in-ms-when-sync-empty=0", "spring.cloud.config.enabled=false", "spring.config.name=isolated-test"})
 class ServiceApplicationTest {
     @Test
     void contextLoads() {

@@ -1,4 +1,90 @@
 services:
+  config-server:
+    build:
+      context: .
+      dockerfile: infrastructure/erudit-config-server/Dockerfile
+    ports:
+      - "127.0.0.1:${CONFIG_SERVER_PORT:-8888}:8888"
+    environment:
+      SPRING_PROFILES_ACTIVE: native
+      CONFIG_REPOSITORY_LOCATION: file:/config-repository/
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    volumes:
+      - ./config-repository:/config-repository:ro
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
+  discovery-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :infrastructure:erudit-discovery-server
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+    ports:
+      - "127.0.0.1:${DISCOVERY_PORT:-8761}:8761"
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8761/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :infrastructure:erudit-gateway
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    ports:
+      - "${GATEWAY_PORT:-8089}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+
+  gateway-echo:
+    profiles: [gateway-smoke]
+    image: python:3.13-alpine
+    command: ["python", "/echo.py"]
+    volumes:
+      - ./scripts/fixtures/gateway-echo.py:/echo.py:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  ai-platform:
+    profiles: [discovery-smoke]
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :services:erudit-ai-platform
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+
   app:
     build:
       context: .

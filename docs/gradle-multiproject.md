@@ -6,8 +6,9 @@ Docker Compose и позволяет мигрировать домены пос�
 
 `infrastructure/` содержит `erudit-config-server`, `erudit-discovery-server` и
 `erudit-gateway`; `services/` — восемь бизнес-сервисов из
-`lab2-architecture.md`. Пока это независимые запускаемые Spring Boot каркасы
-без HTTP API, БД, discovery и бизнес-логики. Их реализация — следующие задачи.
+`lab2-architecture.md`. Config Server реализован в задаче 68; остальные
+приложения пока являются каркасами с Config Client, без бизнес-логики и БД.
+Порядок запуска описан в `config-server.md`.
 Промежуточные Gradle-проекты `:infrastructure` и `:services` — только каталоги.
 
 ## Версии и соглашения
@@ -21,8 +22,9 @@ Docker Compose и позволяет мигрировать домены пос�
 - `gradle/service-conventions.gradle` задаёт только настройки сборки:
   toolchain, BOM, executable JAR, JUnit Platform, JaCoCo и OpenAPI.
   Runtime/test зависимости объявляются в каждом сервисе локально.
-- Общей библиотеки DTO/Entity нет. Сервисы не используют `project(...)`
-  зависимости и чужие source sets. Связь между сервисами только через API.
+- Общей библиотеки бизнес DTO/Entity нет. Единственная общая `project(...)`
+  зависимость — технический `platform:erudit-observability` из задачи 72.
+  Чужие source sets не используются; связь между бизнес-сервисами только через API.
 - JaCoCo требует 70% строк прикладного кода; generated OpenAPI и класс
   запуска приложения исключены. У пустого каркаса пока нет прикладного кода.
 
@@ -34,6 +36,8 @@ Docker Compose и позволяет мигрировать домены пос�
 
 # Один сервис, без сборки монолита и других сервисов
 ./gradlew :services:erudit-ai-platform:build
+# Перед запуском клиента поднять Config Server в другом терминале:
+./gradlew :infrastructure:erudit-config-server:bootRun
 ./gradlew :services:erudit-ai-platform:bootRun
 java -jar services/erudit-ai-platform/build/libs/erudit-ai-platform.jar
 
@@ -42,9 +46,8 @@ java -jar services/erudit-ai-platform/build/libs/erudit-ai-platform.jar
 docker compose up --build
 ```
 
-Каркасы используют обычный starter без web-сервера: после успешной
-инициализации контекста процесс завершается. HTTP starter, Actuator и
-контейнеры сервисов добавляются в соответствующих задачах миграции.
+С задачи 69 каркасы запускают HTTP-сервер и Actuator и регистрируются в Eureka.
+Порядок запуска и smoke-проверка описаны в `discovery.md`.
 
 ## Добавление сервиса
 
