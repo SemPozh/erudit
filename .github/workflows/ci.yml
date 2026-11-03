@@ -33,3 +33,22 @@ jobs:
       - name: Build
         run: ./gradlew bootJar
 
+  infrastructure-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate Compose
+        run: |
+          docker compose config --quiet
+          docker compose --profile legacy config --quiet
+      - name: Start, restart and verify infrastructure
+        shell: pwsh
+        run: ./scripts/smoke-infrastructure.ps1
+      - name: Infrastructure logs
+        if: failure()
+        run: docker compose logs --no-color config-server discovery-server gateway
+      - name: Stop infrastructure
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+

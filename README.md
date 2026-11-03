@@ -16,6 +16,8 @@
 
 Структура Gradle multi-project и команды независимой сборки сервисов ЛР2:
 [`docs/gradle-multiproject.md`](docs/gradle-multiproject.md).
+Config Server и загрузка конфигурации сервисами:
+[`docs/config-server.md`](docs/config-server.md).
 
 Для сборки нужен JDK 25. Достаточно запустить Gradle на любой установленной JDK
 версии 17 или новее: при первом `./gradlew build` Gradle автоматически скачает
@@ -23,7 +25,9 @@ JDK 25 в свой локальный кэш и будет использова�
 после клонирования нажмите **Reload All Gradle Projects**; тесты из gutter и окно
 Gradle используют ту же конфигурацию. Первый запуск требует доступ к интернету.
 
-`docker compose up --build` запускает приложение и PostgreSQL. По умолчанию база
+`docker compose up --build` запускает инфраструктуру ЛР2: Config Server, Eureka
+и Gateway. Переходный монолит и его базы запускаются командой
+`docker compose --profile legacy up --build`. По умолчанию база
 `erudit` доступна приложению через сервис `postgres`; Flyway применяет миграции
 при старте. Для своих учётных данных задайте `POSTGRES_DB`, `POSTGRES_USER` и
 `POSTGRES_PASSWORD` в окружении или в локальном `.env` (файл не коммитить).
@@ -54,7 +58,7 @@ Compose также запускает ClickHouse. Версионные мигр�
 Java-интерфейсы API и модели ответов в `build/generated/openapi`. Контроллеры
 реализуют эти интерфейсы; сгенерированные файлы не редактируются вручную.
 
-После `docker compose up --build` откройте
+После `docker compose --profile legacy up --build` откройте
 `http://localhost:8080/swagger-ui/index.html`. UI читает исходный контракт по
 `http://localhost:8080/openapi.yaml` и позволяет выполнить запросы через
 **Try it out**. `/hello` работает сразу. Для успешной жалобы сначала нужна
@@ -92,6 +96,9 @@ email, push и SMS не отправляются.
 лимит равен 50 МБ, локальный каталог — `./data/media`; параметры задаются через
 `MEDIA_MAX_FILE_SIZE`, `MEDIA_MAX_SIZE_BYTES` и `MEDIA_STORAGE_PATH`.
 Docker Compose хранит файлы в именованном volume `media_data`.
+
+Сети, профили, порядок готовности и smoke инфраструктуры описаны в
+[`docs/docker-compose-lab2.md`](docs/docker-compose-lab2.md).
 
 ## Quiz-карточки контента
 
