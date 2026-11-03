@@ -2,7 +2,8 @@
 
 Базовый профиль запускает Config Server, Eureka и Gateway. Gateway подключён к
 сетям `edge` и `internal`; Config Server и Eureka доступны сервисам только через
-`internal`. Их host-порты привязаны к loopback для локальной диагностики.
+`internal` и не публикуют host-порты. Smoke проверяет их readiness из самих
+контейнеров, не нарушая изоляцию сети.
 
 ```powershell
 Copy-Item .env.example .env
