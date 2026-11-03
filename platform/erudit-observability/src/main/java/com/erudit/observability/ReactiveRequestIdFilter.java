@@ -34,4 +34,3 @@ public class ReactiveRequestIdFilter implements WebFilter, Ordered {
         return chain.filter(exchange.mutate().request(request).build()).contextWrite(context -> context.put(HEADER, id));
     }
 }
-
