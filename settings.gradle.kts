@@ -10,6 +10,7 @@ plugins {
 }
 
 rootProject.name = "erudit"
+include("platform:erudit-observability")
 
 include(
     "infrastructure:erudit-config-server",

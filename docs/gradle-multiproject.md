@@ -22,8 +22,9 @@ Docker Compose и позволяет мигрировать домены пос�
 - `gradle/service-conventions.gradle` задаёт только настройки сборки:
   toolchain, BOM, executable JAR, JUnit Platform, JaCoCo и OpenAPI.
   Runtime/test зависимости объявляются в каждом сервисе локально.
-- Общей библиотеки DTO/Entity нет. Сервисы не используют `project(...)`
-  зависимости и чужие source sets. Связь между сервисами только через API.
+- Общей библиотеки бизнес DTO/Entity нет. Единственная общая `project(...)`
+  зависимость — технический `platform:erudit-observability` из задачи 72.
+  Чужие source sets не используются; связь между бизнес-сервисами только через API.
 - JaCoCo требует 70% строк прикладного кода; generated OpenAPI и класс
   запуска приложения исключены. У пустого каркаса пока нет прикладного кода.
 
