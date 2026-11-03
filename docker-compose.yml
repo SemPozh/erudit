@@ -39,7 +39,6 @@ services:
       start_period: 30s
 
   gateway:
-    profiles: [discovery-smoke]
     build:
       context: .
       dockerfile: Dockerfile.service
@@ -48,9 +47,29 @@ services:
     environment:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_URL: http://discovery-server:8761/eureka/
+    ports:
+      - "${GATEWAY_PORT:-8089}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
     depends_on:
       discovery-server:
         condition: service_healthy
+
+  gateway-echo:
+    profiles: [gateway-smoke]
+    image: python:3.13-alpine
+    command: ["python", "/echo.py"]
+    volumes:
+      - ./scripts/fixtures/gateway-echo.py:/echo.py:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
 
   ai-platform:
     profiles: [discovery-smoke]
