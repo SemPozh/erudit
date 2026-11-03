@@ -1,7 +1,7 @@
 param(
-    [string]$ConfigServerUrl = "http://localhost:8888",
-    [string]$DiscoveryUrl = "http://localhost:8761",
-    [string]$GatewayUrl = "http://localhost:8089"
+    [string]$ConfigServerUrl = "http://127.0.0.1:8888",
+    [string]$DiscoveryUrl = "http://127.0.0.1:8761",
+    [string]$GatewayUrl = "http://127.0.0.1:8089"
 )
 
 $ErrorActionPreference = "Stop"
