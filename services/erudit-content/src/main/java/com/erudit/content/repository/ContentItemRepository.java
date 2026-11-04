@@ -1,6 +1,7 @@
 package com.erudit.content.repository;
 
 import com.erudit.content.model.ContentItem;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +20,11 @@ public class ContentItemRepository {
                   estimated_minutes,premium_locked,status,created_at,updated_at)
                 VALUES(:id,:categoryId,:type,:title,:description,:body,:mediaUrl,:difficulty,
                   :estimatedMinutes,:premiumLocked,:status,:createdAt,:createdAt)
-                """).paramSource(item).update();
+                """).param("id", item.id()).param("categoryId", item.categoryId()).param("type", item.type())
+                .param("title", item.title()).param("description", item.description()).param("body", item.body())
+                .param("mediaUrl", item.mediaUrl()).param("difficulty", item.difficulty())
+                .param("estimatedMinutes", item.estimatedMinutes()).param("premiumLocked", item.premiumLocked())
+                .param("status", item.status()).param("createdAt", Timestamp.from(item.createdAt())).update();
         replaceTags(item.id(), item.tags());
     }
 
@@ -65,7 +70,11 @@ public class ContentItemRepository {
         jdbc.sql("""
                 UPDATE content SET category_id=:categoryId,type=:type,title=:title,description=:description,
                 body=:body,media_url=:mediaUrl,difficulty=:difficulty,estimated_minutes=:estimatedMinutes,
-                premium_locked=:premiumLocked,updated_at=now() WHERE id=:id""").paramSource(item).update();
+                premium_locked=:premiumLocked,updated_at=now() WHERE id=:id""")
+                .param("id", item.id()).param("categoryId", item.categoryId()).param("type", item.type())
+                .param("title", item.title()).param("description", item.description()).param("body", item.body())
+                .param("mediaUrl", item.mediaUrl()).param("difficulty", item.difficulty())
+                .param("estimatedMinutes", item.estimatedMinutes()).param("premiumLocked", item.premiumLocked()).update();
         replaceTags(item.id(), item.tags());
     }
 
