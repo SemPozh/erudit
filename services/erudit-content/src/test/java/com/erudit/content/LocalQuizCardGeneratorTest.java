@@ -21,4 +21,10 @@ class LocalQuizCardGeneratorTest {
         assertThat(generator.generate(item(null,"Description fact.")).getFirst().fact()).isEqualTo("Description fact.");
         assertThat(generator.generate(item(" ",null)).getFirst().fact()).isEqualTo("Title");
     }
+
+    @Test void normalizesTabsAndLineBreaksBeforeExtractingFacts() {
+        String body="First"+(char)9+"fact."+(char)10+"Second"+(char)9+"fact.";
+        var cards=new LocalQuizCardGenerator().generate(item(body,"Ignored"));
+        assertThat(cards).extracting(c -> c.fact()).containsExactly("First fact.","Second fact.");
+    }
 }
