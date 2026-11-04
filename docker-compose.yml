@@ -122,6 +122,101 @@ services:
       retries: 20
     restart: unless-stopped
 
+  event-receiver:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args: { MODULE: ":services:erudit-event-receiver" }
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      R2DBC_URL: r2dbc:postgresql://event-postgres:5432/erudit_event
+      DB_USERNAME: ${EVENT_DB_USER:-erudit_event}
+      DB_PASSWORD: ${EVENT_DB_PASSWORD:-erudit_event}
+      CLICKHOUSE_URL: http://event-clickhouse:8123/erudit_events
+      CLICKHOUSE_USERNAME: ${EVENT_CLICKHOUSE_USER:-erudit_event}
+      CLICKHOUSE_PASSWORD: ${EVENT_CLICKHOUSE_PASSWORD:-erudit_event}
+    networks: [internal]
+    depends_on:
+      config-server: {condition: service_healthy}
+      discovery-server: {condition: service_healthy}
+      event-postgres: {condition: service_healthy}
+      event-clickhouse: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8085/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  event-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_event
+      POSTGRES_USER: ${EVENT_DB_USER:-erudit_event}
+      POSTGRES_PASSWORD: ${EVENT_DB_PASSWORD:-erudit_event}
+    volumes: [event_postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${EVENT_DB_USER:-erudit_event} -d erudit_event"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  event-clickhouse:
+    image: clickhouse/clickhouse-server:25.8
+    environment:
+      CLICKHOUSE_DB: erudit_events
+      CLICKHOUSE_USER: ${EVENT_CLICKHOUSE_USER:-erudit_event}
+      CLICKHOUSE_PASSWORD: ${EVENT_CLICKHOUSE_PASSWORD:-erudit_event}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes: [event_clickhouse_data:/var/lib/clickhouse]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  notificator:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args: { MODULE: ":services:erudit-notificator" }
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      DB_URL: jdbc:postgresql://notification-postgres:5432/erudit_notification
+      DB_USERNAME: ${NOTIFICATION_DB_USER:-erudit_notification}
+      DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-erudit_notification}
+    networks: [internal]
+    depends_on:
+      config-server: {condition: service_healthy}
+      discovery-server: {condition: service_healthy}
+      notification-postgres: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8088/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  notification-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_notification
+      POSTGRES_USER: ${NOTIFICATION_DB_USER:-erudit_notification}
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-erudit_notification}
+    volumes: [notification_postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${NOTIFICATION_DB_USER:-erudit_notification} -d erudit_notification"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   gateway-echo:
     profiles: [gateway-smoke]
     image: python:3.13-alpine
@@ -231,6 +326,9 @@ services:
     restart: unless-stopped
 
 volumes:
+  event_clickhouse_data:
+  event_postgres_data:
+  notification_postgres_data:
   content_media_data:
   content_postgres_data:
   postgres_data:

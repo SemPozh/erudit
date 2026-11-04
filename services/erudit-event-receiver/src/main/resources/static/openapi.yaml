@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info: {title: Erudit Event and Analytics API, version: 2.0.0}
+paths:
+  /api/v1/events:
+    post:
+      tags: [Events]
+      operationId: ingestEvent
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/EventRequest'}}}}
+      responses: {'202': {description: Accepted, content: {application/json: {schema: {$ref: '#/components/schemas/EventReceiptResponse'}}}}}
+  /api/v1/events/batch:
+    post:
+      tags: [Events]
+      operationId: ingestEventBatch
+      requestBody: {required: true, content: {application/json: {schema: {type: array, minItems: 1, maxItems: 100, items: {$ref: '#/components/schemas/EventRequest'}}}}}
+      responses: {'202': {description: Accepted, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/EventReceiptResponse'}}}}}}
+  /api/v1/analytics/{metric}:
+    get:
+      tags: [Analytics]
+      operationId: getAnalyticsMetric
+      parameters:
+        - {name: metric, in: path, required: true, schema: {type: string, enum: [active-users,sessions,engagement,learning,funnels,monetization,notifications]}}
+        - {name: from, in: query, required: true, schema: {type: string, format: date-time}}
+        - {name: to, in: query, required: true, schema: {type: string, format: date-time}}
+      responses: {'200': {description: Aggregate, content: {application/json: {schema: {$ref: '#/components/schemas/AnalyticsResponse'}}}}}
+components:
+  schemas:
+    EventRequest:
+      type: object
+      required: [eventId, eventType, occurredAt, payload]
+      properties:
+        eventId: {type: string, format: uuid}
+        userId: {type: string, format: uuid}
+        eventType: {type: string, minLength: 1, maxLength: 100}
+        occurredAt: {type: string, format: date-time}
+        payload: {type: object, additionalProperties: true}
+    EventReceiptResponse:
+      type: object
+      required: [eventId, status, duplicate]
+      properties:
+        eventId: {type: string, format: uuid}
+        status: {type: string}
+        duplicate: {type: boolean}
+    AnalyticsResponse:
+      type: object
+      required: [metric, count, uniqueUsers, value]
+      properties:
+        metric: {type: string}
+        count: {type: integer, format: int64}
+        uniqueUsers: {type: integer, format: int64}
+        value: {type: number, format: double}
