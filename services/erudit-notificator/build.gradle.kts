@@ -5,10 +5,26 @@ dependencies {
     "implementation"("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
     "implementation"("org.springframework.boot:spring-boot-starter-actuator")
     "implementation"("org.springframework.boot:spring-boot-starter-webflux")
+    "implementation"("org.springframework.boot:spring-boot-starter-validation")
+    "implementation"("org.springframework.boot:spring-boot-starter-jdbc")
+    "implementation"("org.springframework.boot:spring-boot-starter-flyway")
+    "implementation"("org.springdoc:springdoc-openapi-starter-webflux-ui:3.1.1")
+    "runtimeOnly"("org.postgresql:postgresql")
+    "runtimeOnly"("org.flywaydb:flyway-database-postgresql")
     "implementation"("org.springframework.boot:spring-boot-starter")
     "implementation"("org.springframework.cloud:spring-cloud-starter-config")
     "implementation"("org.springframework.retry:spring-retry")
     "implementation"("org.springframework.boot:spring-boot-starter-aspectj")
     "testImplementation"("org.springframework.boot:spring-boot-starter-test")
+    "testImplementation"("io.projectreactor:reactor-test")
+    "testImplementation"("org.springframework.boot:spring-boot-testcontainers")
+    "testImplementation"("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
+    "testImplementation"("org.testcontainers:testcontainers-postgresql:2.0.5")
+    "compileOnly"("org.projectlombok:lombok:1.18.42")
+    "annotationProcessor"("org.projectlombok:lombok:1.18.42")
     "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.named<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerate") {
+    configOptions.put("reactive", "true")
 }

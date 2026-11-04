@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info: {title: Erudit Notification API, version: 2.0.0}
+paths:
+  /api/v1/notifications/preferences:
+    get: {tags: [Notifications], operationId: getPreferences, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'200': {description: Preferences, content: {application/json: {schema: {$ref: '#/components/schemas/PreferenceResponse'}}}}}}
+    put: {tags: [Notifications], operationId: updatePreferences, parameters: [{$ref: '#/components/parameters/UserId'}], requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/PreferenceRequest'}}}}, responses: {'200': {description: Updated, content: {application/json: {schema: {$ref: '#/components/schemas/PreferenceResponse'}}}}}}
+  /api/v1/notifications:
+    get:
+      tags: [Notifications]
+      operationId: listNotifications
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}, {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}]
+      responses: {'200': {description: Inbox, headers: {X-Total-Count: {schema: {type: integer, format: int64}}}, content: {application/json: {schema: {$ref: '#/components/schemas/NotificationPageResponse'}}}}}
+  /api/v1/notifications/{id}/read:
+    post: {tags: [Notifications], operationId: markRead, parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}], responses: {'204': {description: Read}}}
+  /api/v1/notifications/read-all:
+    post: {tags: [Notifications], operationId: markAllRead, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'204': {description: Read}}}
+  /api/v1/notifications/unread-count:
+    get: {tags: [Notifications], operationId: unreadCount, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'200': {description: Count, content: {application/json: {schema: {$ref: '#/components/schemas/UnreadResponse'}}}}}}
+  /api/v1/notifications/templates:
+    get: {tags: [Templates], operationId: listTemplates, responses: {'200': {description: Templates, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/TemplateResponse'}}}}}}}
+    post: {tags: [Templates], operationId: createTemplate, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateRequest'}}}}, responses: {'201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
+  /api/v1/notifications/templates/{id}:
+    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+    get: {tags: [Templates], operationId: getTemplate, responses: {'200': {description: Template, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
+    put: {tags: [Templates], operationId: updateTemplate, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateRequest'}}}}, responses: {'200': {description: Updated, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
+    delete: {tags: [Templates], operationId: deleteTemplate, responses: {'204': {description: Deleted}}}
+  /internal/v1/notifications/enqueue:
+    post: {tags: [InternalNotifications], operationId: enqueue, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/EnqueueRequest'}}}}, responses: {'202': {description: Queued, content: {application/json: {schema: {$ref: '#/components/schemas/NotificationResponse'}}}}}}
+  /internal/v1/notifications/enqueue/batch:
+    post: {tags: [InternalNotifications], operationId: enqueueBatch, requestBody: {required: true, content: {application/json: {schema: {type: array, minItems: 1, maxItems: 100, items: {$ref: '#/components/schemas/EnqueueRequest'}}}}}, responses: {'202': {description: Queued, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/NotificationResponse'}}}}}}}
+components:
+  parameters:
+    UserId: {name: X-User-Id, in: header, required: false, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}
+  schemas:
+    PreferenceRequest: {type: object, required: [enabled, channels], properties: {enabled: {type: boolean}, channels: {type: array, minItems: 1, items: {type: string, enum: [IN_APP, EMAIL, PUSH]}}}}
+    PreferenceResponse: {allOf: [{$ref: '#/components/schemas/PreferenceRequest'}, {type: object, required: [userId], properties: {userId: {type: string, format: uuid}}}]}
+    NotificationResponse: {type: object, required: [id,userId,templateCode,title,body,read,createdAt], properties: {id: {type: string, format: uuid}, userId: {type: string, format: uuid}, templateCode: {type: string}, title: {type: string}, body: {type: string}, read: {type: boolean}, createdAt: {type: string, format: date-time}}}
+    NotificationPageResponse: {type: object, required: [data,page,size,total], properties: {data: {type: array, items: {$ref: '#/components/schemas/NotificationResponse'}}, page: {type: integer}, size: {type: integer}, total: {type: integer, format: int64}}}
+    UnreadResponse: {type: object, required: [count], properties: {count: {type: integer, format: int64}}}
+    TemplateRequest: {type: object, required: [code,titleTemplate,bodyTemplate,enabled], properties: {code: {type: string, minLength: 1, maxLength: 100}, titleTemplate: {type: string, minLength: 1, maxLength: 300}, bodyTemplate: {type: string, minLength: 1, maxLength: 2000}, enabled: {type: boolean}}}
+    TemplateResponse: {allOf: [{$ref: '#/components/schemas/TemplateRequest'}, {type: object, required: [id], properties: {id: {type: string, format: uuid}}}]}
+    EnqueueRequest: {type: object, required: [userId,templateCode], properties: {userId: {type: string, format: uuid}, templateCode: {type: string}, title: {type: string}, body: {type: string}}}
