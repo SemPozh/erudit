@@ -247,6 +247,82 @@ services:
       discovery-server:
         condition: service_healthy
 
+  user-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args: {MODULE: ":services:erudit-user"}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      DB_URL: jdbc:postgresql://user-postgres:5432/erudit_user
+      DB_USERNAME: ${USER_DB_USER:-erudit_user}
+      DB_PASSWORD: ${USER_DB_PASSWORD:-erudit_user}
+    networks: [internal]
+    depends_on:
+      config-server: {condition: service_healthy}
+      discovery-server: {condition: service_healthy}
+      user-postgres: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8082/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  user-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_user
+      POSTGRES_USER: ${USER_DB_USER:-erudit_user}
+      POSTGRES_PASSWORD: ${USER_DB_PASSWORD:-erudit_user}
+    volumes: [user_postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER:-erudit_user} -d erudit_user"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  quiz-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args: {MODULE: ":services:erudit-quiz"}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      DB_URL: jdbc:postgresql://quiz-postgres:5432/erudit_quiz
+      DB_USERNAME: ${QUIZ_DB_USER:-erudit_quiz}
+      DB_PASSWORD: ${QUIZ_DB_PASSWORD:-erudit_quiz}
+    networks: [internal]
+    depends_on:
+      config-server: {condition: service_healthy}
+      discovery-server: {condition: service_healthy}
+      quiz-postgres: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8084/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  quiz-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_quiz
+      POSTGRES_USER: ${QUIZ_DB_USER:-erudit_quiz}
+      POSTGRES_PASSWORD: ${QUIZ_DB_PASSWORD:-erudit_quiz}
+    volumes: [quiz_postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${QUIZ_DB_USER:-erudit_quiz} -d erudit_quiz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   app:
     profiles: [legacy]
     build:
@@ -326,6 +402,8 @@ services:
     restart: unless-stopped
 
 volumes:
+  user_postgres_data:
+  quiz_postgres_data:
   event_clickhouse_data:
   event_postgres_data:
   notification_postgres_data:
