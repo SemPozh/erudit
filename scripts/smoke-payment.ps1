@@ -40,6 +40,7 @@ try {
     } | ConvertTo-Json
     $item = Invoke-RestMethod "$BaseUrl/api/v1/content" -Method Post -Headers $headers -ContentType "application/json" -Body $draft
     $contentId = $item.data.id
+    $null = Invoke-RestMethod "$BaseUrl/api/v1/admin/content/$contentId/approve" -Method Post -Headers $headers
     $visible = Invoke-RestMethod "$BaseUrl/api/v1/content/$contentId" -Headers $headers
     Assert-True ($visible.data.body -eq "Payment smoke body") "Content did not receive the paid entitlement through Feign"
     $history = Invoke-RestMethod "$BaseUrl/api/v1/subscriptions/payments?size=1" -Headers $headers

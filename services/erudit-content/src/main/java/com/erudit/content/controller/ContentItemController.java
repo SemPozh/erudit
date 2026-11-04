@@ -33,6 +33,7 @@ public class ContentItemController implements ContentApi {
 
     @Override public ResponseEntity<ContentResponse> getContent(UUID id) {
         var item = service.get(id);
+        if (!item.status().equals("PUBLISHED")) throw new com.erudit.content.service.CategoryNotFoundException(id);
         return ResponseEntity.ok(response(visible(item, !item.premiumLocked() || hasPremium())));
     }
 
@@ -56,7 +57,7 @@ public class ContentItemController implements ContentApi {
 
     private boolean hasPremium() { return premium.premiumFor(request.getHeader("X-User-Id")); }
 
-    private static ContentItem visible(ContentItem item, boolean access) {
+    static ContentItem visible(ContentItem item, boolean access) {
         if (!item.premiumLocked() || access) return item;
         return new ContentItem(item.id(), item.categoryId(), item.type(), item.title(), "Premium content",
                 "Premium content", null, item.difficulty(), item.estimatedMinutes(), true, item.status(), item.tags(), item.createdAt());
@@ -68,9 +69,9 @@ public class ContentItemController implements ContentApi {
                 value.getEstimatedMinutes(), value.getPremiumLocked(), value.getTags());
     }
 
-    private static ContentResponse response(ContentItem item) { return new ContentResponse(data(item)); }
+    static ContentResponse response(ContentItem item) { return new ContentResponse(data(item)); }
 
-    private static ContentDataResponse data(ContentItem item) {
+    static ContentDataResponse data(ContentItem item) {
         return new ContentDataResponse(item.categoryId(), ContentDataResponse.TypeEnum.fromValue(item.type()), item.title(),
                 item.description(), item.body(), ContentDataResponse.DifficultyEnum.fromValue(item.difficulty()),
                 item.estimatedMinutes(), item.premiumLocked(), item.tags(), item.id(), item.status(),

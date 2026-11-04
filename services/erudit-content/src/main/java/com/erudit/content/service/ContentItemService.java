@@ -24,14 +24,17 @@ public class ContentItemService {
             "estimatedMinutes,desc", "estimated_minutes DESC, id");
     private final ContentItemRepository repository;
     private final CategoryRepository categories;
+    private final com.erudit.content.repository.ContentWorkflowRepository workflows;
+    private final QuizCardGenerator generator;
 
     @Transactional
     public ContentItem create(Draft draft) {
         validate(draft);
         ContentItem item = new ContentItem(UUID.randomUUID(), draft.categoryId(), draft.type(), draft.title().trim(),
                 draft.description().trim(), draft.body().trim(), draft.mediaUrl(), draft.difficulty(),
-                draft.estimatedMinutes(), draft.premiumLocked(), "PUBLISHED", cleanTags(draft.tags()), Instant.now());
+                draft.estimatedMinutes(), draft.premiumLocked(), "PENDING_MODERATION", cleanTags(draft.tags()), Instant.now());
         repository.save(item);
+        workflows.replaceCards(item.id(),generator.generate(item));
         return item;
     }
 
@@ -54,17 +57,20 @@ public class ContentItemService {
 
     @Transactional
     public ContentItem update(UUID id, Draft draft) {
+        repository.lock(id);
         validate(draft);
         ContentItem old = get(id);
         ContentItem item = new ContentItem(id, draft.categoryId(), draft.type(), draft.title().trim(),
                 draft.description().trim(), draft.body().trim(), draft.mediaUrl(), draft.difficulty(),
-                draft.estimatedMinutes(), draft.premiumLocked(), old.status(), cleanTags(draft.tags()), old.createdAt());
+                draft.estimatedMinutes(), draft.premiumLocked(), "PENDING_MODERATION", cleanTags(draft.tags()), old.createdAt());
         repository.update(item);
+        workflows.replaceCards(item.id(),generator.generate(item));
         return item;
     }
 
     @Transactional
     public void archive(UUID id) {
+        repository.lock(id);
         if (!repository.archive(id)) throw new CategoryNotFoundException(id);
     }
 

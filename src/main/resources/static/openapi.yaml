@@ -77,7 +77,7 @@ paths:
       operationId: reportContent
       summary: Пожаловаться на контент
       description: Реализовано.
-      x-task-id: 20
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -679,7 +679,7 @@ paths:
       operationId: getContentFeed
       summary: Персональная лента
       description: Бесконечная лента без подсчёта общего количества. Ранжирует опубликованный контент по любимым категориям и истории взаимодействий; следующая страница указана в X-Next-Page, если X-Has-More равен true.
-      x-task-id: 19
+      x-task-id: 78
       x-implementation-status: implemented
       parameters: *id004
       responses:
@@ -796,8 +796,8 @@ paths:
       - Content
       operationId: getContentQuizCards
       summary: Карточки вопросов по контенту
-      description: Реализовано в задаче 17. Для неопубликованного контента требуется роль ADMIN.
-      x-task-id: 17
+      description: Реализовано в задаче 17. Неопубликованный контент недоступен.
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -825,7 +825,7 @@ paths:
       operationId: getContentProgress
       summary: Прогресс по контенту
       description: Реализовано в задаче 22. Возвращает прогресс текущего пользователя.
-      x-task-id: 22
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -853,7 +853,7 @@ paths:
       operationId: markContentViewed
       summary: Отметить просмотр
       description: Реализовано в задаче 22. Идемпотентно отмечает первый просмотр.
-      x-task-id: 22
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -881,7 +881,7 @@ paths:
       operationId: completeContent
       summary: Завершить изучение
       description: Реализовано в задаче 22. Идемпотентно завершает изучение контента.
-      x-task-id: 22
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -972,7 +972,7 @@ paths:
       operationId: listModerationQueue
       summary: Очередь модерации
       description: Возвращает ожидающий решения контент. В ЛР 1 доступен без проверки роли.
-      x-task-id: 20
+      x-task-id: 78
       x-implementation-status: implemented
       parameters: *id004
       responses:
@@ -995,7 +995,7 @@ paths:
       operationId: approveContent
       summary: Одобрить контент
       description: Публикует контент из очереди модерации. В ЛР 1 доступен без проверки роли.
-      x-task-id: 20
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -1029,7 +1029,7 @@ paths:
       operationId: rejectContent
       summary: Отклонить контент
       description: Отклоняет контент из очереди модерации. В ЛР 1 доступен без проверки роли.
-      x-task-id: 20
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -1063,7 +1063,7 @@ paths:
       operationId: listContentReports
       summary: Жалобы на контент
       description: Возвращает открытые жалобы в порядке поступления. В ЛР 1 доступен без проверки роли.
-      x-task-id: 61
+      x-task-id: 78
       x-implementation-status: implemented
       parameters: *id004
       responses:
@@ -1086,7 +1086,7 @@ paths:
       operationId: resolveContentReport
       summary: Рассмотреть жалобу
       description: Необратимо принимает или отклоняет открытую жалобу и записывает действие в аудит. В ЛР 1 доступен без проверки роли.
-      x-task-id: 61
+      x-task-id: 78
       x-implementation-status: implemented
       parameters:
       - name: id

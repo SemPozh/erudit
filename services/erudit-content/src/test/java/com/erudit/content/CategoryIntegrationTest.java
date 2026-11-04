@@ -98,9 +98,11 @@ class CategoryIntegrationTest {
                  "difficulty":"BEGINNER","estimatedMinutes":5,"premiumLocked":false,"tags":["science","light"]}
                 """;
         String body = mvc.perform(post("/api/v1/content").contentType(MediaType.APPLICATION_JSON).content(request))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.status").value("PUBLISHED"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.status").value("PENDING_MODERATION"))
                 .andReturn().getResponse().getContentAsString();
         String id = body.substring(body.indexOf("\"id\":\"") + 6, body.indexOf("\",\"status\""));
+
+        mvc.perform(post("/api/v1/admin/content/{id}/approve",id)).andExpect(status().isOk());
 
         mvc.perform(get("/api/v1/content").param("categoryId", "10000000-0000-0000-0000-000000000001")
                         .param("query", "blue").param("sort", "title,asc"))
@@ -143,6 +145,7 @@ class CategoryIntegrationTest {
         var item = content.create(new com.erudit.content.service.ContentItemService.Draft(
                 UUID.fromString("10000000-0000-0000-0000-000000000001"), "ARTICLE", "Premium test article",
                 "Secret description", "Secret body", "https://example.com/premium.mp4", "BEGINNER", 5, true, java.util.List.of()));
+        mvc.perform(post("/api/v1/admin/content/{id}/approve",item.id())).andExpect(status().isOk());
         org.mockito.Mockito.when(entitlements.get(user)).thenReturn(
                 new com.erudit.integration.InternalContracts.Entitlement(user,true,null));
         mvc.perform(get("/api/v1/content/{id}",item.id())).andExpect(status().isOk())
