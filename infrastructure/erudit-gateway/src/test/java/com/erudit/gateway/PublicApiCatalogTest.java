@@ -32,4 +32,3 @@ class PublicApiCatalogTest {
                 .hasMessageContaining("Unresolved");
     }
 }
-
