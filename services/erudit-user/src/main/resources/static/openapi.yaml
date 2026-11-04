@@ -70,12 +70,6 @@ paths:
       operationId: revokeDevice
       parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}]
       responses: {'204': {description: Revoked}}
-  /internal/v1/users/{id}:
-    get:
-      tags: [Internal Users]
-      operationId: internalUser
-      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
-      responses: {'200': {description: Minimal profile, content: {application/json: {schema: {$ref: '#/components/schemas/InternalUserResponse'}}}}}
   /api/v1/users/{id}/settings:
     parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
     get: {tags: [User Settings], operationId: getSettings, responses: {'200': {description: Settings, content: {application/json: {schema: {$ref: '#/components/schemas/SettingsResponse'}}}}}}
@@ -113,7 +107,6 @@ components:
     PublicUserResponse: {type: object, required: [id, displayName], properties: {id: {type: string, format: uuid}, displayName: {type: string}}}
     DeviceRequest: {type: object, required: [pushToken, platform], properties: {pushToken: {type: string, minLength: 8}, platform: {type: string, enum: [IOS, ANDROID, WEB]}}}
     DeviceResponse: {type: object, required: [id, platform], properties: {id: {type: string, format: uuid}, platform: {type: string}}}
-    InternalUserResponse: {type: object, required: [id, displayName, active, deviceIds], properties: {id: {type: string, format: uuid}, displayName: {type: string}, active: {type: boolean}, deviceIds: {type: array, items: {type: string, format: uuid}}}}
     RegisterRequest:
       type: object
       required: [email, displayName]
@@ -144,6 +137,7 @@ components:
       - id
       - displayName
       - active
+      - deviceIds
       properties:
         id:
           type: string
@@ -152,3 +146,8 @@ components:
           type: string
         active:
           type: boolean
+        deviceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
