@@ -13,12 +13,15 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_payment_demo
-      POSTGRES_USER: erudit_payment_demo
-      POSTGRES_PASSWORD: erudit_payment_demo
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: local-payment-demo-bootstrap
+      APP_DB_USER: erudit_payment_demo
+      APP_DB_PASSWORD: erudit_payment_demo
+    volumes: [./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro]
     tmpfs: [/var/lib/postgresql/data]
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U erudit_payment_demo -d erudit_payment_demo"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20

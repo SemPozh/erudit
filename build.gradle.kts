@@ -154,6 +154,9 @@ tasks.check {
 }
 
 tasks.withType<Test> {
+    // Architecture/data tests inspect service-owned source, migrations and bootstrap configuration.
+    inputs.files(fileTree("services") { include("*/src/main/**", "*/build.gradle.kts") })
+    inputs.files(fileTree("config-repository"), fileTree("docker/postgres"), file("docker-compose.yml"))
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)
     systemProperty("test.postgres.image", postgresTestImage.get())

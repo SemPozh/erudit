@@ -8,6 +8,7 @@ import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
+@org.springframework.boot.sql.init.dependency.DependsOnDatabaseInitialization
 @Repository
 @RequiredArgsConstructor
 public class EventReceiptRepository {
