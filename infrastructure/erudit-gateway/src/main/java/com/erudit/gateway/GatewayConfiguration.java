@@ -15,7 +15,8 @@ public class GatewayConfiguration {
     @Bean
     RouteLocator publicRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("admin", r -> r.path("/api/v1/admin/**").uri("lb://erudit-admin"))
+                .route("content-moderation", r -> r.path("/api/v1/admin/content/**").uri("lb://erudit-content"))
+                .route("admin", r -> r.path("/api/v1/admin/**").and().not(p -> p.path("/api/v1/admin/content/**")).uri("lb://erudit-admin"))
                 .route("user", r -> r.path("/api/v1/auth/**", "/api/v1/users/**", "/api/v1/friends/**")
                         .uri("lb://erudit-user"))
                 .route("content", r -> r.path("/api/v1/content/**", "/api/v1/media/**")
@@ -37,7 +38,7 @@ public class GatewayConfiguration {
         cors.setAllowedOrigins(origins);
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         cors.setAllowedHeaders(List.of("Content-Type", "Accept", "X-Request-ID", "X-User-Id"));
-        cors.setExposedHeaders(List.of("X-Request-ID", "X-Total-Count", "Location"));
+        cors.setExposedHeaders(List.of("X-Request-ID", "X-Total-Count", "Location", "X-Has-More", "X-Next-Page"));
         cors.setAllowCredentials(false);
         cors.setMaxAge(3600L);
         var source = new UrlBasedCorsConfigurationSource();

@@ -14,6 +14,28 @@ import org.springframework.stereotype.Repository;
 public class ContentItemRepository {
     private final JdbcClient jdbc;
 
+
+    public void lock(UUID id) {
+        if (jdbc.sql("SELECT id FROM content WHERE id=:id FOR UPDATE").param("id",id).query(UUID.class).optional().isEmpty())
+            throw new com.erudit.content.service.CategoryNotFoundException(id);
+    }
+    public List<ContentItem> pending(int page,int size) {
+        return jdbc.sql("SELECT * FROM content WHERE status='PENDING_MODERATION' ORDER BY created_at,id LIMIT :size OFFSET :offset")
+                .param("size",size).param("offset",(long)page*size).query(this::map).list();
+    }
+    public List<ContentItem> feed(UUID user,int page,int size) {
+        return jdbc.sql("""
+                SELECT c.* FROM content c
+                LEFT JOIN content_progress own ON own.content_id=c.id AND own.user_id=:user
+                LEFT JOIN (SELECT interacted.category_id,count(*) interactions FROM content_progress p
+                  JOIN content interacted ON interacted.id=p.content_id WHERE p.user_id=:user GROUP BY interacted.category_id)
+                  behavior ON behavior.category_id=c.category_id
+                WHERE c.status='PUBLISHED'
+                ORDER BY (COALESCE(behavior.interactions,0)*10 + CASE own.status WHEN 'COMPLETED' THEN -1000 WHEN 'VIEWED' THEN -100 ELSE 0 END) DESC,
+                  c.created_at DESC,c.id
+                LIMIT :limit OFFSET :offset
+                """).param("user",user).param("limit",size+1).param("offset",(long)page*size).query(this::map).list();
+    }
     public void save(ContentItem item) {
         jdbc.sql("""
                 INSERT INTO content(id,category_id,type,title,description,body,media_url,difficulty,
@@ -70,7 +92,7 @@ public class ContentItemRepository {
         jdbc.sql("""
                 UPDATE content SET category_id=:categoryId,type=:type,title=:title,description=:description,
                 body=:body,media_url=:mediaUrl,difficulty=:difficulty,estimated_minutes=:estimatedMinutes,
-                premium_locked=:premiumLocked,updated_at=now() WHERE id=:id""")
+                premium_locked=:premiumLocked,status='PENDING_MODERATION',updated_at=now() WHERE id=:id""")
                 .param("id", item.id()).param("categoryId", item.categoryId()).param("type", item.type())
                 .param("title", item.title()).param("description", item.description()).param("body", item.body())
                 .param("mediaUrl", item.mediaUrl()).param("difficulty", item.difficulty())

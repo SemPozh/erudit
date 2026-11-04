@@ -78,7 +78,7 @@ class GatewayHttpTest {
     @ValueSource(strings = {"/api/v1/admin/audit", "/api/v1/users/me", "/api/v1/auth/register",
             "/api/v1/friends", "/api/v1/content", "/api/v1/media/123", "/api/v1/quiz/daily",
             "/api/v1/program/me", "/api/v1/assessment/me/result", "/api/v1/competition", "/api/v1/rating",
-            "/api/v1/notifications"})
+            "/api/v1/notifications", "/api/v1/admin/content/moderation", "/api/v1/admin/content/reports"})
     void routesWithoutAuthorizationAndKeepsPathAndContext(String path) throws Exception {
         var response = send(request(path + "?page=2").header("X-User-Id", "42")
                 .header("X-Request-ID", "trace-123").GET().build());
@@ -141,7 +141,7 @@ class GatewayHttpTest {
 
     @Test void allExistingPublicContractPathsHaveExactlyOneDiscoveryRoute() throws Exception {
         var configured = routes.getRoutes().collectList().block();
-        assertThat(configured).hasSize(7).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
+        assertThat(configured).hasSize(8).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
         for (String line : Files.readAllLines(Path.of(System.getProperty("legacy.openapi")))) {
             if (!line.startsWith("  /api/v1/")) { continue; }
             String path = line.trim().replaceAll("\\{[^}]+}", "123").replaceAll(":$", "");
@@ -149,6 +149,11 @@ class GatewayHttpTest {
             long matches = configured.stream().filter(route -> Boolean.TRUE.equals(
                     reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).count();
             assertThat(matches).as(path).isEqualTo(1);
+            if (path.startsWith("/api/v1/admin/content/")) {
+                var selected=configured.stream().filter(route -> Boolean.TRUE.equals(
+                        reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).findFirst().orElseThrow();
+                assertThat(selected.getUri().toString()).isEqualTo("lb://erudit-content");
+            }
         }
     }
 

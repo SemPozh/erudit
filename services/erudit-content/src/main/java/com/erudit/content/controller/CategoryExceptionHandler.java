@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@org.springframework.core.annotation.Order(org.springframework.core.Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice
 public class CategoryExceptionHandler {
     @ExceptionHandler(CategoryNotFoundException.class)
@@ -25,6 +26,9 @@ public class CategoryExceptionHandler {
     ResponseEntity<ErrorResponse> badRequest(Exception exception) {
         return error(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
+
+    @ExceptionHandler(com.erudit.content.service.ContentAccessException.class)
+    ResponseEntity<ErrorResponse> premium(Exception exception) { return error(HttpStatus.FORBIDDEN,exception.getMessage()); }
 
     private ResponseEntity<ErrorResponse> error(HttpStatus status, String message) {
         return ResponseEntity.status(status).body(new ErrorResponse(status.value(), message));
