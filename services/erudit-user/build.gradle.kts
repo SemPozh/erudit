@@ -18,6 +18,7 @@ dependencies {
     "implementation"("org.springframework.boot:spring-boot-starter-aspectj")
     "testImplementation"("org.springframework.boot:spring-boot-starter-test")
     "testImplementation"("org.springframework.boot:spring-boot-starter-webmvc-test")
+    "testImplementation"("org.springframework.boot:spring-boot-testcontainers")
     "testImplementation"("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
     "testImplementation"("org.testcontainers:testcontainers-postgresql:2.0.5")
     "compileOnly"("org.projectlombok:lombok:1.18.42")

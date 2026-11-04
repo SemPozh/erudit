@@ -69,4 +69,23 @@ public class AdminController implements AdminApi {
             return new UUID(0, 1);
         }
     }
+
+    // Temporary legacy adapter keeps the shared generated contract runnable until task 99.
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erudit.payment.service.SubscriptionService legacyPayments;
+
+    @Override public ResponseEntity<SubscriptionResponse> viewUserSubscription(UUID id,UUID xUserId) {
+        var value=legacyPayments.current(id);
+        return ResponseEntity.ok(new SubscriptionResponse(new SubscriptionDataResponse(value.id(),value.status().name())
+                .plan(value.planCode()).expiresAt(value.endDate().atOffset(ZoneOffset.UTC))));
+    }
+    @Override public ResponseEntity<PaymentListResponse> viewUserPayments(UUID id,Integer page,Integer size,UUID xUserId) {
+        if(page<0||size<1||size>50)throw new com.erudit.web.exception.ValidationException("Invalid page or size");
+        var result=legacyPayments.payments(id,page,size);
+        var rows=result.items().stream().map(value -> new PaymentDataResponse(value.id(),value.status().name())
+                .amount(value.amount().doubleValue()).currency(value.currency().getCurrencyCode())
+                .paidAt(value.paidAt()==null?null:value.paidAt().atOffset(ZoneOffset.UTC))).toList();
+        return ResponseEntity.ok().header("X-Total-Count",Long.toString(result.total()))
+                .body(new PaymentListResponse(rows).pagination(meta(page,size,result.total(),(int)((result.total()+size-1)/size))));
+    }
 }

@@ -63,7 +63,7 @@ public class ContentWorkflowController implements ContentWorkflowsApi {
     }
     @Override public ResponseEntity<InternalModerationResponse> moderateInternal(InternalModerationRequest request,UUID xUserId) {
         var item=service.moderate(request.getContentId(),request.getStatus().getValue(),user(xUserId),request.getReason());
-        return ResponseEntity.ok(new InternalModerationResponse(item.id(),item.status()).reason(request.getReason()));
+        return ResponseEntity.ok(new InternalModerationResponse(item.id(),item.status()).reason(request.getReason()).data(ContentItemController.data(item)));
     }
     @Override public ResponseEntity<WorkflowContentPageResponse> internalListModerationQueue(Integer page,Integer size,UUID xUserId) { return listModerationQueue(page,size,xUserId); }
     @Override public ResponseEntity<ContentReportListResponse> internalListContentReports(Integer page,Integer size,UUID xUserId) { return listContentReports(page,size,xUserId); }

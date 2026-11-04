@@ -25,5 +25,15 @@ public class UserRepository {
     public void delete(UUID id){if(jdbc.sql("DELETE FROM users WHERE id=:id").param("id",id).update()!=1)throw new IllegalArgumentException("User not found");}
     public UserSettings settings(UUID id){return jdbc.sql("SELECT * FROM user_settings WHERE user_id=:id").param("id",id).query((rs,row)->new UserSettings(id,rs.getString("locale"),rs.getInt("daily_goal"))).optional().orElseThrow(()->new IllegalArgumentException("User not found"));}
     public UserSettings save(UserSettings v){jdbc.sql("INSERT INTO user_settings(user_id,locale,daily_goal) VALUES(:id,:locale,:goal) ON CONFLICT(user_id) DO UPDATE SET locale=excluded.locale,daily_goal=excluded.daily_goal").param("id",v.userId()).param("locale",v.locale()).param("goal",v.dailyGoal()).update();return v;}
+
+    public boolean blocked(UUID id){return jdbc.sql("SELECT EXISTS(SELECT 1 FROM user_restrictions WHERE user_id=:id AND blocked)").param("id",id).query(Boolean.class).single();}
+    public boolean block(UUID id){return jdbc.sql("INSERT INTO user_restrictions(user_id,blocked) SELECT id,TRUE FROM users WHERE id=:id ON CONFLICT(user_id) DO UPDATE SET blocked=TRUE").param("id",id).update()==1;}
+    public List<com.erudit.user.model.AdminUser> adminSearch(String query,int page,int size){
+        return jdbc.sql("SELECT u.*,COALESCE(r.blocked,FALSE) blocked FROM users u LEFT JOIN user_restrictions r ON r.user_id=u.id WHERE lower(u.display_name) LIKE lower(:query) OR lower(u.email) LIKE lower(:query) ORDER BY u.created_at,u.id LIMIT :size OFFSET :offset")
+                .param("query","%"+(query==null?"":query.trim())+"%").param("size",size).param("offset",(long)page*size)
+                .query((rs,row)->new com.erudit.user.model.AdminUser(rs.getObject("id",UUID.class),rs.getString("email"),rs.getString("display_name"),rs.getObject("created_at",OffsetDateTime.class),rs.getBoolean("blocked")?"BLOCKED":"ACTIVE")).list();
+    }
+    public long adminCount(String query){return jdbc.sql("SELECT count(*) FROM users WHERE lower(display_name) LIKE lower(:query) OR lower(email) LIKE lower(:query)")
+            .param("query","%"+(query==null?"":query.trim())+"%").query(Long.class).single();}
     private User map(ResultSet rs,int row)throws SQLException{return new User(rs.getObject("id",UUID.class),rs.getString("email"),rs.getString("display_name"),rs.getBoolean("verified"),rs.getObject("created_at",OffsetDateTime.class).withOffsetSameInstant(ZoneOffset.UTC));}
 }

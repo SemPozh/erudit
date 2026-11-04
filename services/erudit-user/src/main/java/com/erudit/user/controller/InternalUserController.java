@@ -11,7 +11,15 @@ public class InternalUserController implements InternalUsersApi {
     public InternalUserController(UserRepository users) { this.users = users; }
     @Override
     public ResponseEntity<UserLookupResponse> lookupUser(UUID id) {
-        return users.get(id).map(user -> ResponseEntity.ok(new UserLookupResponse(user.id(), user.displayName(), true)))
+        return users.get(id).map(user -> ResponseEntity.ok(new UserLookupResponse(user.id(), user.displayName(), !users.blocked(id))))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    @Override public ResponseEntity<com.erudit.user.openapi.model.AdminUserPage> adminSearchUsers(String query,Integer page,Integer size){
+        if(page<0||size<1||size>50)throw new IllegalArgumentException("Invalid page or size");
+        var data=users.adminSearch(query,page,size).stream().map(u -> new com.erudit.user.openapi.model.AdminUserResponse(u.id(),u.email(),u.name(),u.registeredAt(),u.status())).toList();
+        long total=users.adminCount(query);
+        return ResponseEntity.ok().header("X-Total-Count",Long.toString(total)).body(new com.erudit.user.openapi.model.AdminUserPage(data,page,size,total));
+    }
+    @Override public ResponseEntity<Void> adminBlockUser(UUID id){return users.block(id)?ResponseEntity.noContent().build():ResponseEntity.notFound().build();}
 }

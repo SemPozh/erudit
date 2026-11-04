@@ -416,4 +416,4 @@ components:
     InternalModerationResponse:
       type: object
       required: [contentId, status]
-      properties: {contentId: {type: string, format: uuid}, status: {type: string}, reason: {type: string}}
+      properties: {"contentId": {"type": "string", "format": "uuid"}, "status": {"type": "string"}, "reason": {"type": "string"}, "data": {"$ref": "#/components/schemas/ContentDataResponse"}}
