@@ -16,6 +16,12 @@ paths:
     post: {tags: [Notifications], operationId: markAllRead, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'204': {description: Read}}}
   /api/v1/notifications/unread-count:
     get: {tags: [Notifications], operationId: unreadCount, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'200': {description: Count, content: {application/json: {schema: {$ref: '#/components/schemas/UnreadResponse'}}}}}}
+  /api/v1/notifications/{id}/delivery-attempts:
+    get:
+      tags: [Notifications]
+      operationId: deliveryAttempts
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Mock attempts, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/DeliveryAttemptResponse'}}}}}}
   /api/v1/notifications/templates:
     get: {tags: [Templates], operationId: listTemplates, responses: {'200': {description: Templates, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/TemplateResponse'}}}}}}}
     post: {tags: [Templates], operationId: createTemplate, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateRequest'}}}}, responses: {'201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
@@ -40,3 +46,4 @@ components:
     TemplateRequest: {type: object, required: [code,titleTemplate,bodyTemplate,enabled], properties: {code: {type: string, minLength: 1, maxLength: 100}, titleTemplate: {type: string, minLength: 1, maxLength: 300}, bodyTemplate: {type: string, minLength: 1, maxLength: 2000}, enabled: {type: boolean}}}
     TemplateResponse: {allOf: [{$ref: '#/components/schemas/TemplateRequest'}, {type: object, required: [id], properties: {id: {type: string, format: uuid}}}]}
     EnqueueRequest: {type: object, required: [userId,templateCode], properties: {userId: {type: string, format: uuid}, templateCode: {type: string}, title: {type: string}, body: {type: string}}}
+    DeliveryAttemptResponse: {type: object, required: [id,notificationId,attempt,status,payloadPreview,createdAt], properties: {id: {type: string, format: uuid}, notificationId: {type: string, format: uuid}, attempt: {type: integer}, status: {type: string}, payloadPreview: {type: string}, createdAt: {type: string, format: date-time}}}
