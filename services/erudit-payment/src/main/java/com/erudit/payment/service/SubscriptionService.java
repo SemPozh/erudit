@@ -61,7 +61,7 @@ public class SubscriptionService {
             repository.lockOwner(user);
             var subscription = repository.find(id).orElseThrow(() -> new PaymentException(404, "Subscription not found"));
             if (!subscription.userId().equals(user)) throw new PaymentException(403, "Subscription belongs to another user");
-            return repository.cancel(id);
+            return repository.cancel(id, clock.instant());
         });
     }
     public Entitlement entitlement(UUID user) {
@@ -73,7 +73,7 @@ public class SubscriptionService {
         if (page < 0 || size < 1 || size > 50) throw new PaymentException(400, "Invalid page or size");
         return new PaymentPage(repository.payments(user, page, size), repository.paymentCount(user), page, size);
     }
-    private void requireUser(UUID user) {
+    void requireUser(UUID user) {
         try {
             var result = users.get(user);
             if (result == null || !user.equals(result.id()) || !result.active())

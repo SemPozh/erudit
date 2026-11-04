@@ -202,6 +202,96 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EntitlementResponse'
+  /api/v1/subscriptions/mobile/verify:
+    post:
+      tags:
+      - Payments
+      operationId: verifyMobileReceipt
+      summary: Подтвердить покупку в магазине
+      description: Local mock only. Any nonempty receipt is accepted except invalid*.
+        Receipts containing year use the yearly plan. Replay never extends access;
+        cross-user replay returns 409.
+      x-task-id: 87
+      x-implementation-status: implemented
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileReceiptRequest'
+            example:
+              provider: APP_STORE
+              receipt: monthly-receipt-demo-87
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      parameters:
+      - name: X-User-Id
+        in: header
+        schema:
+          type: string
+          format: uuid
+          default: 00000000-0000-0000-0000-000000000001
+  /api/v1/payments/webhooks/{provider}:
+    post:
+      tags:
+      - Payments
+      operationId: paymentWebhook
+      summary: Вебхук платёжного провайдера
+      description: 'Local mock HMAC-SHA256 over compact JSON with recursively sorted
+        keys. Demo key: local-webhook-secret. Example targets the fixed expired subscription
+        installed by profile demo. Same event ID with different data returns 409;
+        older/equal occurredAt is ignored.'
+      x-task-id: 87
+      x-implementation-status: implemented
+      security: []
+      parameters:
+      - name: provider
+        in: path
+        required: true
+        schema:
+          type: string
+          default: MOCK
+      - name: X-Signature
+        in: header
+        required: true
+        description: Lowercase hex HMAC-SHA256 of the sorted compact JSON request,
+          using the local mock key.
+        schema:
+          type: string
+          example: 4733679dfa15539535a042cc17b59898a29775016d638eca845beb47a1251465
+          default: 4733679dfa15539535a042cc17b59898a29775016d638eca845beb47a1251465
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+            example:
+              eventId: demo-renewal-87
+              type: RENEWED
+              subscriptionId: 00000000-0000-0000-0000-000000008700
+              occurredAt: '2026-11-04T12:00:00Z'
+      responses:
+        '204':
+          description: Операция выполнена
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     EntitlementResponse:
@@ -341,3 +431,18 @@ components:
           type: string
         period:
           type: string
+    MobileReceiptRequest:
+      type: object
+      properties:
+        provider:
+          type: string
+          enum:
+          - APP_STORE
+          - GOOGLE_PLAY
+        receipt:
+          type: string
+          minLength: 1
+          maxLength: 4096
+      required:
+      - provider
+      - receipt

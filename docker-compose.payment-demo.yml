@@ -1,0 +1,24 @@
+# Explicit, disposable payment demo database; the normal payment volume is preserved.
+services:
+  payment-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+      PAYMENT_WEBHOOK_SECRET: local-webhook-secret
+      DB_URL: jdbc:postgresql://payment-demo-postgres:5432/erudit_payment_demo
+      DB_USERNAME: erudit_payment_demo
+      DB_PASSWORD: erudit_payment_demo
+    depends_on:
+      payment-demo-postgres: {condition: service_healthy}
+  payment-demo-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_payment_demo
+      POSTGRES_USER: erudit_payment_demo
+      POSTGRES_PASSWORD: erudit_payment_demo
+    tmpfs: [/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erudit_payment_demo -d erudit_payment_demo"]
+      interval: 5s
+      timeout: 3s
+      retries: 20

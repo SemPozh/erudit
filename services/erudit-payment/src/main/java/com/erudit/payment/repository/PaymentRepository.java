@@ -22,7 +22,10 @@ public class PaymentRepository {
                 .query(SubscriptionPlan.class).list();
     }
     public Optional<SubscriptionPlan> plan(String code) {
-        return jdbc.sql("SELECT * FROM subscription_plans WHERE code=:code AND available")
+        return historicalPlan(code).filter(SubscriptionPlan::available);
+    }
+    public Optional<SubscriptionPlan> historicalPlan(String code) {
+        return jdbc.sql("SELECT * FROM subscription_plans WHERE code=:code")
                 .param("code", code).query(SubscriptionPlan.class).optional();
     }
     public void lockOwner(UUID userId) {
@@ -32,6 +35,7 @@ public class PaymentRepository {
                 .param("user", userId).query(UUID.class).single();
     }
     public Subscription save(Subscription value) { return aggregates.insert(value); }
+    public Subscription replace(Subscription value) { return aggregates.update(value); }
     public Payment save(Payment value) { return aggregates.insert(value); }
     public Optional<Subscription> find(UUID id) {
         return jdbc.sql("SELECT * FROM subscriptions WHERE id=:id").param("id", id)
@@ -49,8 +53,9 @@ public class PaymentRepository {
         return jdbc.sql("UPDATE subscriptions SET status='EXPIRED' WHERE status='ACTIVE' AND end_date<=:now")
                 .param("now", now.atOffset(java.time.ZoneOffset.UTC)).update();
     }
-    public Subscription cancel(UUID id) {
-        jdbc.sql("UPDATE subscriptions SET status='EXPIRED' WHERE id=:id").param("id", id).update();
+    public Subscription cancel(UUID id, Instant now) {
+        jdbc.sql("UPDATE subscriptions SET status='EXPIRED',provider_event_at=GREATEST(COALESCE(provider_event_at,:now),:now) WHERE id=:id")
+                .param("now",now.atOffset(java.time.ZoneOffset.UTC)).param("id", id).update();
         return find(id).orElseThrow();
     }
     public List<Payment> payments(UUID user, int page, int size) {
