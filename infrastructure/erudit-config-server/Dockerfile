@@ -10,6 +10,15 @@ RUN --mount=type=cache,target=/root/.gradle,sharing=locked ./gradlew :infrastruc
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app
+ARG VCS_REF=worktree
+ARG BUILD_DATE=unspecified
+ARG WORKTREE_STATE=local
+ARG MODULE
+LABEL org.opencontainers.image.source="https://github.com/SemPozh/erudit" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="erudit-config-server" \
+      io.erudit.worktree-state="${WORKTREE_STATE}"
 RUN useradd --system --uid 10001 appuser && apt-get update \
     && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*

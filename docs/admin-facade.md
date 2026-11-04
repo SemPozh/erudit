@@ -54,9 +54,8 @@ batch автоматически нельзя. Audit endpoint поддержив
 удалённой операции, ранее сохранённый RUNNING остаётся для разбора. Блокировка
 не зависит от текущей роли: Spring Security/JWT по-прежнему относятся к ЛР3.
 
-Общий OpenAPI дополнен Payment views. Временный legacy adapter реализует эти
-read-only методы до удаления монолита задачей 99; microservice repositories
-и Entity при этом не переиспользуются.
+Сервисный OpenAPI Admin включает Payment views. Временный root adapter удалён
+в №99; фасад использует только Feign и собственный аудит.
 
 ## Проверка
 

@@ -1,136 +1,41 @@
-# ERUDIT
+# ERUDIT — ЛР2
 
-## Описание
-
-Проект - backend приложения для развития эрудированности. Первая версия монолитная.
-
-## Правила работы с репозиторием
-
-Используем подход Trunk-based development. Ветка main всегда содержит рабочий код, которй готов к релизу в продакшн.
-Для разработки фичи отводим от main отдельную ветку. После завершения работы над фичей создаем PR в main.
-После ревью и прохождения всех тестов в CI, пулл реквест мержится в main.
-
-Перед началом разработки нужно подтянуть актуальный main: git pull origin main
-
-## Локальный запуск
-
-Структура Gradle multi-project и команды независимой сборки сервисов ЛР2:
-[`docs/gradle-multiproject.md`](docs/gradle-multiproject.md).
-Config Server и загрузка конфигурации сервисами:
-[`docs/config-server.md`](docs/config-server.md).
-
-Для сборки нужен JDK 25. Достаточно запустить Gradle на любой установленной JDK
-версии 17 или новее: при первом `./gradlew build` Gradle автоматически скачает
-JDK 25 в свой локальный кэш и будет использовать её как toolchain. В IntelliJ IDEA
-после клонирования нажмите **Reload All Gradle Projects**; тесты из gutter и окно
-Gradle используют ту же конфигурацию. Первый запуск требует доступ к интернету.
-
-`docker compose up --build` запускает инфраструктуру ЛР2: Config Server, Eureka
-и Gateway. Переходный монолит и его базы запускаются командой
-`docker compose --profile legacy up --build`. По умолчанию база
-`erudit` доступна приложению через сервис `postgres`; Flyway применяет миграции
-при старте. Для своих учётных данных задайте `POSTGRES_DB`, `POSTGRES_USER` и
-`POSTGRES_PASSWORD` в окружении или в локальном `.env` (файл не коммитить).
-
-Compose также запускает ClickHouse. Версионные миграции из
-`src/main/resources/db/clickhouse/migration` применяются приложением при старте;
-выполненные версии фиксируются в таблице `erudit_schema_migrations`.
-Настройки подключения: `CLICKHOUSE_URL`, `CLICKHOUSE_USERNAME`,
-`CLICKHOUSE_PASSWORD` для приложения вне Docker; `CLICKHOUSE_DB`,
-`CLICKHOUSE_USER`, `CLICKHOUSE_PASSWORD` для Compose. Тестовый профиль отключает
-подключение к ClickHouse; smoke-тест записи и чтения запускается в CI на
-контейнере ClickHouse, который тест создаёт через Testcontainers.
-
-Канонические типы аналитических событий перечислены в
-[`docs/event-types.md`](docs/event-types.md).
-
-При запуске приложения вне Docker задайте `DB_URL`, `DB_USERNAME` и `DB_PASSWORD`.
-Тестовый профиль запускает PostgreSQL через Testcontainers, поэтому для
-`./gradlew test` нужен доступный Docker. Образ PostgreSQL задаётся в
-`gradle.properties` свойством `postgresTestImage`. JaCoCo требует не менее 70%
-покрытия прикладного кода.
-
-## OpenAPI и Swagger UI
-
-Единый контракт API находится в `src/main/resources/static/openapi.yaml`.
-Он описывает все реализованные HTTP операции, сгруппированные по предметным тегам.
-`./gradlew openApiValidate` проверяет его, а при сборке Gradle генерирует
-Java-интерфейсы API и модели ответов в `build/generated/openapi`. Контроллеры
-реализуют эти интерфейсы; сгенерированные файлы не редактируются вручную.
-
-После `docker compose --profile legacy up --build` откройте
-`http://localhost:8080/swagger-ui/index.html`. UI читает исходный контракт по
-`http://localhost:8080/openapi.yaml` и позволяет выполнить запросы через
-**Try it out**. `/hello` работает сразу. Для успешной жалобы сначала нужна
-запись контента в PostgreSQL; иначе `/api/v1/content/{id}/report` вернёт 404.
-Остальные маршруты появятся по мере реализации соответствующих задач.
-
-В ЛР 2 авторизации и проверки ролей всё ещё нет. Для сценариев, которым нужен текущий
-пользователь, можно передать необязательный заголовок `X-User-Id`. Это лишь
-непроверяемый идентификатор тестового контекста; без заголовка используется
-`00000000-0000-0000-0000-000000000001`. JWT и Spring Security добавляются
-отдельно в ЛР 3.
-
-Согласованная микросервисная архитектура ЛР2 описана в
-[`docs/lab2-architecture.md`](docs/lab2-architecture.md), порядок реализации —
-в [`docs/lab2-task-plan.md`](docs/lab2-task-plan.md). Задачи №67–100 находятся
-в `tasks/todo`. До ЛР4 нотификатор использует только локальный mock: реальные
-email, push и SMS не отправляются.
-
-После запуска Compose основные сценарии можно проверить одной командой:
+Восемь бизнес-сервисов, Gateway, Config Server, Eureka, семь PostgreSQL и ClickHouse.
+Root Gradle — агрегатор и архитектурные/contract tests, без приложения, datasource
+и монолитного Docker image. Модули перечислены в `settings.gradle.kts`.
 
 ```powershell
-.\scripts\smoke-e2e.ps1
+./gradlew test openApiValidate build
+./scripts/reset-demo.ps1
+./scripts/smoke-demo-contracts.ps1
+./scripts/smoke-e2e.ps1
+./scripts/smoke-resilience.ps1
 ```
 
-Для другого адреса передайте `-BaseUrl`. Скрипт проверяет Swagger/OpenAPI,
-регистрацию, профиль и настройки, каталог, создание и чтение контента, тарифы и
-приём аналитического события. Заголовок `Authorization` не используется; любой
-ответ 401 завершает проверку с ошибкой.
+Java 25, Docker Compose v2 и PowerShell 7.5+. Обычное окружение:
+`docker compose up --build -d --wait`, Gateway/Swagger на порту 8089.
+Для метаданных локальных образов используйте `scripts/build-images.ps1`:
+он фиксирует Git SHA, UTC, dirty-state и проверяет UID 10001 всех 11 приложений.
+После сборки: `docker compose up -d --no-build --wait`.
 
-## Медиа
+Demo — отдельный проект erudit-demo на порту 18089; reset разрешён только этому
+семейству имён и не удаляет данные обычного проекта. Swagger:
+http://localhost:18089/swagger-ui/index.html. Секреты окружения задаются через
+локальный `.env` (не коммитить), пример — `.env.example`.
 
-Клиент загружает изображения, аудио и видео через
-`POST /api/v1/media` (`multipart/form-data`, поле `file`) и получает файл через
-`GET /api/v1/media/{id}`. Проверяются MIME, сигнатура и размер. По умолчанию
-лимит равен 50 МБ, локальный каталог — `./data/media`; параметры задаются через
-`MEDIA_MAX_FILE_SIZE`, `MEDIA_MAX_SIZE_BYTES` и `MEDIA_STORAGE_PATH`.
-Docker Compose хранит файлы в именованном volume `media_data`.
+- [Demo fixtures и stateful сценарии](docs/demo-runbook.md)
+- [Архитектура и владельцы](docs/lab2-architecture.md)
+- [Gateway E2E, resilience и CI gate](docs/system-gates.md)
+- [Удаление legacy, соответствие маршрутов и история](docs/legacy-retirement.md)
+- [Изоляция баз и baseline](docs/database-isolation.md)
+- [Gateway Swagger](docs/gateway-swagger.md)
 
-Сети, профили, порядок готовности и smoke инфраструктуры описаны в
-[`docs/docker-compose-lab2.md`](docs/docker-compose-lab2.md).
+Авторизации/JWT/проверок ролей в ЛР2 нет. X-User-Id выбирает непроверяемый
+контекст; AI/payment/notificator работают локально, email/push/SMS не отправляются.
+Сервисные OpenAPI в `services/erudit-*/src/main/resources/static/openapi.yaml` —
+источник внешнего контракта. `docs/api/public-operations.json` фиксирует утверждённые
+83 method/path/operationId. Изменение списка требует явного обновления baseline.
 
-## Quiz-карточки контента
-
-При создании и изменении контента система выделяет из текста до пяти фактов и
-сохраняет карточки с вопросом, правильным ответом и вариантами. Для формата без
-текстового содержимого используется заголовок. Клиент читает
-карточки через `GET /api/v1/content/{id}/quiz-cards`; черновики недоступны до
-публикации. Правильный ответ хранится во внутренней модели для quiz-домена и
-не помечается в публичном ответе.
-
-## Каталог контента
-
-`GET /api/v1/content` возвращает только опубликованный контент и поддерживает
-фильтры `categoryId`, `type`, `difficulty`, `premium`, поиск `query` и allowlist
-сортировок. Размер страницы ограничен 50, общее количество возвращается в
-`X-Total-Count` и `pagination`. Категории доступны постранично через
-`GET /api/v1/content/categories`, форматы — через `/api/v1/content/formats`.
-
-Правила разработки проекта находятся в `docs/development-rules.md`, а краткие
-обязательные инструкции — в `AGENTS.md`.
-
-## Наблюдаемость
-
-Приложение пишет структурированные JSON-логи. Каждый HTTP-ответ содержит
-`X-Request-ID`; безопасное входящее значение сохраняется, иначе приложение
-создаёт UUID. В логах запросов доступны `requestId`, `traceId` и `spanId`.
-
-- `GET /actuator/health` — состояние приложения;
-- `GET /actuator/health/liveness` и `/actuator/health/readiness` — probes;
-- `GET /actuator/metrics` — перечень метрик;
-- `GET /actuator/prometheus` — метрики в формате Prometheus.
-
-По умолчанию локальный экспорт трейсов выключен. Для отправки в Zipkin задайте
-`ZIPKIN_ENABLED=true` и `ZIPKIN_ENDPOINT`; доля семплирования задаётся через
-`TRACING_SAMPLING_PROBABILITY` (по умолчанию `1.0`).
+История ЛР1 сохранена в Git и `docs/history/legacy-inventory.json`;
+старые aliases уже не входили в сервисные контракты после №93. Исторические
+документы ЛР1 не являются инструкцией запуска текущей системы.

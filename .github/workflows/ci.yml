@@ -9,26 +9,27 @@ on:
   pull_request:
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.impact.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Verify conservative impact graph
+        run: python scripts/test_ci_plan.py
+      - id: impact
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: echo "matrix=$(python scripts/ci-plan.py --base "$BASE_SHA" --head HEAD)" >> "$GITHUB_OUTPUT"
+
   module_tests:
     runs-on: ubuntu-latest
+    needs: plan
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - {id: root, module: ":"}
-          - {id: user, module: ":services:erudit-user:"}
-          - {id: content, module: ":services:erudit-content:"}
-          - {id: quiz, module: ":services:erudit-quiz:"}
-          - {id: event-receiver, module: ":services:erudit-event-receiver:"}
-          - {id: ai-platform, module: ":services:erudit-ai-platform:"}
-          - {id: notificator, module: ":services:erudit-notificator:"}
-          - {id: payment, module: ":services:erudit-payment:"}
-          - {id: admin, module: ":services:erudit-admin:"}
-          - {id: gateway, module: ":infrastructure:erudit-gateway:"}
-          - {id: config-server, module: ":infrastructure:erudit-config-server:"}
-          - {id: discovery-server, module: ":infrastructure:erudit-discovery-server:"}
-          - {id: integration, module: ":platform:erudit-integration:"}
-          - {id: observability, module: ":platform:erudit-observability:"}
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
@@ -52,12 +53,14 @@ jobs:
           retention-days: 7
 
   test:
-    needs: module_tests
+    needs: [plan, module_tests, build, infrastructure-smoke, system-smoke]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Require every module test and coverage check
-        run: test '${{ needs.module_tests.result }}' = 'success'
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: python -c "import json,os; assert all(j['result']=='success' for j in json.loads(os.environ['RESULTS']).values())"
 
   build:
     runs-on: ubuntu-latest
@@ -69,7 +72,7 @@ jobs:
           java-version: '25'
       - uses: gradle/actions/setup-gradle@v6
       - name: Build
-        run: ./gradlew bootJar
+        run: ./gradlew assemble openApiValidate
 
   infrastructure-smoke:
     runs-on: ubuntu-latest
@@ -79,7 +82,8 @@ jobs:
       - name: Validate Compose
         run: |
           docker compose config --quiet
-          docker compose --profile legacy config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.demo.yml --profile demo config --quiet
+          docker compose -f docker-compose.yml -f docker-compose.debug.yml --profile debug config --quiet
       - name: Start, restart and verify infrastructure
         shell: pwsh
         run: ./scripts/smoke-infrastructure.ps1
@@ -91,7 +95,7 @@ jobs:
         run: docker compose down --volumes --remove-orphans
 
 
-  demo-contracts:
+  system-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -102,6 +106,11 @@ jobs:
       - name: Verify public HTTP contracts and fixtures
         shell: pwsh
         run: ./scripts/smoke-demo-contracts.ps1
+      - name: Gateway user journeys and dependency circuit recovery
+        shell: pwsh
+        run: |
+          ./scripts/smoke-e2e.ps1
+          ./scripts/smoke-resilience.ps1 -Project erudit-demo-ci
       - name: Stop demo applications before normal-profile smoke
         run: docker compose -p erudit-demo-ci -f docker-compose.yml -f docker-compose.demo.yml --profile demo stop
       - name: Verify normal Compose startup and restart
@@ -111,7 +120,12 @@ jobs:
         if: always()
         with:
           name: demo-contract-results
-          path: build/demo-contract-results.xml
+          path: |
+            build/demo-contract-results.xml
+            build/gateway-e2e.xml
+            build/gateway-e2e.xml.md
+            build/gateway-resilience.md
+            build/images-report.json
       - name: Collect failed demo logs
         if: failure()
         run: docker compose -p erudit-demo-ci -f docker-compose.yml -f docker-compose.demo.yml --profile demo logs --tail 100

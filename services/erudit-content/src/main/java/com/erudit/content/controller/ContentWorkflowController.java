@@ -43,33 +43,17 @@ public class ContentWorkflowController implements ContentWorkflowsApi {
         return response.body(new ContentFeedResponse(result.items().stream()
                 .map(item -> ContentItemController.data(ContentItemController.visible(item,access))).toList()));
     }
-    @Deprecated
-    @GetMapping("/api/v1/admin/content/moderation")
-    public ResponseEntity<WorkflowContentPageResponse> listModerationQueue(
+    private ResponseEntity<WorkflowContentPageResponse> listModerationQueue(
             @RequestParam(defaultValue="0") Integer page,@RequestParam(defaultValue="20") Integer size,
             @RequestHeader(value="X-User-Id",required=false) UUID xUserId) {
         var result=service.queue(page,size);
         return ResponseEntity.ok().header("X-Total-Count",Long.toString(result.total())).body(new WorkflowContentPageResponse(
                 result.items().stream().map(ContentItemController::data).toList(),metadata(page,size,result.total())));
     }
-    @Deprecated
-    @PostMapping("/api/v1/admin/content/{id}/approve")
-    public ResponseEntity<ContentResponse> approveContent(@PathVariable UUID id,
-            @RequestHeader(value="X-User-Id",required=false) UUID xUserId) {
-        return ResponseEntity.ok(ContentItemController.response(service.moderate(id,"PUBLISHED",user(xUserId),null)));
-    }
-    @Deprecated
-    @PostMapping("/api/v1/admin/content/{id}/reject")
-    public ResponseEntity<ContentResponse> rejectContent(@PathVariable UUID id,
-            @RequestHeader(value="X-User-Id",required=false) UUID xUserId) {
-        return ResponseEntity.ok(ContentItemController.response(service.moderate(id,"REJECTED",user(xUserId),null)));
-    }
     @Override public ResponseEntity<ReportCreatedResponse> reportContent(UUID id,ContentReportRequest request,UUID xUserId) {
         return ResponseEntity.status(201).body(new ReportCreatedResponse(service.report(id,request.getReason()).id()));
     }
-    @Deprecated
-    @GetMapping("/api/v1/admin/content/reports")
-    public ResponseEntity<ContentReportListResponse> listContentReports(
+    private ResponseEntity<ContentReportListResponse> listContentReports(
             @RequestParam(defaultValue="0") Integer page,@RequestParam(defaultValue="20") Integer size,
             @RequestHeader(value="X-User-Id",required=false) UUID xUserId) {
         var result=service.reports(page,size);
@@ -77,9 +61,7 @@ public class ContentWorkflowController implements ContentWorkflowsApi {
                 result.items().stream().map(r -> new ContentReportItemDataResponse(r.id(),r.contentId(),r.status())
                         .reason(r.reason()).createdAt(r.createdAt())).toList()).pagination(metadata(page,size,result.total())));
     }
-    @Deprecated
-    @PostMapping("/api/v1/admin/content/reports/{id}/resolve")
-    public ResponseEntity<Void> resolveContentReport(@PathVariable UUID id,@RequestBody ReportResolutionRequest request,
+    private ResponseEntity<Void> resolveContentReport(@PathVariable UUID id,@RequestBody ReportResolutionRequest request,
             @RequestHeader(value="X-User-Id",required=false) UUID xUserId) {
         service.resolve(id,request.getDecision().getValue(),request.getComment(),user(xUserId));
         return ResponseEntity.noContent().build();

@@ -1,4 +1,4 @@
-param([string]$BaseUrl="http://localhost:18089",[string]$Report="build/demo-contract-results.xml")
+param([string]$BaseUrl="http://localhost:18089",[string]$Report="build/demo-contract-results.xml",[switch]$LibraryOnly,[switch]$TraceHttp)
 $ErrorActionPreference="Stop"
 $cases=[ordered]@{};$activeCase="readiness";$documents=@()
 $headers=@{"X-User-Id"="00000000-0000-0000-0000-000000000001";"X-Request-ID"="demo-contract-"+[guid]::NewGuid()}
@@ -43,7 +43,9 @@ function Invoke-Contract([string]$method,[string]$path,[int]$expected=200,$body=
     $script:activeCase="$method $path [$expected]";$cases[$script:activeCase]=$null
     $arguments=@{Uri="$BaseUrl$path";Method=$method;Headers=$headers;SkipHttpErrorCheck=$true;TimeoutSec=20}
     if($null -ne $body){$arguments.ContentType="application/json";$arguments.Body=($body|ConvertTo-Json -Depth 20 -Compress)}
+    if($TraceHttp){Write-Host ("REQUEST $method $path headers="+($headers|ConvertTo-Json -Compress)+" body="+($body|ConvertTo-Json -Depth 20 -Compress))}
     $response=Invoke-WebRequest @arguments
+    if($TraceHttp){Write-Host ("RESPONSE status="+$response.StatusCode+" headers="+($response.Headers|ConvertTo-Json -Compress)+" body="+$response.Content)}
     Assert-Contract ($response.StatusCode -eq $expected) "$method $path expected $expected, got $($response.StatusCode): $($response.Content)"
     Assert-Contract ([bool]$response.Headers['X-Request-ID']) "Missing request ID at $path"
     $value=if($response.Content){ConvertFrom-Json -InputObject $response.Content -AsHashtable -NoEnumerate -DateKind String}else{$null}
@@ -72,6 +74,7 @@ function Invoke-Contract([string]$method,[string]$path,[int]$expected=200,$body=
     Write-Host "[PASS] $method $path ($expected)"
     return $value
 }
+if($LibraryOnly){return}
 try{
     $ready=$false
     for($attempt=0;$attempt -lt 90;$attempt++){

@@ -16,7 +16,7 @@ public class GatewayConfiguration {
     RouteLocator publicRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("admin", r -> r.path("/api/v1/admin/**").uri("lb://erudit-admin"))
-                .route("user", r -> r.path("/api/v1/auth/**", "/api/v1/users/**", "/api/v1/friends/**", "/api/v1/devices/**")
+                .route("user", r -> r.path("/api/v1/users/**", "/api/v1/friends/**", "/api/v1/devices/**")
                         .uri("lb://erudit-user"))
                 .route("content", r -> r.path("/api/v1/content/**", "/api/v1/media/**")
                         .uri("lb://erudit-content"))

@@ -77,9 +77,9 @@ class GatewayHttpTest {
     @AfterAll static void close() { UPSTREAM.stop(0); }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/v1/admin/audit", "/api/v1/users/me", "/api/v1/auth/register",
-            "/api/v1/friends", "/api/v1/devices", "/api/v1/content", "/api/v1/media/123", "/api/v1/quizzes/daily",
-            "/api/v1/learning-program", "/api/v1/assessments/questions", "/api/v1/competitions/123", "/api/v1/ratings",
+    @ValueSource(strings = {"/api/v1/admin/audit", "/api/v1/users/me",
+            "/api/v1/friends", "/api/v1/content", "/api/v1/media/123", "/api/v1/quizzes/daily",
+            "/api/v1/learning-program", "/api/v1/assessments/questions", "/api/v1/competitions/123/leaderboard", "/api/v1/ratings",
             "/api/v1/notifications", "/api/v1/admin/content/moderation", "/api/v1/admin/content/reports"})
     void routesWithoutAuthorizationAndKeepsPathAndContext(String path) throws Exception {
         var response = send(request(path + "?page=2").header("X-User-Id", "42")
@@ -112,7 +112,7 @@ class GatewayHttpTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"/api/v1/events", "/api/v1/subscriptions"})
+    @ValueSource(strings = {"/api/v1/analytics/sessions", "/api/v1/subscriptions/plans"})
     void unavailableOrUnregisteredServiceReturns503(String path) throws Exception {
         assertError(send(request(path).GET().build()), 503, "SERVICE_UNAVAILABLE");
     }
@@ -185,6 +185,14 @@ class GatewayHttpTest {
         assertThat(ui.body()).contains("swagger-ui", "swagger-initializer.js");
         var initializer = send(request("/swagger-ui/swagger-initializer.js").GET().build());
         assertThat(initializer.body()).contains("/openapi/swagger-config");
+    }
+
+    @Test void refusesRetiredOrUndocumentedOperationsBeforeForwarding() throws Exception {
+        int before=REQUESTS.get();
+        assertError(send(request("/api/v1/auth/register").POST(HttpRequest.BodyPublishers.ofString("{}")).build()),404,"NOT_FOUND");
+        assertError(send(request("/api/v1/program/me").GET().build()),404,"NOT_FOUND");
+        assertError(send(request("/api/v1/users/123").POST(HttpRequest.BodyPublishers.ofString("{}")).build()),404,"NOT_FOUND");
+        assertThat(REQUESTS.get()).isEqualTo(before);
     }
 
     private HttpRequest.Builder request(String path) { return HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)); }

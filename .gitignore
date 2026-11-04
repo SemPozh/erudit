@@ -15,3 +15,7 @@ build
 
 # Local database credentials
 .env
+
+# Python CI planner cache
+__pycache__/
+*.pyc

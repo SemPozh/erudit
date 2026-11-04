@@ -15,8 +15,8 @@
 | Admin | erudit_admin | V1 audit |
 
 Файлы находятся в `services/erudit-*/src/main/resources/db/migration`.
-Общие legacy migrations в `src/main/resources/db/migration` остаются только для
-legacy-профиля до отдельной задачи №99. Их history и номера нельзя переносить в
+Legacy migrations удалены из runtime в №99; история доступна через commit 56538b3
+и `docs/history/legacy-inventory.json`. Их history и номера нельзя переносить в
 service database: все сервисы начинают собственную историю с V1. Применённые
 версии не редактируются, дальнейшие изменения идут новыми миграциями.
 

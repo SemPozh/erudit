@@ -53,14 +53,14 @@ class ContentWorkflowIntegrationTest {
         assertThat(item.status()).isEqualTo("PENDING_MODERATION");
         mvc.perform(get("/api/v1/content/{id}",item.id())).andExpect(status().isNotFound());
         mvc.perform(post("/api/v1/content/{id}/view",item.id())).andExpect(status().isNotFound());
-        mvc.perform(get("/api/v1/admin/content/moderation")).andExpect(status().isOk())
+        mvc.perform(get("/internal/v1/content/moderation")).andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count","1")).andExpect(jsonPath("$.pagination.totalElements").value(1));
-        mvc.perform(post("/api/v1/admin/content/{id}/approve",item.id())).andExpect(status().isOk())
+        mvc.perform(moderation(item.id(),"PUBLISHED")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.status").value("PUBLISHED"));
-        mvc.perform(post("/api/v1/admin/content/{id}/reject",item.id())).andExpect(status().isConflict());
+        mvc.perform(moderation(item.id(),"REJECTED")).andExpect(status().isConflict());
         mvc.perform(get("/api/v1/content/{id}",item.id())).andExpect(status().isOk());
         assertThat(items.update(item.id(),draft(item,"New source fact.")).status()).isEqualTo("PENDING_MODERATION");
-        mvc.perform(post("/api/v1/admin/content/{id}/reject",item.id())).andExpect(status().isOk());
+        mvc.perform(moderation(item.id(),"REJECTED")).andExpect(status().isOk());
         mvc.perform(get("/api/v1/content/{id}",item.id())).andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/content/{id}/quiz-cards",item.id())).andExpect(status().isNotFound());
         items.archive(item.id());
@@ -142,14 +142,14 @@ class ContentWorkflowIntegrationTest {
     @Test void reportResolutionArchivesOnceAndPreservesUnverifiedActorAudit() throws Exception {
         var item=published(false);var report=workflows.report(item.id(),"  Factual error in this material  ");
         UUID actor=UUID.randomUUID();
-        mvc.perform(get("/api/v1/admin/content/reports")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"));
-        mvc.perform(post("/api/v1/admin/content/reports/{id}/resolve",report.id()).header("X-User-Id",actor)
+        mvc.perform(get("/internal/v1/content/reports")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"));
+        mvc.perform(post("/internal/v1/content/reports/{id}/resolve",report.id()).header("X-User-Id",actor)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"decision\":\"ACCEPT\",\"comment\":\" Checked \"}"))
                 .andExpect(status().isNoContent());
         assertThat(items.get(item.id()).status()).isEqualTo("ARCHIVED");
         assertThat(repository.report(report.id()).orElseThrow().status()).isEqualTo("RESOLVED");
         assertThat(jdbc.queryForObject("SELECT resolved_by FROM content_reports WHERE id=?",UUID.class,report.id())).isEqualTo(actor);
-        mvc.perform(post("/api/v1/admin/content/reports/{id}/resolve",report.id()).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/internal/v1/content/reports/{id}/resolve",report.id()).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"decision\":\"REJECT\"}")).andExpect(status().isConflict());
         assertThat(workflows.reports(0,20).total()).isZero();
     }
@@ -199,7 +199,7 @@ class ContentWorkflowIntegrationTest {
         var item=published(false);
         mvc.perform(post("/api/v1/content/{id}/report",item.id()).contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"short\"}"))
                 .andExpect(status().isBadRequest());
-        for(String path:List.of("/api/v1/content/feed","/api/v1/admin/content/moderation","/api/v1/admin/content/reports")) {
+        for(String path:List.of("/api/v1/content/feed","/internal/v1/content/moderation","/internal/v1/content/reports")) {
             mvc.perform(get(path).param("size","51")).andExpect(status().isBadRequest());
             mvc.perform(get(path).param("page","-1")).andExpect(status().isBadRequest());
         }
@@ -211,4 +211,9 @@ class ContentWorkflowIntegrationTest {
         assertThat(repository.report(report.id()).orElseThrow().status()).isEqualTo("OPEN");
         assertThatThrownBy(() -> workflows.feed(USER,0,0)).isInstanceOf(IllegalArgumentException.class);
     }
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder moderation(UUID id,String state){
+        return post("/internal/v1/moderation").contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("{\"contentId\":\"%s\",\"status\":\"%s\"}",id,state));
+    }
+
 }
