@@ -27,7 +27,7 @@ tasks.test {
     dependsOn(subprojects.filter { it.name.startsWith("erudit-") }.map { "${it.path}:classes" })
     inputs.files(fileTree("services") { include("*/src/main/**", "*/build.gradle.kts", "*/build/classes/java/main/**") })
     inputs.files(fileTree("platform") { include("*/src/main/**") }, fileTree("infrastructure") { include("*/src/main/**", "*/build/classes/java/main/**") }, fileTree("config-repository"),
-        fileTree("docker"), file("docker-compose.yml"), file("docs/api/public-operations.json"))
+        fileTree("docker"), file("docker-compose.yml"), file("docs/api/public-operations.json"), file("docs/api/endpoints.md"))
     systemProperty("test.postgres.image", providers.gradleProperty("postgresTestImage").get())
     systemProperty("architecture.root", projectDir.absolutePath)
     addTestListener(object : org.gradle.api.tasks.testing.TestListener {

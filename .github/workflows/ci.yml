@@ -105,7 +105,9 @@ jobs:
         run: ./scripts/reset-demo.ps1 -Project erudit-demo-ci -Port 18089
       - name: Verify public HTTP contracts and fixtures
         shell: pwsh
-        run: ./scripts/smoke-demo-contracts.ps1
+        run: |
+          ./scripts/smoke-acceptance.ps1 -Project erudit-demo-ci
+          ./scripts/smoke-demo-contracts.ps1
       - name: Gateway user journeys and dependency circuit recovery
         shell: pwsh
         run: |
@@ -126,6 +128,7 @@ jobs:
             build/gateway-e2e.xml.md
             build/gateway-resilience.md
             build/images-report.json
+            build/acceptance-platform.json
       - name: Collect failed demo logs
         if: failure()
         run: docker compose -p erudit-demo-ci -f docker-compose.yml -f docker-compose.demo.yml --profile demo logs --tail 100

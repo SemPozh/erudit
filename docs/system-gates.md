@@ -48,6 +48,8 @@ Required status check; workflow не изменяет repository permissions/rul
 без args имеет явную local/worktree provenance, а не ложный release SHA. Content
 digest всегда неизменяем; Git/UTC labels задаются проверяемым builder.
 
-Проверка доступа 5 ноября 2026: GitHub Settings сообщает текущему аккаунту
-«You don't have access to repository options». Обязательность `test` и owner bypass
-не удалось проверить/настроить; это остаётся действием владельца main.
+Проверка GitHub API 5 ноября 2026 подтвердила protected main и обязательные
+`test`/`build` с enforcement_level=everyone. Таким образом последний критерий 97
+подтверждён, хотя UI repository options по-прежнему недоступен текущему аккаунту.
+Снимок: [history/main-protection.json](history/main-protection.json).
+Полная приёмка и демонстрация: [lab2-acceptance.md](lab2-acceptance.md).

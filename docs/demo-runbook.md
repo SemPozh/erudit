@@ -122,3 +122,5 @@ JaCoCo, порог 70% сохранён. CI запускает каждый мо
 Suite сверяет ответы с публичными schemas (required/type/enum/format/allOf/ref),
 проверяет отрицательные pagination/sort, CRUD, state transitions, conflict,
 idempotency и наличие demo-аналитики. JUnit: `build/demo-contract-results.xml`.
+
+Финальная матрица требований, каталог API и демонстрация: [приёмка ЛР2](lab2-acceptance.md).

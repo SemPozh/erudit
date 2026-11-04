@@ -20,12 +20,13 @@
 
 ```shell
 docker compose up --build -d config-server
-curl http://localhost:8888/actuator/health
-curl http://localhost:8888/erudit-user/default
-curl http://localhost:8888/erudit-user/demo
+docker compose exec -T config-server curl http://localhost:8888/actuator/health
+docker compose exec -T config-server curl http://localhost:8888/erudit-user/default
+docker compose exec -T config-server curl http://localhost:8888/erudit-user/demo
 ```
 
-Compose монтирует репозиторий read-only и публикует порт только на loopback.
+Compose монтирует репозиторий read-only. В default профиль порт не публикуется;
+loopback-доступ включается только через docker-compose.debug.yml.
 Проверка health включает доступность репозитория, probes доступны на
 `/actuator/health/liveness` и `/actuator/health/readiness`.
 У будущих Compose-клиентов должна быть зависимость
