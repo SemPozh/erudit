@@ -2915,7 +2915,10 @@ components:
       type: object
       properties:
         id: *id001
-        amount: *id009
+        amount:
+          type: number
+          format: double
+          minimum: 0
         currency:
           type: string
         status:

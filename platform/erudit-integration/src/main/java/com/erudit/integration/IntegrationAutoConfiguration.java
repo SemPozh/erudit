@@ -3,7 +3,6 @@ package com.erudit.integration;
 import feign.RequestInterceptor;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.common.circuitbreaker.configuration.CircuitBreakerConfigCustomizer;
-import java.time.Duration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskDecorator;
@@ -30,7 +29,7 @@ public class IntegrationAutoConfiguration {
                 .failureRateThreshold(50)
                 .slidingWindowSize(10)
                 .minimumNumberOfCalls(5)
-                .waitDurationInOpenState(Duration.ofSeconds(10))
+                // Config Server supplies the open-state wait interval. Do not configure it twice.
                 .permittedNumberOfCallsInHalfOpenState(2));
     }
 
