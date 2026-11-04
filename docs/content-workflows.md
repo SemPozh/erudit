@@ -53,7 +53,7 @@ QuizCardGenerator для задачи 89. Запросы к AI здесь не �
 Gateway не открывает /internal/**.
 
 Gateway направляет `/api/v1/admin/**` в Admin facade (задача 90), который
-обращается к внутренним Content API по Feign. Внешние legacy paths сохранены;
+обращается к внутренним Content API по Feign. Временные дубли внешних Admin routes внутри Content удалены в №99;
 CORS открывает заголовки feed для браузера.
 
 ## Проверка

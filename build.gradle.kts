@@ -1,192 +1,55 @@
 plugins {
     java
-    jacoco
-    id("org.springframework.boot") version "4.1.1"
-    id("io.spring.dependency-management") version "1.1.7"
-    id("org.openapi.generator") version "7.25.0"
+    id("org.springframework.boot") version "4.1.1" apply false
+    id("io.spring.dependency-management") version "1.1.7" apply false
+    id("org.openapi.generator") version "7.25.0" apply false
 }
-
 group = "com.erudit"
 version = "0.0.1-SNAPSHOT"
-
-val postgresTestImage = providers.gradleProperty("postgresTestImage")
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
-    }
-}
-
-repositories {
-    mavenCentral()
-}
-
+repositories { mavenCentral() }
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(25)) } }
+// The root is a verification/aggregation project, with no application or runtime datasource.
 dependencies {
-    // Spring Boot
-    implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.springframework.boot:spring-boot-starter-zipkin")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    implementation("org.springframework.boot:spring-boot-starter-flyway")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-
-    implementation("com.clickhouse:clickhouse-jdbc:0.9.8:all")
-    implementation("at.favre.lib:bcrypt:0.10.2")
-
-    runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("org.flywaydb:flyway-database-postgresql")
-
-    // OpenAPI and Swagger
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1")
-
-    // Lombok
-    val lombokVersion = "1.18.42"
-
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
-    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-
-    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
-    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
-    // Testing
+    testImplementation(platform("org.springframework.boot:spring-boot-dependencies:4.1.1"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-    testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:testcontainers-jdbc:2.0.5")
+    testImplementation("org.flywaydb:flyway-core")
+    testImplementation("org.flywaydb:flyway-database-postgresql")
+    testImplementation("org.postgresql:postgresql")
+    testImplementation("org.yaml:snakeyaml")
+    testImplementation("com.tngtech.archunit:archunit:1.5.1")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.5")
     testImplementation("org.testcontainers:testcontainers-postgresql:2.0.5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-
-// OpenAPI code generation
-openApiGenerate {
-    generatorName.set("spring")
-    inputSpec.set("$projectDir/src/main/resources/static/openapi.yaml")
-    outputDir.set("${layout.buildDirectory.get()}/generated/openapi")
-
-    apiPackage.set("com.erudit.openapi.api")
-    modelPackage.set("com.erudit.openapi.model")
-
-    configOptions.set(
-        mapOf(
-            "interfaceOnly" to "true",
-            "skipDefaultInterface" to "true",
-            "useSpringBoot4" to "true",
-            "useJackson3" to "true",
-            "openApiNullable" to "false",
-            "useTags" to "true"
-        )
-    )
-}
-
-openApiValidate {
-    inputSpec.set(
-        layout.projectDirectory.file("src/main/resources/static/openapi.yaml")
-    )
-}
-
-val verifyServiceContracts by tasks.registering {
-    group = "verification"
-    description = "Rejects duplicate external paths/operationIds and auth schemes in service OpenAPI contracts"
-    doLast {
-        val owners = mutableMapOf<String, String>()
-        val operations = mutableMapOf<String, String>()
-        fileTree("services") { include("*/src/main/resources/static/openapi.yaml") }.files.sorted().forEach { spec ->
-            val text = spec.readText()
-            require(!text.contains("securitySchemes:") && !Regex("(?m)^security:").containsMatchIn(text)) { "Authorization scheme is forbidden in ${spec.path}" }
-            Regex("(?m)^  (/api/v1/[^:]+):").findAll(text).forEach { match ->
-                val path = match.groupValues[1]
-                val previous = owners.putIfAbsent(path, spec.path)
-                require(previous == null) { "External path $path belongs to both $previous and ${spec.path}" }
-            }
-            Regex("(?m)^\\s+operationId:\\s*([A-Za-z0-9_-]+)").findAll(text).forEach { match ->
-                val operation = match.groupValues[1]
-                val previous = operations.putIfAbsent(operation, spec.path)
-                require(previous == null) { "operationId $operation is duplicated in $previous and ${spec.path}" }
-            }
-        }
-    }
-}
-
-tasks.named("openApiValidate") { finalizedBy(verifyServiceContracts) }
-
-sourceSets {
-    main {
-        java.srcDir(
-            layout.buildDirectory.dir("generated/openapi/src/main/java")
-        )
-    }
-}
-
-tasks.named("compileJava") {
-    dependsOn(tasks.named("openApiGenerate"))
-}
-
-tasks.jacocoTestReport {
-    dependsOn(tasks.test)
-    classDirectories.setFrom(files(classDirectories.files.map {
-        fileTree(it) { exclude("com/erudit/openapi/**") }
-    }))
-    reports {
-        xml.required.set(true)
-        html.required.set(true)
-    }
-}
-
-tasks.jacocoTestCoverageVerification {
-    dependsOn(tasks.test)
-    classDirectories.setFrom(files(classDirectories.files.map {
-        fileTree(it) { exclude("com/erudit/openapi/**") }
-    }))
-    violationRules {
-        rule {
-            limit {
-                counter = "LINE"
-                minimum = "0.70".toBigDecimal()
-            }
-        }
-    }
-}
-
-tasks.check {
-    dependsOn(tasks.jacocoTestCoverageVerification)
-}
-
-tasks.withType<Test> {
-    // Architecture/data tests inspect service-owned source, migrations and bootstrap configuration.
-    inputs.files(fileTree("services") { include("*/src/main/**", "*/build.gradle.kts") })
-    inputs.files(fileTree("config-repository"), fileTree("docker/postgres"), file("docker-compose.yml"))
+tasks.jar { enabled = false }
+tasks.test {
     useJUnitPlatform()
-    finalizedBy(tasks.jacocoTestReport)
-    systemProperty("test.postgres.image", postgresTestImage.get())
-    systemProperty(
-        "test.database.url",
-        "jdbc:tc:postgresql:${postgresTestImage.get().removePrefix("postgres:")}:///erudit?TC_DAEMON=true"
-    )
+    dependsOn(subprojects.filter { it.name.startsWith("erudit-") }.map { "${it.path}:classes" })
+    inputs.files(fileTree("services") { include("*/src/main/**", "*/build.gradle.kts", "*/build/classes/java/main/**") })
+    inputs.files(fileTree("platform") { include("*/src/main/**") }, fileTree("infrastructure") { include("*/src/main/**", "*/build/classes/java/main/**") }, fileTree("config-repository"),
+        fileTree("docker"), file("docker-compose.yml"), file("docs/api/public-operations.json"))
+    systemProperty("test.postgres.image", providers.gradleProperty("postgresTestImage").get())
+    systemProperty("architecture.root", projectDir.absolutePath)
     addTestListener(object : org.gradle.api.tasks.testing.TestListener {
         override fun beforeSuite(suite: org.gradle.api.tasks.testing.TestDescriptor) = Unit
-
-        override fun afterSuite(
-            suite: org.gradle.api.tasks.testing.TestDescriptor,
-            result: org.gradle.api.tasks.testing.TestResult
-        ) {
-            if (suite.parent == null && result.skippedTestCount > 0) {
-                throw GradleException("Skipped tests are not allowed: ${result.skippedTestCount}")
-            }
+        override fun afterSuite(suite: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) {
+            if(suite.parent==null && result.skippedTestCount>0) throw GradleException("Skipped tests are forbidden")
         }
-
-        override fun beforeTest(testDescriptor: org.gradle.api.tasks.testing.TestDescriptor) = Unit
-
-        override fun afterTest(
-            testDescriptor: org.gradle.api.tasks.testing.TestDescriptor,
-            result: org.gradle.api.tasks.testing.TestResult
-        ) = Unit
+        override fun beforeTest(test: org.gradle.api.tasks.testing.TestDescriptor) = Unit
+        override fun afterTest(test: org.gradle.api.tasks.testing.TestDescriptor, result: org.gradle.api.tasks.testing.TestResult) = Unit
     })
-    testLogging {
-        events("failed", "skipped")
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
-        showStackTraces = true
-        showCauses = true
-    }
+    testLogging { events("failed", "skipped") }
 }
+// Keep the documented root commands while validating/building the owners independently.
+tasks.register("openApiValidate") {
+    group = "verification"
+    dependsOn(subprojects.filter { it.path.startsWith(":services:") }.map { "${it.path}:openApiValidate" })
+    dependsOn(tasks.test)
+}
+tasks.register("verifyServiceContracts") { dependsOn(tasks.test) }
+tasks.register("jacocoTestCoverageVerification") {
+    dependsOn(subprojects.filter { it.name.startsWith("erudit-") }.map { "${it.path}:jacocoTestCoverageVerification" })
+}
+tasks.build { dependsOn(subprojects.filter { it.name.startsWith("erudit-") }.map { "${it.path}:build" }) }
+
+tasks.assemble { dependsOn(subprojects.filter { it.name.startsWith("erudit-") }.map { "${it.path}:assemble" }) }

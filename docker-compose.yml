@@ -1,5 +1,10 @@
 name: erudit
 
+x-build-metadata: &build-metadata
+  VCS_REF: ${BUILD_REVISION:-worktree}
+  BUILD_DATE: ${BUILD_DATE:-unspecified}
+  WORKTREE_STATE: ${BUILD_WORKTREE_STATE:-local}
+
 x-java-runtime: &java-runtime
   mem_limit: 640m
   cpus: 1.0
@@ -13,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: infrastructure/erudit-config-server/Dockerfile
+      args: *build-metadata
     environment:
       <<: *java-env
       SPRING_PROFILES_ACTIVE: native
@@ -37,6 +43,7 @@ services:
       context: .
       dockerfile: Dockerfile.service
       args:
+        <<: *build-metadata
         MODULE: :infrastructure:erudit-discovery-server
     environment:
       <<: *java-env
@@ -61,6 +68,7 @@ services:
       context: .
       dockerfile: Dockerfile.service
       args:
+        <<: *build-metadata
         MODULE: :infrastructure:erudit-gateway
     environment:
       <<: *java-env
@@ -91,6 +99,7 @@ services:
       context: .
       dockerfile: Dockerfile.service
       args:
+        <<: *build-metadata
         MODULE: :services:erudit-content
     environment:
       <<: *java-env
@@ -148,7 +157,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.service
-      args: { MODULE: ":services:erudit-event-receiver" }
+      args: { <<: *build-metadata, MODULE: ":services:erudit-event-receiver" }
     environment:
       <<: *java-env
       CONFIG_SERVER_URL: http://config-server:8888
@@ -220,7 +229,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.service
-      args: { MODULE: ":services:erudit-notificator" }
+      args: { <<: *build-metadata, MODULE: ":services:erudit-notificator" }
     environment:
       <<: *java-env
       CONFIG_SERVER_URL: http://config-server:8888
@@ -282,6 +291,7 @@ services:
       context: .
       dockerfile: Dockerfile.service
       args:
+        <<: *build-metadata
         MODULE: :services:erudit-ai-platform
     environment:
       <<: *java-env
@@ -307,7 +317,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.service
-      args: {MODULE: ":services:erudit-user"}
+      args: {<<: *build-metadata, MODULE: ":services:erudit-user"}
     environment:
       <<: *java-env
       CONFIG_SERVER_URL: http://config-server:8888
@@ -354,7 +364,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.service
-      args: {MODULE: ":services:erudit-quiz"}
+      args: {<<: *build-metadata, MODULE: ":services:erudit-quiz"}
     environment:
       <<: *java-env
       CONFIG_SERVER_URL: http://config-server:8888
@@ -401,7 +411,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.service
-      args: {MODULE: ":services:erudit-payment"}
+      args: {<<: *build-metadata, MODULE: ":services:erudit-payment"}
     environment:
       <<: *java-env
       PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-local-webhook-secret}
@@ -449,7 +459,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.service
-      args: {MODULE: ":services:erudit-admin"}
+      args: {<<: *build-metadata, MODULE: ":services:erudit-admin"}
     environment:
       <<: *java-env
       CONFIG_SERVER_URL: http://config-server:8888
@@ -491,83 +501,6 @@ services:
       timeout: 3s
       retries: 20
 
-  app:
-    profiles: [legacy]
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: erudit:latest
-    container_name: erudit
-    ports:
-      - "${APP_PORT:-8080}:8080"
-    environment:
-      SERVER_PORT: 8080
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
-      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-erudit}
-      DB_USERNAME: ${POSTGRES_USER:-erudit}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-erudit}
-      CLICKHOUSE_URL: jdbc:clickhouse:http://clickhouse:8123/${CLICKHOUSE_DB:-erudit}
-      CLICKHOUSE_USERNAME: ${CLICKHOUSE_USER:-erudit}
-      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-erudit}
-      TRACING_SAMPLING_PROBABILITY: ${TRACING_SAMPLING_PROBABILITY:-1.0}
-      ZIPKIN_ENABLED: ${ZIPKIN_ENABLED:-false}
-      ZIPKIN_ENDPOINT: ${ZIPKIN_ENDPOINT:-http://host.docker.internal:9411/api/v2/spans}
-      MEDIA_STORAGE_PATH: /app/data/media
-      MEDIA_MAX_SIZE_BYTES: ${MEDIA_MAX_SIZE_BYTES:-52428800}
-      MEDIA_MAX_FILE_SIZE: ${MEDIA_MAX_FILE_SIZE:-50MB}
-      NOTIFICATION_DAILY_LIMIT: ${NOTIFICATION_DAILY_LIMIT:-10}
-      NOTIFICATION_TRIGGER_CRON: ${NOTIFICATION_TRIGGER_CRON:-0 0 * * * *}
-    volumes:
-      - media_data:/app/data/media
-    networks:
-      - internal
-    depends_on:
-      postgres:
-        condition: service_healthy
-      clickhouse:
-        condition: service_healthy
-    restart: unless-stopped
-
-  postgres:
-    profiles: [legacy]
-    image: postgres:17-alpine
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-erudit}
-      POSTGRES_USER: ${POSTGRES_USER:-erudit}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-erudit}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-erudit} -d ${POSTGRES_DB:-erudit}"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    restart: unless-stopped
-
-  clickhouse:
-    profiles: [legacy]
-    image: clickhouse/clickhouse-server:25.8
-    environment:
-      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-erudit}
-      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-erudit}
-      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-erudit}
-      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
-    ports:
-      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-    networks:
-      - internal
-    healthcheck:
-      test: ["CMD", "clickhouse-client", "--user", "${CLICKHOUSE_USER:-erudit}", "--password", "${CLICKHOUSE_PASSWORD:-erudit}", "--query", "SELECT 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-    restart: unless-stopped
 
 volumes:
   admin_postgres_data:
@@ -579,9 +512,6 @@ volumes:
   notification_postgres_data:
   content_media_data:
   content_postgres_data:
-  postgres_data:
-  clickhouse_data:
-  media_data:
 
 networks:
   edge:

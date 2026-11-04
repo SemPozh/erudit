@@ -1,0 +1,500 @@
+[
+  {
+    "owner": "erudit-admin",
+    "method": "GET",
+    "path": "/api/v1/admin/audit",
+    "operationId": "listAuditLog"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "GET",
+    "path": "/api/v1/admin/content/moderation",
+    "operationId": "listModerationQueue"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "GET",
+    "path": "/api/v1/admin/content/reports",
+    "operationId": "listContentReports"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "POST",
+    "path": "/api/v1/admin/content/reports/{id}/resolve",
+    "operationId": "resolveContentReport"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "POST",
+    "path": "/api/v1/admin/content/{id}/approve",
+    "operationId": "approveContent"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "POST",
+    "path": "/api/v1/admin/content/{id}/reject",
+    "operationId": "rejectContent"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "POST",
+    "path": "/api/v1/admin/notifications/send-many",
+    "operationId": "sendManyNotifications"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "GET",
+    "path": "/api/v1/admin/users",
+    "operationId": "listAdminUsers"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "POST",
+    "path": "/api/v1/admin/users/{id}/block",
+    "operationId": "blockUser"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "GET",
+    "path": "/api/v1/admin/users/{id}/payments",
+    "operationId": "viewUserPayments"
+  },
+  {
+    "owner": "erudit-admin",
+    "method": "GET",
+    "path": "/api/v1/admin/users/{id}/subscription",
+    "operationId": "viewUserSubscription"
+  },
+  {
+    "owner": "erudit-event-receiver",
+    "method": "GET",
+    "path": "/api/v1/analytics/{metric}",
+    "operationId": "getAnalyticsMetric"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/assessments/questions",
+    "operationId": "listAssessmentQuestions"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/assessments/sessions",
+    "operationId": "startAssessment"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/assessments/sessions/{id}/result",
+    "operationId": "getAssessmentResult"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/assessments/sessions/{id}/submit",
+    "operationId": "submitAssessment"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/competitions",
+    "operationId": "createCompetition"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/competitions/{id}/invite",
+    "operationId": "inviteCompetition"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/competitions/{id}/join",
+    "operationId": "joinCompetition"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/competitions/{id}/leaderboard",
+    "operationId": "competitionLeaderboard"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content",
+    "operationId": "listContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "POST",
+    "path": "/api/v1/content",
+    "operationId": "createContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/categories",
+    "operationId": "listCategories"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "POST",
+    "path": "/api/v1/content/categories",
+    "operationId": "createCategory"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "DELETE",
+    "path": "/api/v1/content/categories/{id}",
+    "operationId": "deleteCategory"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/categories/{id}",
+    "operationId": "getCategory"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "PUT",
+    "path": "/api/v1/content/categories/{id}",
+    "operationId": "updateCategory"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/feed",
+    "operationId": "getContentFeed"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/formats",
+    "operationId": "listFormats"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "DELETE",
+    "path": "/api/v1/content/{id}",
+    "operationId": "archiveContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/{id}",
+    "operationId": "getContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "PUT",
+    "path": "/api/v1/content/{id}",
+    "operationId": "updateContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "POST",
+    "path": "/api/v1/content/{id}/complete",
+    "operationId": "completeContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/{id}/progress",
+    "operationId": "getContentProgress"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/content/{id}/quiz-cards",
+    "operationId": "getContentQuizCards"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "POST",
+    "path": "/api/v1/content/{id}/report",
+    "operationId": "reportContent"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "POST",
+    "path": "/api/v1/content/{id}/view",
+    "operationId": "markContentViewed"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "POST",
+    "path": "/api/v1/devices",
+    "operationId": "registerDevice"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "DELETE",
+    "path": "/api/v1/devices/{id}",
+    "operationId": "revokeDevice"
+  },
+  {
+    "owner": "erudit-event-receiver",
+    "method": "POST",
+    "path": "/api/v1/events",
+    "operationId": "ingestEvent"
+  },
+  {
+    "owner": "erudit-event-receiver",
+    "method": "POST",
+    "path": "/api/v1/events/batch",
+    "operationId": "ingestEventBatch"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "GET",
+    "path": "/api/v1/friends",
+    "operationId": "listFriends"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "POST",
+    "path": "/api/v1/friends/requests",
+    "operationId": "requestFriend"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "POST",
+    "path": "/api/v1/friends/requests/{id}/{decision}",
+    "operationId": "decideFriendRequest"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "DELETE",
+    "path": "/api/v1/friends/{friendId}",
+    "operationId": "removeFriend"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/learning-program",
+    "operationId": "getLearningProgram"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/learning-program/next",
+    "operationId": "getNextLearningStep"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "POST",
+    "path": "/api/v1/media",
+    "operationId": "uploadMedia"
+  },
+  {
+    "owner": "erudit-content",
+    "method": "GET",
+    "path": "/api/v1/media/{id}",
+    "operationId": "getMedia"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "GET",
+    "path": "/api/v1/notifications",
+    "operationId": "listNotifications"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "GET",
+    "path": "/api/v1/notifications/preferences",
+    "operationId": "getPreferences"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "PUT",
+    "path": "/api/v1/notifications/preferences",
+    "operationId": "updatePreferences"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "POST",
+    "path": "/api/v1/notifications/read-all",
+    "operationId": "markAllRead"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "GET",
+    "path": "/api/v1/notifications/templates",
+    "operationId": "listTemplates"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "POST",
+    "path": "/api/v1/notifications/templates",
+    "operationId": "createTemplate"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "DELETE",
+    "path": "/api/v1/notifications/templates/{id}",
+    "operationId": "deleteTemplate"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "GET",
+    "path": "/api/v1/notifications/templates/{id}",
+    "operationId": "getTemplate"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "PUT",
+    "path": "/api/v1/notifications/templates/{id}",
+    "operationId": "updateTemplate"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "GET",
+    "path": "/api/v1/notifications/unread-count",
+    "operationId": "unreadCount"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "GET",
+    "path": "/api/v1/notifications/{id}/delivery-attempts",
+    "operationId": "deliveryAttempts"
+  },
+  {
+    "owner": "erudit-notificator",
+    "method": "POST",
+    "path": "/api/v1/notifications/{id}/read",
+    "operationId": "markRead"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "POST",
+    "path": "/api/v1/payments/webhooks/{provider}",
+    "operationId": "paymentWebhook"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/quiz-attempts/{id}/hint",
+    "operationId": "quizHint"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/quiz-attempts/{id}/submit",
+    "operationId": "submitQuiz"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/quizzes",
+    "operationId": "listQuizzes"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/quizzes",
+    "operationId": "createQuiz"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/quizzes/daily",
+    "operationId": "dailyQuiz"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "POST",
+    "path": "/api/v1/quizzes/{id}/attempts",
+    "operationId": "startQuiz"
+  },
+  {
+    "owner": "erudit-quiz",
+    "method": "GET",
+    "path": "/api/v1/ratings",
+    "operationId": "globalRatings"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "POST",
+    "path": "/api/v1/subscriptions",
+    "operationId": "createSubscription"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "GET",
+    "path": "/api/v1/subscriptions/me",
+    "operationId": "getMySubscription"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "POST",
+    "path": "/api/v1/subscriptions/mobile/verify",
+    "operationId": "verifyMobileReceipt"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "GET",
+    "path": "/api/v1/subscriptions/payments",
+    "operationId": "listPayments"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "GET",
+    "path": "/api/v1/subscriptions/plans",
+    "operationId": "listSubscriptionPlans"
+  },
+  {
+    "owner": "erudit-payment",
+    "method": "POST",
+    "path": "/api/v1/subscriptions/{id}/cancel",
+    "operationId": "cancelSubscription"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "GET",
+    "path": "/api/v1/users",
+    "operationId": "searchUsers"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "POST",
+    "path": "/api/v1/users/register",
+    "operationId": "register"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "POST",
+    "path": "/api/v1/users/verify",
+    "operationId": "verifyEmail"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "DELETE",
+    "path": "/api/v1/users/{id}",
+    "operationId": "deleteUser"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "GET",
+    "path": "/api/v1/users/{id}",
+    "operationId": "getUser"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "PUT",
+    "path": "/api/v1/users/{id}",
+    "operationId": "updateUser"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "GET",
+    "path": "/api/v1/users/{id}/settings",
+    "operationId": "getSettings"
+  },
+  {
+    "owner": "erudit-user",
+    "method": "PUT",
+    "path": "/api/v1/users/{id}/settings",
+    "operationId": "updateSettings"
+  }
+]

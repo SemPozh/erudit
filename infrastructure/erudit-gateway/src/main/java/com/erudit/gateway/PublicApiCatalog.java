@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 @Component
 public class PublicApiCatalog {
     private final Map<String, Map<String, Object>> documents;
+    private final List<Endpoint> endpoints;
 
     public PublicApiCatalog() throws IOException {
         var sources = new TreeMap<String, Map<String, Object>>();
@@ -24,7 +25,23 @@ public class PublicApiCatalog {
         }
         if (sources.isEmpty()) { throw new IllegalStateException("No service OpenAPI contracts bundled"); }
         documents = project(sources);
+        endpoints=new ArrayList<>();
+        documents.values().forEach(doc -> objectMap(doc.get("paths")).forEach((path,item) -> {
+            var methods=new HashSet<String>();
+            objectMap(item).keySet().stream().filter(method -> Set.of("get","post","put","patch","delete","head","options").contains(method))
+                    .forEach(method -> methods.add(method.toUpperCase(Locale.ROOT)));
+            String pattern=Arrays.stream(path.split("/",-1)).map(part -> part.startsWith("{")?"[^/]+":java.util.regex.Pattern.quote(part))
+                    .collect(java.util.stream.Collectors.joining("/"));
+            endpoints.add(new Endpoint(java.util.regex.Pattern.compile("^"+pattern+"$"),methods));
+        }));
     }
+
+    public boolean supports(String method,String path) {
+        String effective=method.equals("HEAD")?"GET":method;
+        return endpoints.stream().anyMatch(endpoint -> endpoint.path().matcher(path).matches()
+                && (effective.equals("OPTIONS")||endpoint.methods().contains(effective)));
+    }
+    private record Endpoint(java.util.regex.Pattern path,Set<String> methods){}
 
     static Map<String, Map<String, Object>> project(Map<String, Map<String, Object>> sources) {
         var result = new LinkedHashMap<String, Map<String, Object>>();

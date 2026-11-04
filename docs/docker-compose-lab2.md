@@ -1,3 +1,6 @@
+> Исторический документ до №99. Актуальные команды: [README](../README.md),
+> [system gates](system-gates.md). Старые пути восстанавливаются из commit 56538b3.
+
 # Docker Compose для инфраструктуры ЛР2
 
 Базовый профиль запускает Config Server, Eureka и Gateway. Gateway подключён к

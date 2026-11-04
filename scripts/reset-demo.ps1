@@ -20,9 +20,20 @@ try{
     }
     Invoke-DemoCompose @("down","--volumes","--remove-orphans")
     if(-not $SkipBuild){
-        $apps=@("config-server","discovery-server","gateway","user-service","content-service","quiz-service","event-receiver","ai-platform","notificator","payment-service","admin-service")
-        for($offset=0;$offset -lt $apps.Count;$offset+=2){Invoke-DemoCompose (@("build")+@($apps|Select-Object -Skip $offset -First 2))}
+        & (Join-Path $PSScriptRoot 'build-images.ps1') -Project $Project
+        if($LASTEXITCODE -ne 0){throw 'Verified image build failed'}
     }
     Invoke-DemoCompose @("up","-d","--no-build","--wait","--wait-timeout","300")
+    # Container health precedes Eureka registration and Gateway's discovery cache.
+    $ready=$false
+    for($attempt=0;$attempt -lt 90;$attempt++){
+        try{
+            foreach($path in @('/api/v1/users','/api/v1/admin/users','/api/v1/admin/content/moderation','/api/v1/quizzes/daily','/api/v1/subscriptions/plans','/api/v1/notifications/templates')){
+                $null=Invoke-WebRequest "http://localhost:$Port$path" -TimeoutSec 5
+            }
+            $ready=$true;break
+        }catch{Start-Sleep -Seconds 2}
+    }
+    if(-not $ready){throw 'Gateway discovery did not become ready'}
     Write-Output "Demo is healthy: http://localhost:$Port/swagger-ui/index.html (project $Project)"
 }finally{$env:GATEWAY_PORT=$oldPort;$env:COMPOSE_PARALLEL_LIMIT=$oldParallel}
