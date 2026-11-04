@@ -1,0 +1,1 @@
+package com.erudit.notificator.model;import java.time.OffsetDateTime;import java.util.UUID;public record DeliveryAttempt(UUID id,UUID notificationId,int attempt,String status,String payloadPreview,OffsetDateTime createdAt){}

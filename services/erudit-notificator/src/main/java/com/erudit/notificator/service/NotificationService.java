@@ -4,6 +4,8 @@ import com.erudit.notificator.model.NotificationRecord;
 import com.erudit.notificator.model.Preference;
 import com.erudit.notificator.model.Template;
 import com.erudit.notificator.repository.NotificationRepository;
+import com.erudit.notificator.repository.DeliveryRepository;
+import com.erudit.notificator.model.DeliveryAttempt;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,8 +19,9 @@ import reactor.core.scheduler.Schedulers;
 public class NotificationService {
     private final NotificationRepository repository;
     private final Scheduler jdbc;
-    public NotificationService(NotificationRepository repository,@Value("${erudit.notifications.jdbc-threads:4}")int threads,
-                               @Value("${erudit.notifications.jdbc-queue:256}")int queue){this.repository=repository;this.jdbc=Schedulers.newBoundedElastic(threads,queue,"notification-jdbc");}
+    private final DeliveryRepository deliveries;
+    public NotificationService(NotificationRepository repository,DeliveryRepository deliveries,@Value("${erudit.notifications.jdbc-threads:4}")int threads,
+                               @Value("${erudit.notifications.jdbc-queue:256}")int queue){this.repository=repository;this.deliveries=deliveries;this.jdbc=Schedulers.newBoundedElastic(threads,queue,"notification-jdbc");}
     public Mono<Preference> preference(UUID user){return blocking(()->repository.preference(user));}
     public Mono<Preference> savePreference(Preference value){return blocking(()->repository.save(value));}
     public Mono<Page> list(UUID user,int page,int size){if(page<0||size<1||size>50)return Mono.error(new IllegalArgumentException("Invalid page or size"));return blocking(()->new Page(repository.list(user,page,size),repository.count(user),page,size));}
@@ -32,6 +35,7 @@ public class NotificationService {
     public Mono<Void> deleteTemplate(UUID id){return blocking(()->{repository.deleteTemplate(id);return 0;}).then();}
     public Mono<NotificationRecord> enqueue(UUID user,String code,String title,String body){return blocking(()->{Template t=repository.template(code).orElseThrow(()->new IllegalArgumentException("Template not found"));return repository.insert(user,code,title==null?t.title():title,body==null?t.body():body);});}
     public Flux<NotificationRecord> enqueue(List<Enqueue> values){if(values==null||values.isEmpty()||values.size()>100)return Flux.error(new IllegalArgumentException("Batch size must be 1..100"));return Flux.fromIterable(values).concatMap(v->enqueue(v.user(),v.code(),v.title(),v.body()));}
+    public Flux<DeliveryAttempt> attempts(UUID notification){return blocking(()->deliveries.attempts(notification)).flatMapMany(Flux::fromIterable);}
     private <T>Mono<T>blocking(java.util.concurrent.Callable<T> action){return Mono.fromCallable(action).subscribeOn(jdbc);}
     public record Page(List<NotificationRecord> items,long total,int page,int size){}
     public record Enqueue(UUID user,String code,String title,String body){}

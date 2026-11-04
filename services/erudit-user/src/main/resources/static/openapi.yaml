@@ -32,6 +32,44 @@ paths:
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/UpdateUserRequest'}}}}
       responses: {'200': {description: Updated, content: {application/json: {schema: {$ref: '#/components/schemas/UserResponse'}}}}}
     delete: {tags: [Users], operationId: deleteUser, responses: {'204': {description: Deleted}}}
+  /api/v1/friends:
+    get:
+      tags: [Friends]
+      operationId: listFriends
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: page, in: query, schema: {type: integer, default: 0}}, {name: size, in: query, schema: {type: integer, default: 20, maximum: 50}}]
+      responses: {'200': {description: Friends, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/PublicUserResponse'}}}}}}
+  /api/v1/friends/requests:
+    post:
+      tags: [Friends]
+      operationId: requestFriend
+      parameters: [{$ref: '#/components/parameters/UserId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/FriendRequest'}}}}
+      responses: {'202': {description: Requested}}
+  /api/v1/friends/requests/{id}/{decision}:
+    post:
+      tags: [Friends]
+      operationId: decideFriendRequest
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}, {name: decision, in: path, required: true, schema: {type: string, enum: [accept, reject]}}]
+      responses: {'204': {description: Decided}}
+  /api/v1/friends/{friendId}:
+    delete:
+      tags: [Friends]
+      operationId: removeFriend
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: friendId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'204': {description: Removed}}
+  /api/v1/devices:
+    post:
+      tags: [Devices]
+      operationId: registerDevice
+      parameters: [{$ref: '#/components/parameters/UserId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/DeviceRequest'}}}}
+      responses: {'201': {description: Device, content: {application/json: {schema: {$ref: '#/components/schemas/DeviceResponse'}}}}}
+  /api/v1/devices/{id}:
+    delete:
+      tags: [Devices]
+      operationId: revokeDevice
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'204': {description: Revoked}}
   /api/v1/users/{id}/settings:
     parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
     get: {tags: [User Settings], operationId: getSettings, responses: {'200': {description: Settings, content: {application/json: {schema: {$ref: '#/components/schemas/SettingsResponse'}}}}}}
@@ -62,7 +100,13 @@ paths:
         '404':
           description: User not found
 components:
+  parameters:
+    UserId: {name: X-User-Id, in: header, required: false, schema: {type: string, format: uuid, default: '00000000-0000-0000-0000-000000000001'}}
   schemas:
+    FriendRequest: {type: object, required: [userId], properties: {userId: {type: string, format: uuid}}}
+    PublicUserResponse: {type: object, required: [id, displayName], properties: {id: {type: string, format: uuid}, displayName: {type: string}}}
+    DeviceRequest: {type: object, required: [pushToken, platform], properties: {pushToken: {type: string, minLength: 8}, platform: {type: string, enum: [IOS, ANDROID, WEB]}}}
+    DeviceResponse: {type: object, required: [id, platform], properties: {id: {type: string, format: uuid}, platform: {type: string}}}
     RegisterRequest:
       type: object
       required: [email, displayName]
@@ -93,6 +137,7 @@ components:
       - id
       - displayName
       - active
+      - deviceIds
       properties:
         id:
           type: string
@@ -101,3 +146,8 @@ components:
           type: string
         active:
           type: boolean
+        deviceIds:
+          type: array
+          items:
+            type: string
+            format: uuid

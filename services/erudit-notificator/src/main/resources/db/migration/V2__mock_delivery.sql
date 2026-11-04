@@ -1,0 +1,2 @@
+CREATE TABLE delivery_attempts(id UUID PRIMARY KEY,notification_id UUID NOT NULL REFERENCES notifications(id) ON DELETE CASCADE,attempt INTEGER NOT NULL,status VARCHAR(32) NOT NULL,payload_preview VARCHAR(500) NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT now(),UNIQUE(notification_id,attempt));
+CREATE INDEX idx_delivery_attempts_notification ON delivery_attempts(notification_id,created_at DESC);

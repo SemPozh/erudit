@@ -1,0 +1,4 @@
+package com.erudit.notificator.service;import com.erudit.notificator.model.*;import com.erudit.notificator.repository.DeliveryRepository;import java.time.*;import lombok.RequiredArgsConstructor;import org.springframework.beans.factory.annotation.Value;import org.springframework.stereotype.Service;
+@Service @RequiredArgsConstructor public class MockNotificationSender {private final DeliveryRepository repository;@Value("${erudit.notifications.daily-limit:10}")private int dailyLimit;@Value("${erudit.notifications.quiet-start:22}")private int quietStart;@Value("${erudit.notifications.quiet-end:8}")private int quietEnd;
+ public DeliveryAttempt send(NotificationRecord n,OffsetDateTime now){int hour=now.getHour();if(hour>=quietStart||hour<quietEnd)return repository.record(n,"SKIPPED_QUIET_HOURS");if(repository.deliveredToday(n.userId())>=dailyLimit)return repository.record(n,"SKIPPED_DAILY_LIMIT");return repository.record(n,"MOCK_DELIVERED");}
+}
