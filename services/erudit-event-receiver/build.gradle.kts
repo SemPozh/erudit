@@ -1,6 +1,9 @@
 apply(from = rootProject.file("gradle/service-conventions.gradle"))
 
 dependencies {
+    "implementation"("org.springframework.boot:spring-boot-starter-flyway")
+    "runtimeOnly"("org.postgresql:postgresql")
+    "runtimeOnly"("org.flywaydb:flyway-database-postgresql")
     "implementation"(project(":platform:erudit-observability"))
     "implementation"("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
     "implementation"("org.springframework.boot:spring-boot-starter-actuator")

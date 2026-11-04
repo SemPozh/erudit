@@ -9,8 +9,6 @@ import com.erudit.eventreceiver.service.EventIngestionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -48,11 +46,10 @@ class EventStoresTestcontainersTest {
                 .option(PASSWORD, POSTGRES.getPassword())
                 .build();
         database = DatabaseClient.create(ConnectionFactories.get(options));
-        Flux.fromArray(Files.readString(Path.of("src/main/resources/schema.sql")).split(";"))
-                .filter(statement -> !statement.isBlank())
-                .concatMap(statement -> database.sql(statement).then())
-                .then()
-                .block();
+        var flyway = org.flywaydb.core.Flyway.configure()
+                .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword()).load();
+        flyway.migrate();
+        assertThat(flyway.migrate().migrationsExecuted).isZero();
         store=new ClickHouseEventStore(CLICKHOUSE.getJdbcUrl(),CLICKHOUSE.getUsername(),CLICKHOUSE.getPassword(),new ObjectMapper());
         store.initialize().block();
     }

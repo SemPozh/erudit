@@ -109,14 +109,17 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_content
-      POSTGRES_USER: ${CONTENT_DB_USER:-erudit_content}
-      POSTGRES_PASSWORD: ${CONTENT_DB_PASSWORD:-erudit_content}
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${CONTENT_DB_OWNER_PASSWORD:-local-content-bootstrap}
+      APP_DB_USER: ${CONTENT_DB_USER:-erudit_content}
+      APP_DB_PASSWORD: ${CONTENT_DB_PASSWORD:-erudit_content}
     volumes:
       - content_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks:
       - internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${CONTENT_DB_USER:-erudit_content} -d erudit_content"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -131,6 +134,7 @@ services:
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_URL: http://discovery-server:8761/eureka/
       R2DBC_URL: r2dbc:postgresql://event-postgres:5432/erudit_event
+      DB_URL: jdbc:postgresql://event-postgres:5432/erudit_event
       DB_USERNAME: ${EVENT_DB_USER:-erudit_event}
       DB_PASSWORD: ${EVENT_DB_PASSWORD:-erudit_event}
       CLICKHOUSE_URL: http://event-clickhouse:8123/erudit_events
@@ -154,12 +158,16 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_event
-      POSTGRES_USER: ${EVENT_DB_USER:-erudit_event}
-      POSTGRES_PASSWORD: ${EVENT_DB_PASSWORD:-erudit_event}
-    volumes: [event_postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${EVENT_DB_OWNER_PASSWORD:-local-event-bootstrap}
+      APP_DB_USER: ${EVENT_DB_USER:-erudit_event}
+      APP_DB_PASSWORD: ${EVENT_DB_PASSWORD:-erudit_event}
+    volumes:
+      - event_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${EVENT_DB_USER:-erudit_event} -d erudit_event"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -207,12 +215,16 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_notification
-      POSTGRES_USER: ${NOTIFICATION_DB_USER:-erudit_notification}
-      POSTGRES_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-erudit_notification}
-    volumes: [notification_postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${NOTIFICATION_DB_OWNER_PASSWORD:-local-notification-bootstrap}
+      APP_DB_USER: ${NOTIFICATION_DB_USER:-erudit_notification}
+      APP_DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-erudit_notification}
+    volumes:
+      - notification_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${NOTIFICATION_DB_USER:-erudit_notification} -d erudit_notification"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -275,12 +287,16 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_user
-      POSTGRES_USER: ${USER_DB_USER:-erudit_user}
-      POSTGRES_PASSWORD: ${USER_DB_PASSWORD:-erudit_user}
-    volumes: [user_postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${USER_DB_OWNER_PASSWORD:-local-user-bootstrap}
+      APP_DB_USER: ${USER_DB_USER:-erudit_user}
+      APP_DB_PASSWORD: ${USER_DB_PASSWORD:-erudit_user}
+    volumes:
+      - user_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${USER_DB_USER:-erudit_user} -d erudit_user"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -313,12 +329,16 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_quiz
-      POSTGRES_USER: ${QUIZ_DB_USER:-erudit_quiz}
-      POSTGRES_PASSWORD: ${QUIZ_DB_PASSWORD:-erudit_quiz}
-    volumes: [quiz_postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${QUIZ_DB_OWNER_PASSWORD:-local-quiz-bootstrap}
+      APP_DB_USER: ${QUIZ_DB_USER:-erudit_quiz}
+      APP_DB_PASSWORD: ${QUIZ_DB_PASSWORD:-erudit_quiz}
+    volumes:
+      - quiz_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${QUIZ_DB_USER:-erudit_quiz} -d erudit_quiz"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -340,7 +360,6 @@ services:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
       payment-postgres: {condition: service_healthy}
-      user-service: {condition: service_healthy}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8087/actuator/health"]
@@ -353,12 +372,16 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_payment
-      POSTGRES_USER: ${PAYMENT_DB_USER:-erudit_payment}
-      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:-erudit_payment}
-    volumes: [payment_postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${PAYMENT_DB_OWNER_PASSWORD:-local-payment-bootstrap}
+      APP_DB_USER: ${PAYMENT_DB_USER:-erudit_payment}
+      APP_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:-erudit_payment}
+    volumes:
+      - payment_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${PAYMENT_DB_USER:-erudit_payment} -d erudit_payment"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -391,12 +414,16 @@ services:
     image: postgres:17-alpine
     environment:
       POSTGRES_DB: erudit_admin
-      POSTGRES_USER: ${ADMIN_DB_USER:-erudit_admin}
-      POSTGRES_PASSWORD: ${ADMIN_DB_PASSWORD:-erudit_admin}
-    volumes: [admin_postgres_data:/var/lib/postgresql/data]
+      POSTGRES_USER: erudit_bootstrap
+      POSTGRES_PASSWORD: ${ADMIN_DB_OWNER_PASSWORD:-local-admin-bootstrap}
+      APP_DB_USER: ${ADMIN_DB_USER:-erudit_admin}
+      APP_DB_PASSWORD: ${ADMIN_DB_PASSWORD:-erudit_admin}
+    volumes:
+      - admin_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks: [internal]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${ADMIN_DB_USER:-erudit_admin} -d erudit_admin"]
+      test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
       timeout: 3s
       retries: 20
@@ -495,7 +522,7 @@ volumes:
 
 networks:
   edge:
-    name: erudit-edge
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-edge
   internal:
-    name: erudit-internal
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-internal
     internal: true
