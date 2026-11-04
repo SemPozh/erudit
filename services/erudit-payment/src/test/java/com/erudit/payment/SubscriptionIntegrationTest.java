@@ -41,13 +41,16 @@ class SubscriptionIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired SubscriptionService service;
     @Autowired SubscriptionMaintenance maintenance;
+    @Autowired ProviderPaymentService providers;
+    @Autowired MockWebhookVerifier signatures;
+    private final tools.jackson.databind.json.JsonMapper json = tools.jackson.databind.json.JsonMapper.builder().build();
     @Autowired PaymentRepository repository;
     @MockitoBean UserClient users;
     @TestConfiguration static class TimeConfiguration {
         @Bean @Primary Clock fixedClock() { return Clock.fixed(NOW, ZoneOffset.UTC); }
     }
     @BeforeEach void reset() {
-        jdbc.execute("TRUNCATE payments, subscriptions, subscription_owners");
+        jdbc.execute("TRUNCATE payment_provider_events, payments, subscriptions, subscription_owners CASCADE");
         when(users.get(any())).thenAnswer(call -> new UserLookup(call.getArgument(0), "Demo", true));
     }
     @Test void supportsSwaggerPurchaseCurrentHistoryCancelAndEntitlement() throws Exception {
@@ -147,5 +150,153 @@ class SubscriptionIntegrationTest {
         assertThat(service.payments(UUID.randomUUID(),0,20).items()).isEmpty();
         assertThat(service.payments(USER,1,1).items()).isEmpty();
         assertThatThrownBy(() -> service.payments(USER,0,0)).isInstanceOf(PaymentException.class);
+    }
+
+    private java.util.Map<String,Object> event(UUID id, String eventId, String type, Instant at) {
+        return java.util.Map.of("subscriptionId",id.toString(),"eventId",eventId,"type",type,"occurredAt",at.toString());
+    }
+    private void deliver(java.util.Map<String,Object> event) {
+        providers.webhook("MOCK",signatures.signature(event),event);
+    }
+    @Test void receiptHttpReplayCannotExtendOrReactivateAndBindsItsOwner() throws Exception {
+        String body = "{\"provider\":\"APP_STORE\",\"receipt\":\"monthly-receipt-87\"}";
+        mvc.perform(post("/api/v1/subscriptions/mobile/verify").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("ACTIVE"));
+        var subscription = repository.latest(USER).orElseThrow();
+        service.cancel(USER,subscription.id());
+        mvc.perform(post("/api/v1/subscriptions/mobile/verify").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("EXPIRED"));
+        assertThat(repository.find(subscription.id()).orElseThrow().endDate()).isEqualTo(subscription.endDate());
+        assertThat(repository.paymentCount(USER)).isOne();
+        mvc.perform(post("/api/v1/subscriptions/mobile/verify").header("X-User-Id",UUID.randomUUID())
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isConflict());
+        mvc.perform(post("/api/v1/subscriptions/mobile/verify").contentType(MediaType.APPLICATION_JSON)
+                .content(body.replace("monthly-receipt-87","invalid-demo"))).andExpect(status().isBadRequest());
+    }
+    @Test void distinctMobileProvidersAndNewReceiptsAreHandledWithoutShorteningAccess() {
+        var yearly = providers.verifyReceipt(USER,"APP_STORE","yearly-receipt-87");
+        var monthly = providers.verifyReceipt(USER,"GOOGLE_PLAY","monthly-receipt-87");
+        assertThat(monthly.id()).isEqualTo(yearly.id());
+        assertThat(monthly.endDate()).isEqualTo(yearly.endDate());
+        providers.verifyReceipt(USER,"APP_STORE","monthly-receipt-87");
+        assertThat(repository.paymentCount(USER)).isEqualTo(3);
+    }
+    @Test void receiptCannotActivateWhenUserIsUnavailable() {
+        when(users.get(USER)).thenThrow(new IllegalStateException("offline"));
+        assertThatThrownBy(() -> providers.verifyReceipt(USER,"APP_STORE","receipt-87"))
+                .isInstanceOfSatisfying(PaymentException.class,e -> assertThat(e.status()).isEqualTo(503));
+        assertThat(repository.latest(USER)).isEmpty();
+    }
+    @Test void webhookHttpChecksSignatureAndDuplicateIdentity() throws Exception {
+        var subscription = service.create(USER,"PREMIUM_MONTHLY","mock");
+        var event = event(subscription.id(),"renew-87","RENEWED",NOW.plusSeconds(1));
+        String body = json.writeValueAsString(event);
+        mvc.perform(post("/api/v1/payments/webhooks/MOCK").header("X-Signature","wrong")
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isBadRequest());
+        for (int i=0;i<2;i++) mvc.perform(post("/api/v1/payments/webhooks/MOCK").header("X-Signature",signatures.signature(event))
+                .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isNoContent());
+        assertThat(repository.find(subscription.id()).orElseThrow().endDate()).isEqualTo(subscription.endDate().plus(Duration.ofDays(30)));
+        assertThat(repository.paymentCount(USER)).isEqualTo(2);
+        var conflicting = event(subscription.id(),"renew-87","CANCELLED",NOW.plusSeconds(2));
+        assertThatThrownBy(() -> deliver(conflicting)).isInstanceOfSatisfying(PaymentException.class,e -> assertThat(e.status()).isEqualTo(409));
+    }
+    @Test void staleAndEqualEventsCannotUndoNewerRenewalCancelAndExpiration() {
+        var subscription = service.create(USER,"PREMIUM_MONTHLY","mock");
+        deliver(event(subscription.id(),"cancel-87","CANCELLED",NOW.plusSeconds(10)));
+        assertThat(service.entitlement(USER).premium()).isFalse();
+        deliver(event(subscription.id(),"stale-renew-87","RENEWED",NOW.plusSeconds(9)));
+        deliver(event(subscription.id(),"equal-renew-87","RENEWED",NOW.plusSeconds(10)));
+        assertThat(repository.find(subscription.id()).orElseThrow().status()).isEqualTo("EXPIRED");
+        deliver(event(subscription.id(),"new-renew-87","RENEWED",NOW.plusSeconds(11)));
+        assertThat(service.entitlement(USER).premium()).isTrue();
+        deliver(event(subscription.id(),"stale-expire-87","EXPIRED",NOW.plusSeconds(10)));
+        assertThat(service.entitlement(USER).premium()).isTrue();
+        deliver(event(subscription.id(),"new-expire-87","EXPIRED",NOW.plusSeconds(12)));
+        assertThat(service.entitlement(USER).premium()).isFalse();
+        assertThat(repository.paymentCount(USER)).isEqualTo(2);
+    }
+    @Test void manualCancellationAndNewSubscriptionRejectOldRenewals() {
+        var old = service.create(USER,"PREMIUM_MONTHLY","mock");
+        service.cancel(USER,old.id());
+        deliver(event(old.id(),"older-than-manual","RENEWED",NOW.minusSeconds(1)));
+        assertThat(service.entitlement(USER).premium()).isFalse();
+        var current = service.create(USER,"PREMIUM_YEARLY","mock");
+        deliver(event(old.id(),"old-subscription-renew","RENEWED",NOW.plusSeconds(1)));
+        assertThat(service.current(USER).id()).isEqualTo(current.id());
+        assertThat(repository.paymentCount(USER)).isEqualTo(2);
+    }
+    @Test void inactiveTariffDoesNotPreventProviderCancellationOrRenewal() {
+        var subscription = service.create(USER,"PREMIUM_YEARLY","mock");
+        jdbc.update("UPDATE subscription_plans SET available=false WHERE code='PREMIUM_YEARLY'");
+        try {
+            deliver(event(subscription.id(),"inactive-renew","RENEWED",NOW.plusSeconds(1)));
+            assertThat(repository.find(subscription.id()).orElseThrow().endDate()).isEqualTo(subscription.endDate().plus(Duration.ofDays(365)));
+            deliver(event(subscription.id(),"inactive-cancel","CANCELLED",NOW.plusSeconds(2)));
+            assertThat(service.entitlement(USER).premium()).isFalse();
+        } finally { jdbc.update("UPDATE subscription_plans SET available=true WHERE code='PREMIUM_YEARLY'"); }
+    }
+    @Test void failedReceiptAndRenewalRollBackIdempotencyAndSubscriptionChanges() {
+        var subscription = service.create(USER,"PREMIUM_MONTHLY","mock");
+        var event = event(subscription.id(),"retry-after-rollback","RENEWED",NOW.plusSeconds(1));
+        jdbc.execute("ALTER TABLE payments ADD CONSTRAINT test_reject CHECK (amount=0) NOT VALID");
+        try {
+            assertThatThrownBy(() -> deliver(event)).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+            assertThatThrownBy(() -> providers.verifyReceipt(USER,"APP_STORE","receipt-rollback"))
+                    .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+            assertThat(repository.find(subscription.id()).orElseThrow().endDate()).isEqualTo(subscription.endDate());
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM payment_provider_events",Integer.class)).isZero();
+            assertThat(jdbc.queryForObject("SELECT count(*) FROM mobile_receipts",Integer.class)).isZero();
+        } finally { jdbc.execute("ALTER TABLE payments DROP CONSTRAINT test_reject"); }
+        deliver(event);
+        providers.verifyReceipt(USER,"APP_STORE","receipt-rollback");
+        assertThat(repository.paymentCount(USER)).isEqualTo(3);
+    }
+    @Test void concurrentReceiptOwnersAndWebhookReplaysRemainAtomic() throws Exception {
+        UUID other = UUID.randomUUID();
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var start = new CountDownLatch(1);
+            java.util.function.Function<UUID,Boolean> claim = user -> {
+                try { start.await(); providers.verifyReceipt(user,"APP_STORE","concurrent-receipt"); return true; }
+                catch (PaymentException conflict) { assertThat(conflict.status()).isEqualTo(409); return false; }
+                catch (InterruptedException e) { throw new RuntimeException(e); }
+            };
+            var first = executor.submit(() -> claim.apply(USER)); var second = executor.submit(() -> claim.apply(other));start.countDown();
+            assertThat(java.util.List.of(first.get(20,TimeUnit.SECONDS),second.get(20,TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder(true,false);
+            UUID owner = repository.latest(USER).isPresent() ? USER : other;
+            var event = event(repository.latest(owner).orElseThrow().id(),"concurrent-webhook","RENEWED",NOW.plusSeconds(1));
+            var a=executor.submit(() -> deliver(event)); var b=executor.submit(() -> deliver(event));
+            a.get(20,TimeUnit.SECONDS); b.get(20,TimeUnit.SECONDS);
+            assertThat(repository.paymentCount(owner)).isEqualTo(2);
+        }
+    }
+    @Test void missingSubscriptionDoesNotConsumeWebhookIdentity() {
+        var event=event(UUID.randomUUID(),"unknown-subscription","RENEWED",NOW);
+        assertThatThrownBy(() -> deliver(event)).isInstanceOfSatisfying(PaymentException.class,e -> assertThat(e.status()).isEqualTo(404));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM payment_provider_events",Integer.class)).isZero();
+    }
+    @Test void demoMigrationAndPublishedSwaggerSignatureAreExecutable() throws Exception {
+        jdbc.execute(java.nio.file.Files.readString(java.nio.file.Path.of("src/main/resources/db/demo/R__mock_payment_example.sql")));
+        UUID id=UUID.fromString("00000000-0000-0000-0000-000000008700");
+        assertThat(service.entitlement(USER).premium()).isFalse();
+        var event=event(id,"demo-renewal-87","RENEWED",Instant.parse("2026-11-04T12:00:00Z"));
+        assertThat(signatures.signature(event)).isEqualTo("4733679dfa15539535a042cc17b59898a29775016d638eca845beb47a1251465");
+        deliver(event);
+        assertThat(service.entitlement(USER).premium()).isTrue();
+    }
+
+    @Test void eventsBeforePurchaseCannotCancelNewPaymentOrReceipt() {
+        var bought=service.create(USER,"PREMIUM_MONTHLY","mock");
+        deliver(event(bought.id(),"before-purchase","CANCELLED",NOW.minusSeconds(1)));
+        assertThat(service.entitlement(USER).premium()).isTrue();
+        providers.verifyReceipt(USER,"APP_STORE","new-mobile-purchase");
+        deliver(event(bought.id(),"before-receipt","CANCELLED",NOW.minusSeconds(1)));
+        assertThat(service.entitlement(USER).premium()).isTrue();
+    }
+
+    @Test void maximumProviderEventIdFitsThePaymentReference() {
+        var subscription=service.create(USER,"PREMIUM_MONTHLY","mock");
+        deliver(event(subscription.id(),"e".repeat(255),"RENEWED",NOW.plusSeconds(1)));
+        assertThat(repository.paymentCount(USER)).isEqualTo(2);
     }
 }

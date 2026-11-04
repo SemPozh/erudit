@@ -1764,7 +1764,7 @@ paths:
       - Payments
       operationId: verifyMobileReceipt
       summary: Подтвердить покупку в магазине
-      description: Верифицирует чек App Store или Google Play и синхронизирует подписку.
+      description: Локальный mock App Store/Google Play. Пример receipt — monthly-receipt-demo-87; invalid* отклоняется. Повтор не продлевает подписку.
       x-task-id: 45
       x-implementation-status: implemented
       requestBody:
@@ -1792,7 +1792,7 @@ paths:
       - Payments
       operationId: paymentWebhook
       summary: Вебхук платёжного провайдера
-      description: Проверяет подпись и идемпотентно обрабатывает событие платёжного провайдера.
+      description: Локальный mock webhook, HMAC-SHA256 по JSON с сортировкой ключей. Demo key — local-webhook-secret. Примеры в контракте payment service; старые события игнорируются.
       x-task-id: 62
       x-implementation-status: implemented
       security: []

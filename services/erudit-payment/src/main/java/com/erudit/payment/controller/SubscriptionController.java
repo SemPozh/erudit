@@ -4,6 +4,7 @@ import com.erudit.payment.model.Subscription;
 import com.erudit.payment.openapi.api.*;
 import com.erudit.payment.openapi.model.*;
 import com.erudit.payment.service.SubscriptionService;
+import com.erudit.payment.service.ProviderPaymentService;
 import java.time.ZoneOffset;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class SubscriptionController implements SubscriptionsApi, PaymentsApi, EntitlementsApi {
     private static final UUID DEMO_USER = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private final SubscriptionService service;
-    public SubscriptionController(SubscriptionService service) { this.service = service; }
+    private final ProviderPaymentService providers;
+    public SubscriptionController(SubscriptionService service, ProviderPaymentService providers) {
+        this.service = service; this.providers = providers;
+    }
     private UUID user(UUID value) { return value == null ? DEMO_USER : value; }
     @Override public ResponseEntity<SubscriptionPlanListResponse> listSubscriptionPlans() {
         return ResponseEntity.ok(new SubscriptionPlanListResponse(service.plans().stream().map(p ->
@@ -41,6 +45,13 @@ public class SubscriptionController implements SubscriptionsApi, PaymentsApi, En
         var result = service.entitlement(userId);
         return ResponseEntity.ok(new EntitlementResponse(result.userId(), result.premium())
                 .expiresAt(result.expiresAt() == null ? null : result.expiresAt().atOffset(ZoneOffset.UTC)));
+    }
+    @Override public ResponseEntity<SubscriptionResponse> verifyMobileReceipt(MobileReceiptRequest body, UUID xUserId) {
+        return ResponseEntity.ok(response(providers.verifyReceipt(user(xUserId),body.getProvider().getValue(),body.getReceipt())));
+    }
+    @Override public ResponseEntity<Void> paymentWebhook(String provider, String xSignature, java.util.Map<String,Object> body) {
+        providers.webhook(provider,xSignature,body);
+        return ResponseEntity.noContent().build();
     }
     private SubscriptionResponse response(Subscription s) {
         return new SubscriptionResponse(new SubscriptionDataResponse(s.id(), s.status())

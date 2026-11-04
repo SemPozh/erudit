@@ -329,6 +329,7 @@ services:
       dockerfile: Dockerfile.service
       args: {MODULE: ":services:erudit-payment"}
     environment:
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-local-webhook-secret}
       CONFIG_SERVER_URL: http://config-server:8888
       EUREKA_URL: http://discovery-server:8761/eureka/
       DB_URL: jdbc:postgresql://payment-postgres:5432/erudit_payment
