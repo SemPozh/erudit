@@ -52,10 +52,9 @@ QuizCardGenerator для задачи 89. Запросы к AI здесь не �
 `/internal/v1/content/reports/{id}/resolve` предназначены для будущего Admin facade.
 Gateway не открывает /internal/**.
 
-До реализации фасада задачей 90 Gateway направляет `/api/v1/admin/content/**`
-сразу в content, сохраняя внешние legacy paths. Остальные admin paths остаются
-в erudit-admin; пересечения предикатов исключены и проверены тестом. CORS
-открывает заголовки feed для браузера.
+Gateway направляет `/api/v1/admin/**` в Admin facade (задача 90), который
+обращается к внутренним Content API по Feign. Внешние legacy paths сохранены;
+CORS открывает заголовки feed для браузера.
 
 ## Проверка
 

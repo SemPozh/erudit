@@ -99,6 +99,18 @@ paths:
                 $ref: '#/components/schemas/UserLookupResponse'
         '404':
           description: User not found
+  /internal/v1/admin/users:
+    get:
+      tags: [Internal Users]
+      operationId: adminSearchUsers
+      parameters: [{name: query, in: query, schema: {type: string}}, {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}, {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}]
+      responses: {'200': {description: User page, content: {application/json: {schema: {$ref: '#/components/schemas/AdminUserPage'}}}}}
+  /internal/v1/admin/users/{id}/block:
+    post:
+      tags: [Internal Users]
+      operationId: adminBlockUser
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'204': {description: Blocked}, '404': {description: User not found}}
 components:
   parameters:
     UserId: {name: X-User-Id, in: header, required: false, schema: {type: string, format: uuid, default: '00000000-0000-0000-0000-000000000001'}}
@@ -151,3 +163,11 @@ components:
           items:
             type: string
             format: uuid
+    AdminUserResponse:
+      type: object
+      required: [id,email,name,registeredAt,status]
+      properties: {id: {type: string, format: uuid}, email: {type: string}, name: {type: string}, registeredAt: {type: string, format: date-time}, status: {type: string}}
+    AdminUserPage:
+      type: object
+      required: [data,page,size,total]
+      properties: {data: {type: array, items: {$ref: '#/components/schemas/AdminUserResponse'}}, page: {type: integer}, size: {type: integer}, total: {type: integer, format: int64}}

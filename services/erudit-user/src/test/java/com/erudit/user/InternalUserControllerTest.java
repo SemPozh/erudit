@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.erudit.user.controller.InternalUserController;
 import com.erudit.user.model.SocialModels.InternalUser;
 import com.erudit.user.repository.SocialRepository;
+import com.erudit.user.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class InternalUserControllerTest {
     @Autowired MockMvc mvc;
     @MockitoBean SocialRepository repository;
+    @MockitoBean UserRepository users;
     @Test void internalLookupReturnsOnlyOwnedUserDataAnd404ForMissingUser() throws Exception {
         UUID id = UUID.randomUUID();
         when(repository.internal(id)).thenReturn(new InternalUser(id,"Demo",true,List.of()));

@@ -972,7 +972,7 @@ paths:
       operationId: listModerationQueue
       summary: Очередь модерации
       description: Возвращает ожидающий решения контент. В ЛР 1 доступен без проверки роли.
-      x-task-id: 78
+      x-task-id: 90
       x-implementation-status: implemented
       parameters: *id004
       responses:
@@ -995,7 +995,7 @@ paths:
       operationId: approveContent
       summary: Одобрить контент
       description: Публикует контент из очереди модерации. В ЛР 1 доступен без проверки роли.
-      x-task-id: 78
+      x-task-id: 90
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -1029,7 +1029,7 @@ paths:
       operationId: rejectContent
       summary: Отклонить контент
       description: Отклоняет контент из очереди модерации. В ЛР 1 доступен без проверки роли.
-      x-task-id: 78
+      x-task-id: 90
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -1063,7 +1063,7 @@ paths:
       operationId: listContentReports
       summary: Жалобы на контент
       description: Возвращает открытые жалобы в порядке поступления. В ЛР 1 доступен без проверки роли.
-      x-task-id: 78
+      x-task-id: 90
       x-implementation-status: implemented
       parameters: *id004
       responses:
@@ -1086,7 +1086,7 @@ paths:
       operationId: resolveContentReport
       summary: Рассмотреть жалобу
       description: Необратимо принимает или отклоняет открытую жалобу и записывает действие в аудит. В ЛР 1 доступен без проверки роли.
-      x-task-id: 78
+      x-task-id: 90
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -2288,7 +2288,7 @@ paths:
       operationId: listAdminUsers
       summary: Пользователи
       description: Реализовано в задаче 57. В ЛР 1 доступен без проверки роли.
-      x-task-id: 57
+      x-task-id: 90
       x-implementation-status: implemented
       parameters:
       - *id002
@@ -2318,7 +2318,7 @@ paths:
       operationId: blockUser
       summary: Заблокировать пользователя
       description: Реализовано в задаче 57. В ЛР 1 доступен без проверки роли.
-      x-task-id: 57
+      x-task-id: 90
       x-implementation-status: implemented
       parameters:
       - name: id
@@ -2342,7 +2342,7 @@ paths:
       operationId: sendManyNotifications
       summary: Массовое уведомление
       description: Реализовано в задаче 57. В ЛР 1 доступен без проверки роли.
-      x-task-id: 57
+      x-task-id: 90
       x-implementation-status: implemented
       requestBody:
         required: true
@@ -2393,7 +2393,7 @@ paths:
       operationId: listAuditLog
       summary: Журнал действий администратора
       description: Реализовано в задаче 58. В ЛР 1 доступен без проверки роли.
-      x-task-id: 58
+      x-task-id: 90
       x-implementation-status: implemented
       parameters:
       - name: page
@@ -2447,6 +2447,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/admin/users/{id}/subscription: {get: {tags: [Admin], operationId: viewUserSubscription, x-task-id: 90, parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}], responses: {'200': {description: Payment view through Feign, content: {application/json: {schema: {$ref: '#/components/schemas/SubscriptionResponse'}}}}, default: {description: Error, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}, description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'}}
+  /api/v1/admin/users/{id}/payments: {get: {tags: [Admin], operationId: viewUserPayments, x-task-id: 90, parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}, {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}, {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}], responses: {'200': {description: Payment view through Feign, content: {application/json: {schema: {$ref: '#/components/schemas/PaymentListResponse'}}}, headers: {X-Total-Count: {schema: {type: integer, format: int64}}}}, default: {description: Error, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}, description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'}}
 components:
   schemas:
     QuizHintDataResponse:

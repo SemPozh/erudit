@@ -363,6 +363,44 @@ services:
       timeout: 3s
       retries: 20
 
+  admin-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args: {MODULE: ":services:erudit-admin"}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      DB_URL: jdbc:postgresql://admin-postgres:5432/erudit_admin
+      DB_USERNAME: ${ADMIN_DB_USER:-erudit_admin}
+      DB_PASSWORD: ${ADMIN_DB_PASSWORD:-erudit_admin}
+    networks: [internal]
+    depends_on:
+      config-server: {condition: service_healthy}
+      discovery-server: {condition: service_healthy}
+      admin-postgres: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8081/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  admin-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_admin
+      POSTGRES_USER: ${ADMIN_DB_USER:-erudit_admin}
+      POSTGRES_PASSWORD: ${ADMIN_DB_PASSWORD:-erudit_admin}
+    volumes: [admin_postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ADMIN_DB_USER:-erudit_admin} -d erudit_admin"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   app:
     profiles: [legacy]
     build:
@@ -442,6 +480,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  admin_postgres_data:
   payment_postgres_data:
   user_postgres_data:
   quiz_postgres_data:

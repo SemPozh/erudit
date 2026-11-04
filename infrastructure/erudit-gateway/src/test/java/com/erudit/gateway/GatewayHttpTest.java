@@ -141,7 +141,7 @@ class GatewayHttpTest {
 
     @Test void allExistingPublicContractPathsHaveExactlyOneDiscoveryRoute() throws Exception {
         var configured = routes.getRoutes().collectList().block();
-        assertThat(configured).hasSize(8).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
+        assertThat(configured).hasSize(7).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
         for (String line : Files.readAllLines(Path.of(System.getProperty("legacy.openapi")))) {
             if (!line.startsWith("  /api/v1/")) { continue; }
             String path = line.trim().replaceAll("\\{[^}]+}", "123").replaceAll(":$", "");
@@ -152,7 +152,7 @@ class GatewayHttpTest {
             if (path.startsWith("/api/v1/admin/content/")) {
                 var selected=configured.stream().filter(route -> Boolean.TRUE.equals(
                         reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).findFirst().orElseThrow();
-                assertThat(selected.getUri().toString()).isEqualTo("lb://erudit-content");
+                assertThat(selected.getUri().toString()).isEqualTo("lb://erudit-admin");
             }
         }
     }
