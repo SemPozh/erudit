@@ -1,0 +1,33 @@
+services:
+  content-service:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  event-receiver:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  notificator:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  ai-platform:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  user-service:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  quiz-service:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  payment-service:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+  admin-service:
+    profiles: [demo]
+    environment:
+      SPRING_PROFILES_ACTIVE: demo

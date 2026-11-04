@@ -1,0 +1,10 @@
+# Opt-in local diagnostic ports; databases remain private.
+services:
+  config-server:
+    profiles: [debug]
+    ports: ["127.0.0.1:${CONFIG_DEBUG_PORT:-18888}:8888"]
+  discovery-server:
+    profiles: [debug]
+    ports: ["127.0.0.1:${EUREKA_DEBUG_PORT:-18761}:8761"]
+  gateway:
+    profiles: [debug]

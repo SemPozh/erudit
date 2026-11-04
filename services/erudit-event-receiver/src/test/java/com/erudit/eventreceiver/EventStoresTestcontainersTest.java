@@ -64,5 +64,23 @@ class EventStoresTestcontainersTest {
         StepVerifier.create(store.aggregate("sessions",OffsetDateTime.now().minusMinutes(1),OffsetDateTime.now().plusMinutes(1)))
                 .assertNext(v->{assertThat(Thread.currentThread().getName()).startsWith("clickhouse-jdbc");assertThat(v.count()).isEqualTo(1);assertThat(v.users()).isEqualTo(1);}).verifyComplete();
     }
+    @Test void demoStartupIsIdempotentAcrossRestarts() throws Exception {
+        var repository = new EventReceiptRepository(database,new ObjectMapper());
+        var service = new EventIngestionService(repository,store);
+        set(service,"retries",1);set(service,"buffer",16);service.start();
+        var demo = new com.erudit.eventreceiver.demo.DemoEvents(service);
+        demo.run(null);demo.run(null);
+        Long receipts = database.sql("SELECT count(*) FROM event_receipts WHERE payload LIKE '%demo-94%'")
+                .map((row,metadata) -> row.get(0,Long.class)).one().block();
+        assertThat(receipts).isEqualTo(5);
+        var from=OffsetDateTime.parse("2026-01-01T00:00:00Z");var to=from.plusDays(1);
+        long count=0;
+        for(int attempt=0;attempt<50;attempt++){
+            count=store.aggregate("active-users",from,to).block().count();
+            if(count==5)break;
+            Thread.sleep(100);
+        }
+        assertThat(count).isEqualTo(5);
+    }
     private static void set(Object target,String name,Object value)throws Exception{var field=target.getClass().getDeclaredField(name);field.setAccessible(true);field.set(target,value);}
 }

@@ -1,5 +1,5 @@
 openapi: 3.0.3
-info: {title: Erudit AI Internal API, version: 2.0.0}
+info: {"title": "Erudit AI Internal API", "version": "2.0.0", "description": " Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."}
 paths:
   /internal/v1/ai/quiz-generations:
     post:
