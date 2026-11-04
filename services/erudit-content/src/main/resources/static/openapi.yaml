@@ -1,0 +1,225 @@
+openapi: 3.0.3
+info:
+  title: Erudit Content API
+  version: 2.0.0
+servers:
+  - url: /
+tags:
+  - name: Categories
+    description: Content category management
+  - name: Content
+  - name: Media
+paths:
+  /api/v1/content:
+    get:
+      tags: [Content]
+      operationId: listContent
+      parameters:
+        - {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}
+        - {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}
+        - {name: categoryId, in: query, schema: {type: string, format: uuid}}
+        - {name: type, in: query, schema: {type: string}}
+        - {name: difficulty, in: query, schema: {type: string}}
+        - {name: premium, in: query, schema: {type: boolean}}
+        - {name: query, in: query, schema: {type: string}}
+        - {name: sort, in: query, schema: {type: string, enum: ['createdAt,desc','createdAt,asc','title,asc','title,desc','estimatedMinutes,asc','estimatedMinutes,desc'], default: 'createdAt,desc'}}
+      responses:
+        '200':
+          description: Published content page
+          headers: {X-Total-Count: {schema: {type: integer, format: int64}}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/ContentListResponse'}}}
+    post:
+      tags: [Content]
+      operationId: createContent
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ContentRequest'}}}}
+      responses:
+        '201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/ContentResponse'}}}}
+  /api/v1/content/formats:
+    get:
+      tags: [Content]
+      operationId: listFormats
+      responses:
+        '200': {description: Supported formats, content: {application/json: {schema: {$ref: '#/components/schemas/FormatListResponse'}}}}
+  /api/v1/content/{id}:
+    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+    get:
+      tags: [Content]
+      operationId: getContent
+      responses:
+        '200': {description: Content, content: {application/json: {schema: {$ref: '#/components/schemas/ContentResponse'}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+    put:
+      tags: [Content]
+      operationId: updateContent
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ContentRequest'}}}}
+      responses:
+        '200': {description: Updated, content: {application/json: {schema: {$ref: '#/components/schemas/ContentResponse'}}}}
+    delete:
+      tags: [Content]
+      operationId: archiveContent
+      responses: {'204': {description: Archived}, '404': {$ref: '#/components/responses/NotFound'}}
+  /api/v1/media:
+    post:
+      tags: [Media]
+      operationId: uploadMedia
+      requestBody:
+        required: true
+        content: {multipart/form-data: {schema: {type: object, required: [file], properties: {file: {type: string, format: binary}}}}}
+      responses:
+        '201': {description: Uploaded, content: {application/json: {schema: {$ref: '#/components/schemas/MediaResponse'}}}}
+  /api/v1/media/{id}:
+    get:
+      tags: [Media]
+      operationId: getMedia
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses:
+        '200': {description: File, content: {application/octet-stream: {schema: {type: string, format: binary}}}}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /api/v1/content/categories:
+    get:
+      tags: [Categories]
+      operationId: listCategories
+      parameters:
+        - {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}
+        - {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}
+      responses:
+        '200':
+          description: Category page
+          headers:
+            X-Total-Count: {schema: {type: integer, format: int64}}
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryListResponse'}}
+    post:
+      tags: [Categories]
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CategoryRequest'}
+            example: {name: Astronomy}
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryResponse'}}
+        '409': {$ref: '#/components/responses/Conflict'}
+  /api/v1/content/categories/{id}:
+    parameters:
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+    get:
+      tags: [Categories]
+      operationId: getCategory
+      responses:
+        '200':
+          description: Category
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryResponse'}}
+        '404': {$ref: '#/components/responses/NotFound'}
+    put:
+      tags: [Categories]
+      operationId: updateCategory
+      requestBody:
+        required: true
+        content:
+          application/json: {schema: {$ref: '#/components/schemas/CategoryRequest'}}
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CategoryResponse'}}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+    delete:
+      tags: [Categories]
+      operationId: deleteCategory
+      responses:
+        '204': {description: Category deleted}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+components:
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}
+    Conflict:
+      description: Conflict
+      content:
+        application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}
+  schemas:
+    CategoryRequest:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 100, pattern: '.*\S.*', example: Astronomy}
+    CategoryDataResponse:
+      type: object
+      required: [id, name]
+      properties:
+        id: {type: string, format: uuid, example: 10000000-0000-0000-0000-000000000001}
+        name: {type: string, example: Science}
+    CategoryResponse:
+      type: object
+      required: [data]
+      properties:
+        data: {$ref: '#/components/schemas/CategoryDataResponse'}
+    CategoryListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/CategoryDataResponse'}}
+        pagination: {$ref: '#/components/schemas/PageMetadataResponse'}
+    PageMetadataResponse:
+      type: object
+      required: [page, size, total]
+      properties:
+        page: {type: integer, minimum: 0}
+        size: {type: integer, minimum: 1, maximum: 50}
+        total: {type: integer, format: int64, minimum: 0}
+    ContentRequest:
+      type: object
+      required: [categoryId, type, title, description, body, difficulty, estimatedMinutes, premiumLocked, tags]
+      properties:
+        categoryId: {type: string, format: uuid}
+        type: {type: string, enum: [ARTICLE, FACT_CARD, AUDIO, VIDEO, COMBINED, QUIZ_BLOCK]}
+        title: {type: string, minLength: 1, maxLength: 250}
+        description: {type: string, minLength: 1, maxLength: 2000}
+        body: {type: string, minLength: 1}
+        mediaUrl: {type: string, maxLength: 1000}
+        difficulty: {type: string, enum: [BEGINNER, INTERMEDIATE, ADVANCED]}
+        estimatedMinutes: {type: integer, minimum: 1, maximum: 1440}
+        premiumLocked: {type: boolean}
+        tags: {type: array, maxItems: 20, items: {type: string, maxLength: 100}}
+    ContentDataResponse:
+      allOf:
+        - {$ref: '#/components/schemas/ContentRequest'}
+        - {type: object, required: [id, status, createdAt], properties: {id: {type: string, format: uuid}, status: {type: string}, createdAt: {type: string, format: date-time}}}
+    ContentResponse:
+      type: object
+      required: [data]
+      properties: {data: {$ref: '#/components/schemas/ContentDataResponse'}}
+    ContentListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data: {type: array, items: {$ref: '#/components/schemas/ContentDataResponse'}}
+        pagination: {$ref: '#/components/schemas/PageMetadataResponse'}
+    FormatListResponse:
+      type: object
+      required: [data]
+      properties: {data: {type: array, items: {type: string}}}
+    MediaResponse:
+      type: object
+      required: [id, url, contentType, size]
+      properties:
+        id: {type: string, format: uuid}
+        url: {type: string}
+        contentType: {type: string}
+        size: {type: integer, format: int64}
+    ErrorResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status: {type: integer}
+        message: {type: string}

@@ -72,6 +72,56 @@ services:
     restart: unless-stopped
     stop_grace_period: 20s
 
+  content-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE: :services:erudit-content
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      DB_URL: jdbc:postgresql://content-postgres:5432/erudit_content
+      DB_USERNAME: ${CONTENT_DB_USER:-erudit_content}
+      DB_PASSWORD: ${CONTENT_DB_PASSWORD:-erudit_content}
+      MEDIA_STORAGE_PATH: /app/data/media
+    networks:
+      - internal
+    volumes:
+      - content_media_data:/app/data/media
+    depends_on:
+      config-server:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      content-postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    stop_grace_period: 20s
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8083/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  content-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_content
+      POSTGRES_USER: ${CONTENT_DB_USER:-erudit_content}
+      POSTGRES_PASSWORD: ${CONTENT_DB_PASSWORD:-erudit_content}
+    volumes:
+      - content_postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${CONTENT_DB_USER:-erudit_content} -d erudit_content"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
   gateway-echo:
     profiles: [gateway-smoke]
     image: python:3.13-alpine
@@ -181,6 +231,8 @@ services:
     restart: unless-stopped
 
 volumes:
+  content_media_data:
+  content_postgres_data:
   postgres_data:
   clickhouse_data:
   media_data:
