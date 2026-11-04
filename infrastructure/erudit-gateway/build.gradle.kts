@@ -1,6 +1,8 @@
 apply(from = rootProject.file("gradle/service-conventions.gradle"))
 
 dependencies {
+    "implementation"("org.springdoc:springdoc-openapi-starter-webflux-ui:3.1.1")
+    "implementation"("org.yaml:snakeyaml")
     "implementation"(project(":platform:erudit-observability"))
     "implementation"("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
     "implementation"("org.springframework.cloud:spring-cloud-starter-loadbalancer")
@@ -20,4 +22,14 @@ tasks.withType<Test>().configureEach {
         include("*/src/main/resources/static/openapi.yaml")
     })
     systemProperty("service.contracts.root", rootProject.file("services").absolutePath)
+}
+
+// Bundle the same revision of every service contract; no blocking network reads on event loops.
+tasks.named<ProcessResources>("processResources") {
+    rootProject.file("services").listFiles()!!.filter { it.isDirectory }.forEach { service ->
+        from(service.resolve("src/main/resources/static/openapi.yaml")) {
+            into("gateway-contracts")
+            rename { "${service.name}.yaml" }
+        }
+    }
 }

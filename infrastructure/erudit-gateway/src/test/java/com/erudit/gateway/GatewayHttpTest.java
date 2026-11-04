@@ -28,6 +28,8 @@ import org.springframework.test.context.DynamicPropertySource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "springdoc.swagger-ui.config-url=/openapi/swagger-config",
+        "springdoc.swagger-ui.disable-swagger-default-url=true",
         "spring.config.name=isolated-test", "spring.cloud.config.enabled=false", "eureka.client.enabled=false",
         "erudit.gateway.max-body-bytes=64", "spring.cloud.loadbalancer.cache.enabled=false",
         "spring.cloud.gateway.server.webflux.httpclient.connect-timeout=300",
@@ -157,6 +159,32 @@ class GatewayHttpTest {
                 }
             }
         }
+    }
+
+    @Test void swaggerPublishesEveryBundledServiceWithoutPrivateOperations() throws Exception {
+        var mapper = new tools.jackson.databind.ObjectMapper();
+        var config = send(request("/openapi/swagger-config").GET().build());
+        assertThat(config.statusCode()).isEqualTo(200);
+        var urls = mapper.readTree(config.body()).get("urls");
+        assertThat(urls.size()).isEqualTo(8);
+        for (var url : urls) {
+            var response = send(request(url.get("url").asText()).GET().build());
+            assertThat(response.statusCode()).isEqualTo(200);
+            assertThat(response.body()).doesNotContain("/internal/", "securitySchemes", "Internal Users", "localhost:");
+            var doc = mapper.readTree(response.body());
+            assertThat(doc.get("servers").get(0).get("url").asText()).isEqualTo("/");
+            assertThat(doc.get("paths").propertyNames()).allMatch(path -> path.startsWith("/api/v1/"));
+            if (url.get("name").asText().equals("erudit-ai-platform")) {
+                assertThat(doc.get("paths").size()).isZero();
+                assertThat(doc.get("components").size()).isZero();
+            }
+        }
+        assertThat(send(request("/openapi/unknown").GET().build()).statusCode()).isEqualTo(404);
+        var ui = send(request("/swagger-ui/index.html").GET().build());
+        assertThat(ui.statusCode()).isEqualTo(200);
+        assertThat(ui.body()).contains("swagger-ui", "swagger-initializer.js");
+        var initializer = send(request("/swagger-ui/swagger-initializer.js").GET().build());
+        assertThat(initializer.body()).contains("/openapi/swagger-config");
     }
 
     private HttpRequest.Builder request(String path) { return HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)); }
