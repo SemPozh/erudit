@@ -40,6 +40,27 @@ paths:
       operationId: updateSettings
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/SettingsRequest'}}}}
       responses: {'200': {description: Settings, content: {application/json: {schema: {$ref: '#/components/schemas/SettingsResponse'}}}}}
+  /internal/v1/users/{id}:
+    get:
+      tags:
+      - Internal Users
+      operationId: lookupUser
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: User exists (unverified lab context)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLookupResponse'
+        '404':
+          description: User not found
 components:
   schemas:
     RegisterRequest:
@@ -66,3 +87,17 @@ components:
       allOf:
         - {$ref: '#/components/schemas/SettingsRequest'}
         - {type: object, required: [userId], properties: {userId: {type: string, format: uuid}}}
+    UserLookupResponse:
+      type: object
+      required:
+      - id
+      - displayName
+      - active
+      properties:
+        id:
+          type: string
+          format: uuid
+        displayName:
+          type: string
+        active:
+          type: boolean

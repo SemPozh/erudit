@@ -41,4 +41,12 @@ class IntegrationAutoConfigurationTest {
         assertThat(ResilientExecutor.execute(breaker, () -> "recovered", () -> "fallback")).isEqualTo("recovered");
         assertThat(breaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
     }
+
+    @Test
+    void circuitBreakerPolicyAcceptsConfigServerWaitInterval() {
+        var builder = CircuitBreakerConfig.custom().waitIntervalFunctionInOpenState(
+                io.github.resilience4j.core.IntervalFunction.of(10_000));
+        configuration.internalCircuitBreakerPolicy().customize(builder);
+        assertThat(builder.build().getWaitIntervalFunctionInOpenState().apply(1)).isEqualTo(10_000L);
+    }
 }

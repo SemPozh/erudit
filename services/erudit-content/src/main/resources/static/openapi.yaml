@@ -192,6 +192,7 @@ components:
         premiumLocked: {type: boolean}
         tags: {type: array, maxItems: 20, items: {type: string, maxLength: 100}}
     ContentDataResponse:
+      description: Premium description, body and media are visible only with payment entitlement. Otherwise text is replaced with Premium content. X-User-Id is an unverified demo context.
       allOf:
         - {$ref: '#/components/schemas/ContentRequest'}
         - {type: object, required: [id, status, createdAt], properties: {id: {type: string, format: uuid}, status: {type: string}, createdAt: {type: string, format: date-time}}}

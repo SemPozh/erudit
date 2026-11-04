@@ -132,4 +132,26 @@ class CategoryIntegrationTest {
         mvc.perform(multipart("/api/v1/media").file(new MockMultipartFile("file", "fake.png", "image/png", "not png".getBytes())))
                 .andExpect(status().isBadRequest());
     }
+
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    com.erudit.integration.InternalClients.EntitlementClient entitlements;
+
+    @Autowired com.erudit.content.service.ContentItemService content;
+
+    @Test void premiumContentUsesRemoteEntitlementAndRedactsOnOutage() throws Exception {
+        UUID user = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        var item = content.create(new com.erudit.content.service.ContentItemService.Draft(
+                UUID.fromString("10000000-0000-0000-0000-000000000001"), "ARTICLE", "Premium test article",
+                "Secret description", "Secret body", "https://example.com/premium.mp4", "BEGINNER", 5, true, java.util.List.of()));
+        org.mockito.Mockito.when(entitlements.get(user)).thenReturn(
+                new com.erudit.integration.InternalContracts.Entitlement(user,true,null));
+        mvc.perform(get("/api/v1/content/{id}",item.id())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.body").value("Secret body"));
+        org.mockito.Mockito.when(entitlements.get(user)).thenThrow(new IllegalStateException("offline"));
+        mvc.perform(get("/api/v1/content/{id}",item.id())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.body").value("Premium content"))
+                .andExpect(jsonPath("$.data.mediaUrl").isEmpty());
+        mvc.perform(get("/api/v1/content").param("query","Premium test article")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].description").value("Premium content"));
+    }
 }

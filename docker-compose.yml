@@ -323,6 +323,45 @@ services:
       timeout: 3s
       retries: 20
 
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args: {MODULE: ":services:erudit-payment"}
+    environment:
+      CONFIG_SERVER_URL: http://config-server:8888
+      EUREKA_URL: http://discovery-server:8761/eureka/
+      DB_URL: jdbc:postgresql://payment-postgres:5432/erudit_payment
+      DB_USERNAME: ${PAYMENT_DB_USER:-erudit_payment}
+      DB_PASSWORD: ${PAYMENT_DB_PASSWORD:-erudit_payment}
+    networks: [internal]
+    depends_on:
+      config-server: {condition: service_healthy}
+      discovery-server: {condition: service_healthy}
+      payment-postgres: {condition: service_healthy}
+      user-service: {condition: service_healthy}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8087/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
+
+  payment-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: erudit_payment
+      POSTGRES_USER: ${PAYMENT_DB_USER:-erudit_payment}
+      POSTGRES_PASSWORD: ${PAYMENT_DB_PASSWORD:-erudit_payment}
+    volumes: [payment_postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PAYMENT_DB_USER:-erudit_payment} -d erudit_payment"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   app:
     profiles: [legacy]
     build:
@@ -402,6 +441,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  payment_postgres_data:
   user_postgres_data:
   quiz_postgres_data:
   event_clickhouse_data:

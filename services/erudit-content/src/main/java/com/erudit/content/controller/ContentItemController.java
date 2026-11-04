@@ -9,6 +9,8 @@ import com.erudit.content.openapi.model.ContentResponse;
 import com.erudit.content.openapi.model.FormatListResponse;
 import com.erudit.content.openapi.model.PageMetadataResponse;
 import com.erudit.content.service.ContentItemService;
+import com.erudit.content.service.PremiumAccessService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.time.ZoneOffset;
 import java.util.UUID;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ContentItemController implements ContentApi {
     private final ContentItemService service;
+    private final PremiumAccessService premium;
+    private final HttpServletRequest request;
 
     @Override
     public ResponseEntity<ContentResponse> createContent(ContentRequest request) {
@@ -27,13 +31,17 @@ public class ContentItemController implements ContentApi {
         return ResponseEntity.created(URI.create("/api/v1/content/" + item.id())).body(response(item));
     }
 
-    @Override public ResponseEntity<ContentResponse> getContent(UUID id) { return ResponseEntity.ok(response(service.get(id))); }
+    @Override public ResponseEntity<ContentResponse> getContent(UUID id) {
+        var item = service.get(id);
+        return ResponseEntity.ok(response(visible(item, !item.premiumLocked() || hasPremium())));
+    }
 
     @Override
     public ResponseEntity<ContentListResponse> listContent(Integer page, Integer size, UUID categoryId, String type,
                                                             String difficulty, Boolean premium, String query, String sort) {
         var result = service.list(page, size, categoryId, type, difficulty, premium, query, sort);
-        var body = new ContentListResponse(result.items().stream().map(ContentItemController::data).toList(),
+        boolean access = result.items().stream().anyMatch(ContentItem::premiumLocked) && hasPremium();
+        var body = new ContentListResponse(result.items().stream().map(item -> data(visible(item, access))).toList(),
                 new PageMetadataResponse(result.page(), result.size(), result.total()));
         return ResponseEntity.ok().header("X-Total-Count", Long.toString(result.total())).body(body);
     }
@@ -45,6 +53,14 @@ public class ContentItemController implements ContentApi {
     }
 
     @Override public ResponseEntity<Void> archiveContent(UUID id) { service.archive(id); return ResponseEntity.noContent().build(); }
+
+    private boolean hasPremium() { return premium.premiumFor(request.getHeader("X-User-Id")); }
+
+    private static ContentItem visible(ContentItem item, boolean access) {
+        if (!item.premiumLocked() || access) return item;
+        return new ContentItem(item.id(), item.categoryId(), item.type(), item.title(), "Premium content",
+                "Premium content", null, item.difficulty(), item.estimatedMinutes(), true, item.status(), item.tags(), item.createdAt());
+    }
 
     private static ContentItemService.Draft draft(ContentRequest value) {
         return new ContentItemService.Draft(value.getCategoryId(), value.getType().getValue(), value.getTitle(),
