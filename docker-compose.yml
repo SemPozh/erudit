@@ -84,8 +84,11 @@ services:
       DB_URL: jdbc:postgresql://content-postgres:5432/erudit_content
       DB_USERNAME: ${CONTENT_DB_USER:-erudit_content}
       DB_PASSWORD: ${CONTENT_DB_PASSWORD:-erudit_content}
+      MEDIA_STORAGE_PATH: /app/data/media
     networks:
       - internal
+    volumes:
+      - content_media_data:/app/data/media
     depends_on:
       config-server:
         condition: service_healthy
@@ -228,6 +231,7 @@ services:
     restart: unless-stopped
 
 volumes:
+  content_media_data:
   content_postgres_data:
   postgres_data:
   clickhouse_data:
