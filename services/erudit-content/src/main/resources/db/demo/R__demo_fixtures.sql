@@ -1,0 +1,7 @@
+-- Disposable demo profile only; never included in normal migrations.
+INSERT INTO content(id,category_id,type,title,description,body,difficulty,estimated_minutes,premium_locked,status,created_at,updated_at) VALUES
+('11000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','ARTICLE','Demo science','Water on Earth','Water freezes at zero degrees Celsius.','BEGINNER',1,FALSE,'PUBLISHED','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z'),
+('11000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','ARTICLE','Demo moderation','Pending review','The Earth orbits the Sun.','BEGINNER',1,FALSE,'PENDING_MODERATION','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z'),
+('11000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','ARTICLE','Demo premium','Premium example','Light travels at about 300000 kilometres per second.','ADVANCED',2,TRUE,'PUBLISHED','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z') ON CONFLICT DO NOTHING;
+INSERT INTO content_quiz_cards(id,content_id,position,fact,question,answers) VALUES('13000000-0000-0000-0000-000000000001','11000000-0000-0000-0000-000000000001',0,'Water freezes at zero degrees Celsius.','At what temperature does water freeze?',ARRAY['Zero degrees Celsius','One hundred degrees Celsius']) ON CONFLICT DO NOTHING;
+INSERT INTO content_reports(id,content_id,reason,status,created_at) VALUES('12000000-0000-0000-0000-000000000001','11000000-0000-0000-0000-000000000001','Demo factual review','OPEN','2026-01-01T00:00:00Z') ON CONFLICT DO NOTHING;

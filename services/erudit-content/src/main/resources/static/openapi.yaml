@@ -1,5 +1,6 @@
 openapi: 3.0.3
 info:
+  description: " Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."
   title: Erudit Content API
   version: 2.0.0
 servers:
@@ -41,7 +42,7 @@ paths:
       responses:
         '200': {description: Supported formats, content: {application/json: {schema: {$ref: '#/components/schemas/FormatListResponse'}}}}
   /api/v1/content/{id}:
-    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000001'}}]
     get:
       tags: [Content]
       operationId: getContent
@@ -73,7 +74,7 @@ paths:
       operationId: getMedia
       parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
       responses:
-        '200': {description: File, content: {application/octet-stream: {schema: {type: string, format: binary}}}}
+        '200': {description: File, content: {application/octet-stream: {schema: {type: string, format: binary}}, image/png: {schema: {type: string, format: binary}}, image/jpeg: {schema: {type: string, format: binary}}, audio/mpeg: {schema: {type: string, format: binary}}, video/mp4: {schema: {type: string, format: binary}}}}
         '404': {$ref: '#/components/responses/NotFound'}
   /api/v1/content/categories:
     get:
@@ -106,7 +107,7 @@ paths:
         '409': {$ref: '#/components/responses/Conflict'}
   /api/v1/content/categories/{id}:
     parameters:
-      - {name: id, in: path, required: true, schema: {type: string, format: uuid}}
+      - {name: id, in: path, required: true, schema: {type: string, format: uuid, example: '10000000-0000-0000-0000-000000000001'}}
     get:
       tags: [Categories]
       operationId: getCategory
@@ -144,7 +145,7 @@ paths:
       description: Content service workflow. Lab 2 uses unverified X-User-Id; no authorization or role checks.
       x-task-id: 78
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ContentReportRequest'}}}}
       responses: {'201': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/ReportCreatedResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/content/feed:
@@ -163,7 +164,7 @@ paths:
       description: Content service workflow. Lab 2 uses unverified X-User-Id; no authorization or role checks.
       x-task-id: 78
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/QuizCardListResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/content/{id}/progress:
     get:
@@ -172,7 +173,7 @@ paths:
       description: Content service workflow. Lab 2 uses unverified X-User-Id; no authorization or role checks.
       x-task-id: 78
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/ContentProgressResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/content/{id}/view:
     post:
@@ -181,7 +182,7 @@ paths:
       description: Content service workflow. Lab 2 uses unverified X-User-Id; no authorization or role checks.
       x-task-id: 78
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/ContentProgressResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/content/{id}/complete:
     post:
@@ -190,7 +191,7 @@ paths:
       description: Content service workflow. Lab 2 uses unverified X-User-Id; no authorization or role checks.
       x-task-id: 78
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified demo context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/ContentProgressResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /internal/v1/moderation:
     post:
@@ -240,6 +241,7 @@ components:
         application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}
   schemas:
     CategoryRequest:
+      example: {"name":"Demo astronomy"}
       type: object
       required: [name]
       properties:
@@ -269,6 +271,7 @@ components:
         size: {type: integer, minimum: 1, maximum: 50}
         total: {type: integer, format: int64, minimum: 0}
     ContentRequest:
+      example: {"categoryId":"10000000-0000-0000-0000-000000000001","type":"ARTICLE","title":"Swagger science","description":"Local demo article","body":"The Earth orbits the Sun.","difficulty":"BEGINNER","estimatedMinutes":1,"premiumLocked":false,"tags":["demo"]}
       type: object
       required: [categoryId, type, title, description, body, difficulty, estimatedMinutes, premiumLocked, tags]
       properties:
@@ -277,7 +280,7 @@ components:
         title: {type: string, minLength: 1, maxLength: 250}
         description: {type: string, minLength: 1, maxLength: 2000}
         body: {type: string, minLength: 1}
-        mediaUrl: {type: string, maxLength: 1000}
+        mediaUrl: {type: string, maxLength: 1000, nullable: true}
         difficulty: {type: string, enum: [BEGINNER, INTERMEDIATE, ADVANCED]}
         estimatedMinutes: {type: integer, minimum: 1, maximum: 1440}
         premiumLocked: {type: boolean}
@@ -316,6 +319,7 @@ components:
         status: {type: integer}
         message: {type: string}
     ContentReportRequest:
+      example: {"reason":"Demo review requested"}
       type: object
       properties: {reason: {type: string, minLength: 10, maxLength: 500, pattern: .*\S.*, example: В материале есть фактическая ошибка}}
       required: [reason]
@@ -325,7 +329,7 @@ components:
       required: [data]
     QuizCardListResponse:
       type: object
-      properties: {data: {type: array, items: {$ref: '#/components/schemas/QuizCardDataResponse'}}, pagination: {$ref: '#/components/schemas/WorkflowPageMetadata'}}
+      properties: {data: {type: array, items: {$ref: '#/components/schemas/QuizCardDataResponse'}}, pagination: {type: object, nullable: true, allOf: [{$ref: '#/components/schemas/WorkflowPageMetadata'}]}}
       required: [data]
     QuizCardDataResponse:
       type: object
@@ -337,7 +341,7 @@ components:
       required: [data]
     ContentProgressDataResponse:
       type: object
-      properties: {contentId: {type: string, format: uuid}, status: {type: string}, viewedAt: &wf385id001 {type: string, format: date-time}, completedAt: *wf385id001}
+      properties: {contentId: {type: string, format: uuid}, status: {type: string}, viewedAt: &wf385id001 {type: string, format: date-time, nullable: true}, completedAt: *wf385id001}
       required: [contentId, status]
     ContentReportListResponse:
       type: object

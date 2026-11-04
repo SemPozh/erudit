@@ -22,7 +22,7 @@ public class LocalQuizCardGenerator implements QuizCardGenerator {
         String source = item.body() == null || item.body().isBlank() ? item.description() : item.body();
         if (source == null || source.isBlank()) source = item.title();
         AiClient client=ai==null?null:ai.getIfAvailable();
-        if(client!=null){String text=source;var generated=ResilientExecutor.execute(breakers.circuitBreaker("ai"),()->client.card(new AiRequest(item.id().toString(),text)),()->null);if(generated!=null&&!generated.title().isBlank()&&!generated.summary().isBlank())return List.of(new QuizCard(UUID.randomUUID(),item.id(),0,generated.summary(),generated.title(),List.of(generated.summary())));}
+        if(client!=null){String text=source;var generated=ResilientExecutor.execute(breakers.circuitBreaker("ai"),()->client.card(new AiRequest(item.id().toString(),text)),()->null);if(generated!=null&&generated.title()!=null&&!generated.title().isBlank()&&generated.summary()!=null&&!generated.summary().isBlank())return List.of(new QuizCard(UUID.randomUUID(),item.id(),0,generated.summary(),generated.title(),List.of(generated.summary())));}
         List<String> facts = Arrays.stream(source.replaceAll("\\s+"," ").trim().split("(?<=[.!?])\\s+"))
                 .filter(s -> !s.isBlank()).limit(5).toList();
         return IntStream.range(0,facts.size()).mapToObj(i -> new QuizCard(UUID.randomUUID(),item.id(),i,

@@ -6,7 +6,7 @@ COPY infrastructure ./infrastructure
 COPY services ./services
 COPY platform ./platform
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
-RUN ./gradlew :infrastructure:erudit-config-server:bootJar --no-daemon
+RUN --mount=type=cache,target=/root/.gradle,sharing=locked ./gradlew :infrastructure:erudit-config-server:bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app

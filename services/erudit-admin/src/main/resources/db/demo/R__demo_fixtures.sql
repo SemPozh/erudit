@@ -1,0 +1,2 @@
+-- Disposable demo profile only; never included in normal migrations.
+INSERT INTO admin_audit(id,actor_id,action,target_type,target_id,status,request_id,metadata,occurred_at,completed_at) VALUES('94000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000001','DEMO_READY','CONTENT','11000000-0000-0000-0000-000000000002','SUCCESS','demo-94','{}','2026-01-01T00:00:00Z','2026-01-01T00:00:00Z') ON CONFLICT DO NOTHING;

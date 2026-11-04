@@ -1,0 +1,5 @@
+<clickhouse>
+    <!-- Bound the eager schedule pool of the pinned 25.8 image to the local PID budget. -->
+    <background_schedule_pool_size>16</background_schedule_pool_size>
+    <max_server_memory_usage>805306368</max_server_memory_usage>
+</clickhouse>

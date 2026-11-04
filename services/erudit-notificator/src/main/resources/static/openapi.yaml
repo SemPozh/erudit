@@ -1,5 +1,5 @@
 openapi: 3.0.3
-info: {title: Erudit Notification API, version: 2.0.0}
+info: {"title": "Erudit Notification API", "version": "2.0.0", "description": " Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."}
 paths:
   /api/v1/notifications/preferences:
     get: {tags: [Notifications], operationId: getPreferences, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'200': {description: Preferences, content: {application/json: {schema: {$ref: '#/components/schemas/PreferenceResponse'}}}}}}
@@ -11,7 +11,7 @@ paths:
       parameters: [{$ref: '#/components/parameters/UserId'}, {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}, {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}]
       responses: {'200': {description: Inbox, headers: {X-Total-Count: {schema: {type: integer, format: int64}}}, content: {application/json: {schema: {$ref: '#/components/schemas/NotificationPageResponse'}}}}}
   /api/v1/notifications/{id}/read:
-    post: {tags: [Notifications], operationId: markRead, parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}], responses: {'204': {description: Read}}}
+    post: {tags: [Notifications], operationId: markRead, parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid, example: '41000000-0000-0000-0000-000000000001'}}], responses: {'204': {description: Read}}}
   /api/v1/notifications/read-all:
     post: {tags: [Notifications], operationId: markAllRead, parameters: [{$ref: '#/components/parameters/UserId'}], responses: {'204': {description: Read}}}
   /api/v1/notifications/unread-count:
@@ -20,13 +20,13 @@ paths:
     get:
       tags: [Notifications]
       operationId: deliveryAttempts
-      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '41000000-0000-0000-0000-000000000001'}}]
       responses: {'200': {description: Mock attempts, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/DeliveryAttemptResponse'}}}}}}
   /api/v1/notifications/templates:
     get: {tags: [Templates], operationId: listTemplates, responses: {'200': {description: Templates, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/TemplateResponse'}}}}}}}
     post: {tags: [Templates], operationId: createTemplate, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateRequest'}}}}, responses: {'201': {description: Created, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
   /api/v1/notifications/templates/{id}:
-    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '40000000-0000-0000-0000-000000000001'}}]
     get: {tags: [Templates], operationId: getTemplate, responses: {'200': {description: Template, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
     put: {tags: [Templates], operationId: updateTemplate, requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateRequest'}}}}, responses: {'200': {description: Updated, content: {application/json: {schema: {$ref: '#/components/schemas/TemplateResponse'}}}}}}
     delete: {tags: [Templates], operationId: deleteTemplate, responses: {'204': {description: Deleted}}}

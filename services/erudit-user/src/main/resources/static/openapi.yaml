@@ -1,5 +1,5 @@
 openapi: 3.0.3
-info: {title: Erudit User API, version: 2.0.0}
+info: {"title": "Erudit User API", "version": "2.0.0", "description": " Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."}
 tags: [{name: Users}, {name: User Settings}]
 paths:
   /api/v1/users/register:
@@ -24,7 +24,7 @@ paths:
         - {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}
       responses: {'200': {description: Page, headers: {X-Total-Count: {schema: {type: integer, format: int64}}}, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/UserResponse'}}}}}}
   /api/v1/users/{id}:
-    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '00000000-0000-0000-0000-000000000001'}}]
     get: {tags: [Users], operationId: getUser, responses: {'200': {description: User, content: {application/json: {schema: {$ref: '#/components/schemas/UserResponse'}}}}}}
     put:
       tags: [Users]
@@ -49,13 +49,13 @@ paths:
     post:
       tags: [Friends]
       operationId: decideFriendRequest
-      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}, {name: decision, in: path, required: true, schema: {type: string, enum: [accept, reject]}}]
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid, example: 'f0000000-0000-0000-0000-000000000001'}}, {name: decision, in: path, required: true, schema: {type: string, enum: [accept, reject]}}]
       responses: {'204': {description: Decided}}
   /api/v1/friends/{friendId}:
     delete:
       tags: [Friends]
       operationId: removeFriend
-      parameters: [{$ref: '#/components/parameters/UserId'}, {name: friendId, in: path, required: true, schema: {type: string, format: uuid}}]
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: friendId, in: path, required: true, schema: {type: string, format: uuid, example: '00000000-0000-0000-0000-000000000002'}}]
       responses: {'204': {description: Removed}}
   /api/v1/devices:
     post:
@@ -68,10 +68,10 @@ paths:
     delete:
       tags: [Devices]
       operationId: revokeDevice
-      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid, example: 'd0000000-0000-0000-0000-000000000001'}}]
       responses: {'204': {description: Revoked}}
   /api/v1/users/{id}/settings:
-    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+    parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '00000000-0000-0000-0000-000000000001'}}]
     get: {tags: [User Settings], operationId: getSettings, responses: {'200': {description: Settings, content: {application/json: {schema: {$ref: '#/components/schemas/SettingsResponse'}}}}}}
     put:
       tags: [User Settings]
@@ -115,19 +115,30 @@ components:
   parameters:
     UserId: {name: X-User-Id, in: header, required: false, schema: {type: string, format: uuid, default: '00000000-0000-0000-0000-000000000001'}}
   schemas:
-    FriendRequest: {type: object, required: [userId], properties: {userId: {type: string, format: uuid}}}
+    FriendRequest:
+      example: {"userId":"00000000-0000-0000-0000-000000000003"}
+      type: "object"
+      required: ["userId"]
+      properties: {"userId":{"type":"string","format":"uuid"}}
     PublicUserResponse: {type: object, required: [id, displayName], properties: {id: {type: string, format: uuid}, displayName: {type: string}}}
-    DeviceRequest: {type: object, required: [pushToken, platform], properties: {pushToken: {type: string, minLength: 8}, platform: {type: string, enum: [IOS, ANDROID, WEB]}}}
+    DeviceRequest:
+      example: {"pushToken":"swagger-demo-push-token","platform":"WEB"}
+      type: "object"
+      required: ["pushToken","platform"]
+      properties: {"pushToken":{"type":"string","minLength":8},"platform":{"type":"string","enum":["IOS","ANDROID","WEB"]}}
     DeviceResponse: {type: object, required: [id, platform], properties: {id: {type: string, format: uuid}, platform: {type: string}}}
     RegisterRequest:
+      example: {"email":"new-demo@erudit.local","displayName":"Swagger learner"}
       type: object
       required: [email, displayName]
       properties: {email: {type: string, format: email}, displayName: {type: string, minLength: 2, maxLength: 80}}
     VerifyRequest:
+      example: {"token":"demo-verification-token"}
       type: object
       required: [token]
       properties: {token: {type: string}}
     UpdateUserRequest:
+      example: {"displayName":"Updated learner"}
       type: object
       required: [displayName]
       properties: {displayName: {type: string, minLength: 2, maxLength: 80}}

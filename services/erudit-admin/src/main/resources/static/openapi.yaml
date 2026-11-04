@@ -1,5 +1,5 @@
 openapi: 3.0.3
-info: {title: Erudit Admin API, version: 2.0.0, description: "Lab 2 teaching mode; no authorization or ADMIN role checks."}
+info: {"title": "Erudit Admin API", "version": "2.0.0", "description": "Lab 2 teaching mode; no authorization or ADMIN role checks. Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."}
 paths:
   /api/v1/admin/content/moderation:
     get:
@@ -17,7 +17,7 @@ paths:
       description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'
       x-task-id: 90
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000002'}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/ContentItemResponse'}}}}, '409': {description: Контент уже был обработан модератором, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/admin/content/{id}/reject:
     post:
@@ -26,7 +26,7 @@ paths:
       description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'
       x-task-id: 90
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '11000000-0000-0000-0000-000000000002'}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Успешный ответ, content: {application/json: {schema: {$ref: '#/components/schemas/ContentItemResponse'}}}}, '409': {description: Контент уже был обработан модератором, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/admin/content/reports:
     get:
@@ -44,7 +44,7 @@ paths:
       description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'
       x-task-id: 90
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '12000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/ReportResolutionRequest'}}}}
       responses: {'204': {description: Операция выполнена}, '409': {description: Жалоба уже была рассмотрена, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/admin/users:
@@ -63,7 +63,7 @@ paths:
       description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'
       x-task-id: 90
       x-implementation-status: implemented
-      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, description: Идентификатор ресурса, schema: {type: string, format: uuid, example: '00000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'204': {description: Операция выполнена}, default: {description: Ошибка, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
   /api/v1/admin/notifications/send-many:
     post:
@@ -89,7 +89,7 @@ paths:
       tags: [Admin]
       operationId: viewUserSubscription
       x-task-id: 90
-      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '00000000-0000-0000-0000-000000000001'}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Payment view through Feign, content: {application/json: {schema: {$ref: '#/components/schemas/SubscriptionResponse'}}}}, default: {description: Error, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
       description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'
   /api/v1/admin/users/{id}/payments:
@@ -97,7 +97,7 @@ paths:
       tags: [Admin]
       operationId: viewUserPayments
       x-task-id: 90
-      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}, {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}, {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid, example: '00000000-0000-0000-0000-000000000001'}}, {name: page, in: query, schema: {type: integer, minimum: 0, default: 0}}, {name: size, in: query, schema: {type: integer, minimum: 1, maximum: 50, default: 20}}, {name: X-User-Id, in: header, description: Unverified actor context, schema: {type: string, format: uuid, default: 00000000-0000-0000-0000-000000000001}}]
       responses: {'200': {description: Payment view through Feign, content: {application/json: {schema: {$ref: '#/components/schemas/PaymentListResponse'}}}, headers: {X-Total-Count: {schema: {type: integer, format: int64}}}}, default: {description: Error, content: {application/json: {schema: {$ref: '#/components/schemas/ErrorResponse'}}}}}
       description: 'Lab 2 teaching mode: no authorization or ADMIN role check. Calls domain services through Feign; operation result and request ID are audited locally.'
 components:
@@ -108,7 +108,7 @@ components:
       required: [data]
     ContentItemDataResponse:
       type: object
-      properties: {id: {type: string, format: uuid}, categoryId: {type: string, format: uuid}, type: {type: string, enum: [ARTICLE, FACT_CARD, AUDIO, VIDEO, COMBINED, QUIZ_BLOCK]}, title: {type: string, minLength: 1, maxLength: 250}, description: {type: string, maxLength: 2000}, body: {type: string}, mediaUrl: {type: string}, difficulty: {type: string}, estimatedMinutes: {type: integer, format: int32}, authorId: {type: string}, status: {type: string}, tags: {type: array, items: {type: string}}, premiumLocked: {type: boolean}}
+      properties: {id: {type: string, format: uuid}, categoryId: {type: string, format: uuid}, type: {type: string, enum: [ARTICLE, FACT_CARD, AUDIO, VIDEO, COMBINED, QUIZ_BLOCK]}, title: {type: string, minLength: 1, maxLength: 250}, description: {type: string, maxLength: 2000}, body: {type: string}, mediaUrl: {type: string, nullable: true}, difficulty: {type: string}, estimatedMinutes: {type: integer, format: int32}, authorId: {type: string, nullable: true}, status: {type: string}, tags: {type: array, items: {type: string}}, premiumLocked: {type: boolean}}
       required: [id, type, title, status]
     PageMetadataResponse:
       type: object
@@ -135,6 +135,7 @@ components:
       properties: {id: {type: string, format: uuid}, contentId: {type: string, format: uuid}, reason: {type: string}, status: {type: string}, createdAt: {type: string, format: date-time}}
       required: [id, contentId, status]
     ReportResolutionRequest:
+      example: {"decision":"REJECT","comment":"Demo reviewed"}
       type: object
       properties: {decision: {type: string, enum: [ACCEPT, REJECT]}, comment: {type: string}}
       required: [decision]
@@ -144,9 +145,10 @@ components:
       required: [data]
     UserProfileDataResponse:
       type: object
-      properties: {id: {type: string, format: uuid}, email: {type: string, format: email}, name: {type: string}, avatarUrl: {type: string}, registeredAt: {type: string, format: date-time}, status: {type: string}}
+      properties: {id: {type: string, format: uuid}, email: {type: string, format: email}, name: {type: string}, avatarUrl: {type: string, nullable: true}, registeredAt: {type: string, format: date-time}, status: {type: string}}
       required: [id, email, name]
     NotificationSendManyRequest:
+      example: {"userIds":["00000000-0000-0000-0000-000000000001"],"templateId":"40000000-0000-0000-0000-000000000001","parameters":{}}
       type: object
       properties: {userIds: {type: array, items: {type: string, format: uuid}, minItems: 1, maxItems: 1000}, templateId: {type: string, format: uuid}, parameters: {type: object, additionalProperties: {type: string}}}
       required: [userIds, templateId]

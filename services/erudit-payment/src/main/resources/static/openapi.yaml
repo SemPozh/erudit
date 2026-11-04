@@ -1,5 +1,6 @@
 openapi: 3.0.3
 info:
+  description: " Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."
   title: Erudit Payment API
   version: 2.0.0
 paths:

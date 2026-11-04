@@ -1,5 +1,5 @@
 openapi: 3.0.3
-info: {title: Erudit Event and Analytics API, version: 2.0.0}
+info: {"title": "Erudit Event and Analytics API", "version": "2.0.0", "description": " Demo fixtures require the demo Compose profile. Reset: ./scripts/reset-demo.ps1. Stateful scenarios and IDs: docs/demo-runbook.md."}
 paths:
   /api/v1/events:
     post:
@@ -19,12 +19,13 @@ paths:
       operationId: getAnalyticsMetric
       parameters:
         - {name: metric, in: path, required: true, schema: {type: string, enum: [active-users,sessions,engagement,learning,funnels,monetization,notifications]}}
-        - {name: from, in: query, required: true, schema: {type: string, format: date-time}}
-        - {name: to, in: query, required: true, schema: {type: string, format: date-time}}
+        - {name: from, in: query, required: true, schema: {type: string, format: date-time, example: '2026-01-01T00:00:00Z'}}
+        - {name: to, in: query, required: true, schema: {type: string, format: date-time, example: '2026-01-02T00:00:00Z'}}
       responses: {'200': {description: Aggregate, content: {application/json: {schema: {$ref: '#/components/schemas/AnalyticsResponse'}}}}}
 components:
   schemas:
     EventRequest:
+      example: {"eventId":"e0000000-0000-0000-0000-000000000099","userId":"00000000-0000-0000-0000-000000000001","eventType":"SESSION_STARTED","occurredAt":"2026-01-01T12:00:00Z","payload":{"source":"swagger-demo"}}
       type: object
       required: [eventId, eventType, occurredAt, payload]
       properties:

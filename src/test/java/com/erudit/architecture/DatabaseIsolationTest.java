@@ -44,7 +44,8 @@ class DatabaseIsolationTest {
                         sql.execute("INSERT INTO event_receipts(event_id,event_type,occurred_at,payload,status) VALUES ('00000000-0000-0000-0000-000000000092','TEST',now(),'{}','PENDING')");
                     }
                     var flyway = Flyway.configure().dataSource(url, database, "domain-test-password")
-                            .locations("filesystem:" + migrations(entry.getValue()).toAbsolutePath())
+                            .locations("filesystem:" + migrations(entry.getValue()).toAbsolutePath(),
+                                    "filesystem:" + migrations(entry.getValue()).resolveSibling("demo").toAbsolutePath())
                             .baselineOnMigrate(domain.equals("event")).baselineVersion("0").load();
                     assertThat(flyway.migrate().migrationsExecuted).isPositive();
                     assertThat(flyway.migrate().migrationsExecuted).isZero();
