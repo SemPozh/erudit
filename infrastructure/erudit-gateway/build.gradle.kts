@@ -16,6 +16,8 @@ dependencies {
 }
 
 tasks.withType<Test>().configureEach {
-    inputs.file(rootProject.file("src/main/resources/static/openapi.yaml"))
-    systemProperty("legacy.openapi", rootProject.file("src/main/resources/static/openapi.yaml").absolutePath)
+    inputs.files(rootProject.fileTree("services") {
+        include("*/src/main/resources/static/openapi.yaml")
+    })
+    systemProperty("service.contracts.root", rootProject.file("services").absolutePath)
 }

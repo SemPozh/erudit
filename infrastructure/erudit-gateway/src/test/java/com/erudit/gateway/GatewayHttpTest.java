@@ -76,8 +76,8 @@ class GatewayHttpTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"/api/v1/admin/audit", "/api/v1/users/me", "/api/v1/auth/register",
-            "/api/v1/friends", "/api/v1/content", "/api/v1/media/123", "/api/v1/quiz/daily",
-            "/api/v1/program/me", "/api/v1/assessment/me/result", "/api/v1/competition", "/api/v1/rating",
+            "/api/v1/friends", "/api/v1/devices", "/api/v1/content", "/api/v1/media/123", "/api/v1/quizzes/daily",
+            "/api/v1/learning-program", "/api/v1/assessments/questions", "/api/v1/competitions/123", "/api/v1/ratings",
             "/api/v1/notifications", "/api/v1/admin/content/moderation", "/api/v1/admin/content/reports"})
     void routesWithoutAuthorizationAndKeepsPathAndContext(String path) throws Exception {
         var response = send(request(path + "?page=2").header("X-User-Id", "42")
@@ -142,17 +142,19 @@ class GatewayHttpTest {
     @Test void allExistingPublicContractPathsHaveExactlyOneDiscoveryRoute() throws Exception {
         var configured = routes.getRoutes().collectList().block();
         assertThat(configured).hasSize(7).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
-        for (String line : Files.readAllLines(Path.of(System.getProperty("legacy.openapi")))) {
-            if (!line.startsWith("  /api/v1/")) { continue; }
-            String path = line.trim().replaceAll("\\{[^}]+}", "123").replaceAll(":$", "");
-            var exchange = MockServerWebExchange.from(MockServerHttpRequest.get(path).build());
-            long matches = configured.stream().filter(route -> Boolean.TRUE.equals(
-                    reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).count();
-            assertThat(matches).as(path).isEqualTo(1);
-            if (path.startsWith("/api/v1/admin/content/")) {
-                var selected=configured.stream().filter(route -> Boolean.TRUE.equals(
-                        reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).findFirst().orElseThrow();
-                assertThat(selected.getUri().toString()).isEqualTo("lb://erudit-admin");
+        try (var contracts = Files.walk(Path.of(System.getProperty("service.contracts.root")))) {
+            for (Path contract : contracts.filter(path -> path.endsWith("src/main/resources/static/openapi.yaml")).toList()) {
+                for (String line : Files.readAllLines(contract)) {
+                    if (!line.startsWith("  /api/v1/")) { continue; }
+                    String path = line.trim().replaceAll("\\{[^}]+}", "123").replaceAll(":$", "");
+                    var exchange = MockServerWebExchange.from(MockServerHttpRequest.get(path).build());
+                    var matching = configured.stream().filter(route -> Boolean.TRUE.equals(
+                            reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).toList();
+                    assertThat(matching).as(contract + ": " + path).hasSize(1);
+                    if (path.startsWith("/api/v1/admin/content/")) {
+                        assertThat(matching.getFirst().getUri().toString()).isEqualTo("lb://erudit-admin");
+                    }
+                }
             }
         }
     }

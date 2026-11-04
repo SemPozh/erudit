@@ -1,0 +1,5 @@
+CREATE TABLE competitions(id UUID PRIMARY KEY,title VARCHAR(160) NOT NULL,owner_id UUID NOT NULL,status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',created_at TIMESTAMPTZ NOT NULL DEFAULT now());
+CREATE TABLE competition_members(competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,user_id UUID NOT NULL,score INTEGER NOT NULL DEFAULT 0,joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),PRIMARY KEY(competition_id,user_id));
+CREATE TABLE competition_invites(competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,user_id UUID NOT NULL,invited_by UUID NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT now(),PRIMARY KEY(competition_id,user_id));
+INSERT INTO competitions(id,title,owner_id) VALUES('30000000-0000-0000-0000-000000000001','Demo competition','00000000-0000-0000-0000-000000000001');
+INSERT INTO competition_members(competition_id,user_id,score) VALUES('30000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000001',100);

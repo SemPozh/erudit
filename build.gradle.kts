@@ -86,6 +86,31 @@ openApiValidate {
     )
 }
 
+val verifyServiceContracts by tasks.registering {
+    group = "verification"
+    description = "Rejects duplicate external paths/operationIds and auth schemes in service OpenAPI contracts"
+    doLast {
+        val owners = mutableMapOf<String, String>()
+        val operations = mutableMapOf<String, String>()
+        fileTree("services") { include("*/src/main/resources/static/openapi.yaml") }.files.sorted().forEach { spec ->
+            val text = spec.readText()
+            require(!text.contains("securitySchemes:") && !Regex("(?m)^security:").containsMatchIn(text)) { "Authorization scheme is forbidden in ${spec.path}" }
+            Regex("(?m)^  (/api/v1/[^:]+):").findAll(text).forEach { match ->
+                val path = match.groupValues[1]
+                val previous = owners.putIfAbsent(path, spec.path)
+                require(previous == null) { "External path $path belongs to both $previous and ${spec.path}" }
+            }
+            Regex("(?m)^\\s+operationId:\\s*([A-Za-z0-9_-]+)").findAll(text).forEach { match ->
+                val operation = match.groupValues[1]
+                val previous = operations.putIfAbsent(operation, spec.path)
+                require(previous == null) { "operationId $operation is duplicated in $previous and ${spec.path}" }
+            }
+        }
+    }
+}
+
+tasks.named("openApiValidate") { finalizedBy(verifyServiceContracts) }
+
 sourceSets {
     main {
         java.srcDir(

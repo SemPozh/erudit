@@ -16,12 +16,12 @@ public class GatewayConfiguration {
     RouteLocator publicRoutes(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("admin", r -> r.path("/api/v1/admin/**").uri("lb://erudit-admin"))
-                .route("user", r -> r.path("/api/v1/auth/**", "/api/v1/users/**", "/api/v1/friends/**")
+                .route("user", r -> r.path("/api/v1/auth/**", "/api/v1/users/**", "/api/v1/friends/**", "/api/v1/devices/**")
                         .uri("lb://erudit-user"))
                 .route("content", r -> r.path("/api/v1/content/**", "/api/v1/media/**")
                         .uri("lb://erudit-content"))
-                .route("quiz", r -> r.path("/api/v1/assessment/**", "/api/v1/program/**", "/api/v1/quiz/**",
-                        "/api/v1/competition/**", "/api/v1/rating/**").uri("lb://erudit-quiz"))
+                .route("quiz", r -> r.path("/api/v1/assessments/**", "/api/v1/learning-program/**", "/api/v1/quizzes/**",
+                        "/api/v1/quiz-attempts/**", "/api/v1/competitions/**", "/api/v1/ratings/**").uri("lb://erudit-quiz"))
                 .route("payment", r -> r.path("/api/v1/subscriptions/**", "/api/v1/payments/**")
                         .uri("lb://erudit-payment"))
                 .route("notification", r -> r.path("/api/v1/notifications/**").uri("lb://erudit-notificator"))

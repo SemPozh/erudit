@@ -11,7 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @AutoConfiguration
 @EnableFeignClients(clients = {InternalClients.UserClient.class, InternalClients.ModerationClient.class,
         InternalClients.NotificationClient.class, InternalClients.EntitlementClient.class,
-        InternalClients.ContentClient.class, InternalClients.AnalyticsClient.class})
+        InternalClients.ContentClient.class, InternalClients.AnalyticsClient.class, InternalClients.AiClient.class})
 public class IntegrationAutoConfiguration {
     public static final String REQUEST_ID = "X-Request-Id";
 
