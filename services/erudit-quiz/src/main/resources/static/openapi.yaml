@@ -2,6 +2,34 @@ openapi: 3.0.3
 info: {title: Erudit Quiz API, version: 2.0.0}
 tags: [{name: Assessment}, {name: Learning Program}]
 paths:
+  /api/v1/quizzes:
+    get: {tags: [Quizzes], operationId: listQuizzes, responses: {'200': {description: Quizzes, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/QuizResponse'}}}}}}}
+    post:
+      tags: [Quiz Authoring]
+      operationId: createQuiz
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/QuizRequest'}}}}
+      responses: {'201': {description: Quiz, content: {application/json: {schema: {$ref: '#/components/schemas/QuizResponse'}}}}}
+  /api/v1/quizzes/daily:
+    get: {tags: [Quizzes], operationId: dailyQuiz, responses: {'200': {description: Daily, content: {application/json: {schema: {$ref: '#/components/schemas/QuizResponse'}}}}}}
+  /api/v1/quizzes/{id}/attempts:
+    post:
+      tags: [Quiz Attempts]
+      operationId: startQuiz
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}, {$ref: '#/components/parameters/UserId'}]
+      responses: {'201': {description: Attempt, content: {application/json: {schema: {$ref: '#/components/schemas/AttemptResponse'}}}}}
+  /api/v1/quiz-attempts/{id}/hint:
+    post:
+      tags: [Quiz Attempts]
+      operationId: quizHint
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses: {'200': {description: Hint, content: {application/json: {schema: {$ref: '#/components/schemas/HintResponse'}}}}}
+  /api/v1/quiz-attempts/{id}/submit:
+    post:
+      tags: [Quiz Attempts]
+      operationId: submitQuiz
+      parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/QuizSubmitRequest'}}}}
+      responses: {'200': {description: Result, content: {application/json: {schema: {$ref: '#/components/schemas/AttemptResponse'}}}}, '409': {description: Already submitted}}
   /api/v1/assessments/questions:
     get: {tags: [Assessment], operationId: listAssessmentQuestions, responses: {'200': {description: Questions, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/QuestionResponse'}}}}}}}
   /api/v1/assessments/sessions:
@@ -39,6 +67,11 @@ components:
   parameters:
     UserId: {name: X-User-Id, in: header, required: false, schema: {type: string, format: uuid, default: '00000000-0000-0000-0000-000000000001'}}
   schemas:
+    QuizRequest: {type: object, required: [title, prompt, options, correctIndex, hint], properties: {title: {type: string}, prompt: {type: string}, options: {type: array, minItems: 2, items: {type: string}}, correctIndex: {type: integer, minimum: 0}, hint: {type: string}}}
+    QuizResponse: {type: object, required: [id, title], properties: {id: {type: string, format: uuid}, title: {type: string}}}
+    QuizSubmitRequest: {type: object, required: [optionIndex], properties: {optionIndex: {type: integer, minimum: 0}}}
+    AttemptResponse: {type: object, required: [id, status, hintsUsed], properties: {id: {type: string, format: uuid}, status: {type: string}, score: {type: integer}, hintsUsed: {type: integer}}}
+    HintResponse: {type: object, required: [hint, remaining], properties: {hint: {type: string}, remaining: {type: integer}}}
     QuestionResponse:
       type: object
       required: [id, prompt, options]

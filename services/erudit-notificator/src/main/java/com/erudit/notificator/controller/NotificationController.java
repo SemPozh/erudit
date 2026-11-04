@@ -8,6 +8,7 @@ import com.erudit.notificator.openapi.model.NotificationResponse;
 import com.erudit.notificator.openapi.model.PreferenceRequest;
 import com.erudit.notificator.openapi.model.PreferenceResponse;
 import com.erudit.notificator.openapi.model.UnreadResponse;
+import com.erudit.notificator.openapi.model.DeliveryAttemptResponse;
 import com.erudit.notificator.service.NotificationService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class NotificationController implements NotificationsApi {
     @Override public Mono<ResponseEntity<Void>> markRead(UUID id,UUID user,ServerWebExchange exchange){return service.read(user,id).thenReturn(ResponseEntity.noContent().build());}
     @Override public Mono<ResponseEntity<Void>> markAllRead(UUID user,ServerWebExchange exchange){return service.readAll(user).thenReturn(ResponseEntity.noContent().build());}
     @Override public Mono<ResponseEntity<UnreadResponse>> unreadCount(UUID user,ServerWebExchange exchange){return service.unread(user).map(v->ResponseEntity.ok(new UnreadResponse(v)));}
+    @Override public Mono<ResponseEntity<Flux<DeliveryAttemptResponse>>> deliveryAttempts(UUID id,ServerWebExchange exchange){return Mono.just(ResponseEntity.ok(service.attempts(id).map(v->new DeliveryAttemptResponse(v.id(),v.notificationId(),v.attempt(),v.status(),v.payloadPreview(),v.createdAt()))));}
     static NotificationResponse notification(NotificationRecord v){return new NotificationResponse(v.id(),v.userId(),v.templateCode(),v.title(),v.body(),v.read(),v.createdAt());}
     static PreferenceResponse preference(Preference v){return new PreferenceResponse(v.enabled(),v.channels().stream().map(PreferenceResponse.ChannelsEnum::fromValue).toList(),v.userId());}
 }

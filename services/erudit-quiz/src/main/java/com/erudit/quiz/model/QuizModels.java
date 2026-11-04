@@ -1,0 +1,1 @@
+package com.erudit.quiz.model;import java.util.*;public final class QuizModels {private QuizModels(){} public record Quiz(UUID id,String title){} public record Question(UUID id,UUID quizId,String prompt,List<String> options,int correct,String hint){} public record Attempt(UUID id,UUID quizId,UUID userId,String status,Integer score,int hintsUsed){} }
