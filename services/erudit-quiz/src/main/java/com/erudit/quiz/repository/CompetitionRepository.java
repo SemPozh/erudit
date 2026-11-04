@@ -1,0 +1,9 @@
+package com.erudit.quiz.repository;import com.erudit.quiz.model.CompetitionModels.*;import java.util.*;import lombok.RequiredArgsConstructor;import org.springframework.jdbc.core.simple.JdbcClient;import org.springframework.stereotype.Repository;
+@Repository @RequiredArgsConstructor public class CompetitionRepository {private final JdbcClient jdbc;
+ public Competition create(String title,UUID owner){var v=new Competition(UUID.randomUUID(),title,owner,"ACTIVE");jdbc.sql("INSERT INTO competitions(id,title,owner_id) VALUES(:id,:title,:owner)").param("id",v.id()).param("title",title).param("owner",owner).update();join(v.id(),owner);return v;}
+ public void invite(UUID competition,UUID user,UUID actor){jdbc.sql("INSERT INTO competition_invites(competition_id,user_id,invited_by) VALUES(:competition,:user,:actor) ON CONFLICT DO NOTHING").param("competition",competition).param("user",user).param("actor",actor).update();}
+ public void join(UUID competition,UUID user){jdbc.sql("INSERT INTO competition_members(competition_id,user_id) VALUES(:competition,:user) ON CONFLICT DO NOTHING").param("competition",competition).param("user",user).update();}
+ public List<Rating> leaderboard(UUID competition){return ratings("WHERE competition_id=:id",competition);}
+ public List<Rating> ratings(String period){String filter=switch(period){case "WEEK"->"WHERE joined_at>=now()-interval '7 days'";case "MONTH"->"WHERE joined_at>=now()-interval '30 days'";default->"";};return ratings(filter,null);}
+ private List<Rating> ratings(String filter,UUID id){var query=jdbc.sql("SELECT user_id,sum(score) score,row_number() over(ORDER BY sum(score) DESC,user_id) position FROM competition_members "+filter+" GROUP BY user_id ORDER BY position LIMIT 50");if(id!=null)query=query.param("id",id);return query.query((r,n)->new Rating(r.getObject("user_id",UUID.class),r.getInt("score"),r.getInt("position"))).list();}
+}

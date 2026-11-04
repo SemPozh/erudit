@@ -16,4 +16,5 @@ public final class InternalClients {
     @FeignClient(name="erudit-payment",contextId="internalEntitlementClient") public interface EntitlementClient {@GetMapping("/internal/v1/entitlements/{userId}") Entitlement get(@PathVariable("userId") UUID userId);}
     @FeignClient(name="erudit-content",contextId="internalContentClient") public interface ContentClient {@GetMapping("/internal/v1/content/{id}") ContentLookup get(@PathVariable("id") UUID id);}
     @FeignClient(name="erudit-event-receiver",contextId="internalAnalyticsClient") public interface AnalyticsClient {@PostMapping("/internal/v1/events") void publish(@RequestBody AnalyticsEvent event);}
+    @FeignClient(name="erudit-ai-platform",contextId="internalAiClient") public interface AiClient {@PostMapping("/internal/v1/ai/quiz-generations") AiQuiz quiz(@RequestBody AiRequest request);@PostMapping("/internal/v1/ai/content-cards") AiCard card(@RequestBody AiRequest request);}
 }

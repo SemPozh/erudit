@@ -3,6 +3,7 @@ package com.erudit.integration;
 import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 
 public final class InternalContracts {
     private InternalContracts() {}
@@ -13,4 +14,7 @@ public final class InternalContracts {
     public record ContentLookup(UUID id, String title, String status) {}
     public record AnalyticsEvent(UUID eventId, UUID userId, String type, OffsetDateTime occurredAt,
                                  Map<String, Object> payload) {}
+    public record AiRequest(String seed,String sourceText) {}
+    public record AiQuiz(String question,List<String> options,int correctOption) {}
+    public record AiCard(String title,String summary) {}
 }

@@ -1,0 +1,8 @@
+package com.erudit.quiz.controller;import com.erudit.quiz.openapi.api.*;import com.erudit.quiz.openapi.model.*;import com.erudit.quiz.service.CompetitionService;import java.util.*;import lombok.RequiredArgsConstructor;import org.springframework.http.ResponseEntity;import org.springframework.web.bind.annotation.RestController;
+@RestController @RequiredArgsConstructor public class CompetitionController implements CompetitionsApi,RatingsApi {private final CompetitionService service;private static final UUID DEMO=UUID.fromString("00000000-0000-0000-0000-000000000001");private static UUID user(UUID value){return value==null?DEMO:value;}
+ @Override public ResponseEntity<CompetitionResponse> createCompetition(CompetitionRequest r,UUID owner){var v=service.create(r.getTitle(),user(owner));return ResponseEntity.status(201).body(new CompetitionResponse(v.id(),v.title(),v.owner(),v.status()));}
+ @Override public ResponseEntity<Void> inviteCompetition(UUID id,InviteRequest r,UUID owner){service.invite(id,r.getUserId(),user(owner));return ResponseEntity.accepted().build();}
+ @Override public ResponseEntity<Void> joinCompetition(UUID id,UUID member){service.join(id,user(member));return ResponseEntity.noContent().build();}
+ @Override public ResponseEntity<List<RatingResponse>> competitionLeaderboard(UUID id){return ResponseEntity.ok(service.leaderboard(id).stream().map(CompetitionController::response).toList());}
+ @Override public ResponseEntity<List<RatingResponse>> globalRatings(String period){return ResponseEntity.ok(service.ratings(period).stream().map(CompetitionController::response).toList());}private static RatingResponse response(com.erudit.quiz.model.CompetitionModels.Rating v){return new RatingResponse(v.user(),v.score(),v.position());}
+}

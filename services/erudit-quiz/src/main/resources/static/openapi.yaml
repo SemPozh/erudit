@@ -2,6 +2,30 @@ openapi: 3.0.3
 info: {title: Erudit Quiz API, version: 2.0.0}
 tags: [{name: Assessment}, {name: Learning Program}]
 paths:
+  /api/v1/competitions:
+    post:
+      tags: [Competitions]
+      operationId: createCompetition
+      parameters: [{$ref: '#/components/parameters/UserId'}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/CompetitionRequest'}}}}
+      responses: {'201': {description: Competition, content: {application/json: {schema: {$ref: '#/components/schemas/CompetitionResponse'}}}}}
+  /api/v1/competitions/{id}/invite:
+    post:
+      tags: [Competitions]
+      operationId: inviteCompetition
+      parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}]
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/InviteRequest'}}}}
+      responses: {'202': {description: Invited}}
+  /api/v1/competitions/{id}/join:
+    post: {tags: [Competitions], operationId: joinCompetition, parameters: [{$ref: '#/components/parameters/UserId'}, {name: id, in: path, required: true, schema: {type: string, format: uuid}}], responses: {'204': {description: Joined}}}
+  /api/v1/competitions/{id}/leaderboard:
+    get: {tags: [Competitions], operationId: competitionLeaderboard, parameters: [{name: id, in: path, required: true, schema: {type: string, format: uuid}}], responses: {'200': {description: Leaderboard, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/RatingResponse'}}}}}}}
+  /api/v1/ratings:
+    get:
+      tags: [Ratings]
+      operationId: globalRatings
+      parameters: [{name: period, in: query, schema: {type: string, enum: [ALL, MONTH, WEEK], default: ALL}}]
+      responses: {'200': {description: Ratings, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/RatingResponse'}}}}}}
   /api/v1/quizzes:
     get: {tags: [Quizzes], operationId: listQuizzes, responses: {'200': {description: Quizzes, content: {application/json: {schema: {type: array, items: {$ref: '#/components/schemas/QuizResponse'}}}}}}}
     post:
@@ -67,6 +91,10 @@ components:
   parameters:
     UserId: {name: X-User-Id, in: header, required: false, schema: {type: string, format: uuid, default: '00000000-0000-0000-0000-000000000001'}}
   schemas:
+    CompetitionRequest: {type: object, required: [title], properties: {title: {type: string, minLength: 2, maxLength: 160}}}
+    CompetitionResponse: {type: object, required: [id,title,ownerId,status], properties: {id: {type: string, format: uuid}, title: {type: string}, ownerId: {type: string, format: uuid}, status: {type: string}}}
+    InviteRequest: {type: object, required: [userId], properties: {userId: {type: string, format: uuid}}}
+    RatingResponse: {type: object, required: [userId,score,position], properties: {userId: {type: string, format: uuid}, score: {type: integer}, position: {type: integer}}}
     QuizRequest: {type: object, required: [title, prompt, options, correctIndex, hint], properties: {title: {type: string}, prompt: {type: string}, options: {type: array, minItems: 2, items: {type: string}}, correctIndex: {type: integer, minimum: 0}, hint: {type: string}}}
     QuizResponse: {type: object, required: [id, title], properties: {id: {type: string, format: uuid}, title: {type: string}}}
     QuizSubmitRequest: {type: object, required: [optionIndex], properties: {optionIndex: {type: integer, minimum: 0}}}
