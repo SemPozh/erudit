@@ -19,6 +19,39 @@ class GenerationServiceTest {
         var first = service.quiz("demo-seed", "The Earth revolves around the Sun.");
         var second = service.quiz("demo-seed", "The Earth revolves around the Sun.");
         assertThat(second).isEqualTo(first);
+        assertThat(service.card("demo-seed", "The Earth revolves around the Sun."))
+                .isEqualTo(service.card("demo-seed", "The Earth revolves around the Sun."));
+    }
+
+    @Test
+    void enforcesRateLimitAndMapsProviderFailure() throws Exception {
+        GenerationService limited = service(new MockGenerationProvider());
+        set(limited, "rateLimit", 1);
+        limited.quiz("seed", "sufficient source text");
+        assertThatThrownBy(() -> limited.quiz("seed", "sufficient source text"))
+                .isInstanceOf(GenerationException.class).extracting("code").isEqualTo("AI_RATE_LIMIT");
+
+        GenerationProvider failing = new GenerationProvider() {
+            public QuizResult quiz(String seed, String text) { throw new IllegalStateException("offline"); }
+            public CardResult card(String seed, String text) { throw new IllegalStateException("offline"); }
+        };
+        assertThatThrownBy(() -> service(failing).quiz("seed", "sufficient source text"))
+                .isInstanceOf(GenerationException.class).extracting("code").isEqualTo("AI_PROVIDER_ERROR");
+    }
+
+    @Test
+    void timesOutSlowProvider() throws Exception {
+        GenerationProvider slow = new GenerationProvider() {
+            public QuizResult quiz(String seed, String text) {
+                try { Thread.sleep(100); } catch (InterruptedException exception) { Thread.currentThread().interrupt(); }
+                return new QuizResult("question", List.of("a", "b"), 0);
+            }
+            public CardResult card(String seed, String text) { return new CardResult("title", "summary"); }
+        };
+        GenerationService service = service(slow);
+        set(service, "timeout", Duration.ofMillis(1));
+        assertThatThrownBy(() -> service.quiz("seed", "sufficient source text"))
+                .isInstanceOf(GenerationException.class).extracting("code").isEqualTo("AI_TIMEOUT");
     }
 
     @Test
