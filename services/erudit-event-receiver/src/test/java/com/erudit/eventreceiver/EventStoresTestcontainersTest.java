@@ -8,6 +8,7 @@ import com.erudit.eventreceiver.service.ClickHouseEventStore;
 import com.erudit.eventreceiver.service.EventIngestionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactoryOptions;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -20,7 +21,15 @@ import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+
+import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
+import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
+import static io.r2dbc.spi.ConnectionFactoryOptions.HOST;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PORT;
+import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
 @Testcontainers
 class EventStoresTestcontainersTest {
@@ -30,9 +39,20 @@ class EventStoresTestcontainersTest {
     static ClickHouseEventStore store;
 
     @BeforeAll static void schema() throws Exception {
-        String url="r2dbc:postgresql://"+POSTGRES.getHost()+":"+POSTGRES.getMappedPort(5432)+"/"+POSTGRES.getDatabaseName();
-        database=DatabaseClient.create(ConnectionFactories.get(url+"?user="+POSTGRES.getUsername()+"&password="+POSTGRES.getPassword()));
-        database.sql(Files.readString(Path.of("src/main/resources/schema.sql"))).then().block();
+        var options = ConnectionFactoryOptions.builder()
+                .option(DRIVER, "postgresql")
+                .option(HOST, POSTGRES.getHost())
+                .option(PORT, POSTGRES.getMappedPort(5432))
+                .option(DATABASE, POSTGRES.getDatabaseName())
+                .option(USER, POSTGRES.getUsername())
+                .option(PASSWORD, POSTGRES.getPassword())
+                .build();
+        database = DatabaseClient.create(ConnectionFactories.get(options));
+        Flux.fromArray(Files.readString(Path.of("src/main/resources/schema.sql")).split(";"))
+                .filter(statement -> !statement.isBlank())
+                .concatMap(statement -> database.sql(statement).then())
+                .then()
+                .block();
         store=new ClickHouseEventStore(CLICKHOUSE.getJdbcUrl(),CLICKHOUSE.getUsername(),CLICKHOUSE.getPassword(),new ObjectMapper());
         store.initialize().block();
     }
