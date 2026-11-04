@@ -383,7 +383,7 @@ components:
       required: [data]
     ContentProgressDataResponse:
       type: object
-      properties: {contentId: {type: string, format: uuid}, status: {type: string}, viewedAt: &id001 {type: string, format: date-time}, completedAt: *id001}
+      properties: {contentId: {type: string, format: uuid}, status: {type: string}, viewedAt: &wf385id001 {type: string, format: date-time}, completedAt: *wf385id001}
       required: [contentId, status]
     ContentReportListResponse:
       type: object
@@ -391,7 +391,7 @@ components:
       required: [data]
     ContentReportItemDataResponse:
       type: object
-      properties: {id: &id001 {type: string, format: uuid}, contentId: *id001, reason: {type: string}, status: {type: string}, createdAt: {type: string, format: date-time}}
+      properties: {id: &wf393id001 {type: string, format: uuid}, contentId: *wf393id001, reason: {type: string}, status: {type: string}, createdAt: {type: string, format: date-time}}
       required: [id, contentId, status]
     ReportResolutionRequest:
       type: object
@@ -403,7 +403,7 @@ components:
       properties: {data: {type: array, items: {$ref: '#/components/schemas/ContentDataResponse'}}}
     WorkflowPageMetadata:
       type: object
-      properties: {page: &id001 {type: integer, format: int32}, size: *id001, totalElements: {type: integer, format: int64}, totalPages: *id001}
+      properties: {page: &wf405id001 {type: integer, format: int32}, size: *wf405id001, totalElements: {type: integer, format: int64}, totalPages: *wf405id001}
       required: [page, size, totalElements, totalPages]
     WorkflowContentPageResponse:
       type: object
