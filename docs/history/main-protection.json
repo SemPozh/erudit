@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-11-05",
+  "source": "https://api.github.com/repos/SemPozh/erudit/branches/main",
+  "name": "main",
+  "commit": "2a8ddfd7fdaa25346fe075407c9998e9ee662842",
+  "protected": true,
+  "protection": {
+    "enabled": true,
+    "required_status_checks": {
+      "enforcement_level": "everyone",
+      "contexts": [
+        "test",
+        "build"
+      ],
+      "checks": [
+        {
+          "context": "test",
+          "app_id": 15368
+        },
+        {
+          "context": "build",
+          "app_id": 15368
+        }
+      ]
+    }
+  }
+}
