@@ -1,6 +1,7 @@
 package com.erudit.gateway;
 
 import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
@@ -14,7 +15,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 public class GatewayConfiguration {
     @Bean
     RouteLocator publicRoutes(RouteLocatorBuilder builder) {
-        return builder.routes()
+        var routes = builder.routes()
                 .route("admin", r -> r.path("/api/v1/admin/**").uri("lb://erudit-admin"))
                 .route("user", r -> r.path("/api/v1/auth/**", "/api/v1/users/**", "/api/v1/friends/**", "/api/v1/devices/**")
                         .uri("lb://erudit-user"))
@@ -26,8 +27,21 @@ public class GatewayConfiguration {
                         .uri("lb://erudit-payment"))
                 .route("notification", r -> r.path("/api/v1/notifications/**").uri("lb://erudit-notificator"))
                 .route("event", r -> r.path("/api/v1/events/**", "/api/v1/analytics/**")
-                        .uri("lb://erudit-event-receiver"))
-                .build();
+                        .uri("lb://erudit-event-receiver"));
+        Map.of(
+                "admin", "erudit-admin",
+                "user", "erudit-user",
+                "content", "erudit-content",
+                "quiz", "erudit-quiz",
+                "payment", "erudit-payment",
+                "notifications", "erudit-notificator",
+                "events", "erudit-event-receiver",
+                "ai", "erudit-ai-platform"
+        ).forEach((name, service) -> routes.route("openapi-" + name,
+                route -> route.path("/swagger/" + name + "/openapi.yaml")
+                        .filters(filter -> filter.setPath("/openapi.yaml"))
+                        .uri("lb://" + service)));
+        return routes.build();
     }
 
     @Bean

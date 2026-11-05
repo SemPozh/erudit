@@ -232,7 +232,6 @@ services:
       retries: 20
 
   ai-platform:
-    profiles: [discovery-smoke]
     build:
       context: .
       dockerfile: Dockerfile.service
@@ -244,8 +243,17 @@ services:
     networks:
       - internal
     depends_on:
+      config-server:
+        condition: service_healthy
       discovery-server:
         condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8086/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 30s
 
   user-service:
     build:

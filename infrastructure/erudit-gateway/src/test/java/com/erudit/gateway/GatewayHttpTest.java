@@ -11,6 +11,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -94,6 +95,30 @@ class GatewayHttpTest {
         assertThat(response.body()).contains("id=" + id, "body=hello", "user=null");
     }
 
+    @Test void servesSharedSwaggerUi() throws Exception {
+        var response = send(request("/swagger-ui/index.html").GET().build());
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type")).hasValueSatisfying(
+                contentType -> assertThat(contentType).contains("text/html"));
+    }
+
+    @Test void routesEveryServiceOpenApiWithoutExposingInternalApis() {
+        var configured = routes.getRoutes().collectList().block();
+        var expected = Map.of(
+                "admin", "erudit-admin", "user", "erudit-user", "content", "erudit-content",
+                "quiz", "erudit-quiz", "payment", "erudit-payment", "notifications", "erudit-notificator",
+                "events", "erudit-event-receiver", "ai", "erudit-ai-platform");
+        expected.forEach((name, service) -> {
+            var exchange = MockServerWebExchange.from(MockServerHttpRequest.get(
+                    "/swagger/" + name + "/openapi.yaml").build());
+            var matching = configured.stream().filter(route -> Boolean.TRUE.equals(
+                    reactor.core.publisher.Mono.from(route.getPredicate().apply(exchange)).block())).toList();
+            assertThat(matching).hasSize(1);
+            assertThat(matching.getFirst().getId()).isEqualTo("openapi-" + name);
+            assertThat(matching.getFirst().getUri().toString()).isEqualTo("lb://" + service);
+        });
+    }
+
     @Test void replacesInvalidRequestId() throws Exception {
         var response = send(request("/api/v1/content").header("X-Request-ID", "invalid id").GET().build());
         assertThat(response.headers().firstValue("X-Request-ID").orElseThrow()).matches("[a-f0-9-]{36}");
@@ -141,7 +166,7 @@ class GatewayHttpTest {
 
     @Test void allExistingPublicContractPathsHaveExactlyOneDiscoveryRoute() throws Exception {
         var configured = routes.getRoutes().collectList().block();
-        assertThat(configured).hasSize(7).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
+        assertThat(configured).hasSize(15).allSatisfy(route -> assertThat(route.getUri().getScheme()).isEqualTo("lb"));
         try (var contracts = Files.walk(Path.of(System.getProperty("service.contracts.root")))) {
             for (Path contract : contracts.filter(path -> path.endsWith("src/main/resources/static/openapi.yaml")).toList()) {
                 for (String line : Files.readAllLines(contract)) {

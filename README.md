@@ -52,7 +52,21 @@ Compose также запускает ClickHouse. Версионные мигр�
 
 ## OpenAPI и Swagger UI
 
-Единый контракт API находится в `src/main/resources/static/openapi.yaml`.
+Для ЛР2 общий Swagger UI доступен через Gateway:
+`http://localhost:8089/swagger-ui/index.html`. В верхнем выпадающем списке
+выбирается отдельный контракт каждого микросервиса: Admin, AI Platform, Content,
+Events, Notifications, Payment, Quiz или User. Gateway проксирует только их
+`openapi.yaml`; внутренние `/internal/**` endpoints напрямую не публикуются.
+
+```powershell
+docker compose up --build -d
+Start-Process "http://localhost:8089/swagger-ui/index.html"
+```
+
+Исходные service-owned контракты находятся в
+`services/<service>/src/main/resources/static/openapi.yaml`.
+
+Legacy-контракт ЛР1 находится в `src/main/resources/static/openapi.yaml`.
 Он описывает все реализованные HTTP операции, сгруппированные по предметным тегам.
 `./gradlew openApiValidate` проверяет его, а при сборке Gradle генерирует
 Java-интерфейсы API и модели ответов в `build/generated/openapi`. Контроллеры
