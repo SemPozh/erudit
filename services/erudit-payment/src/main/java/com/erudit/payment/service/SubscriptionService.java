@@ -1,6 +1,6 @@
 package com.erudit.payment.service;
 
-import com.erudit.integration.InternalClients.UserClient;
+import com.erudit.user.client.UserClient;
 import com.erudit.payment.model.*;
 import com.erudit.payment.repository.PaymentRepository;
 import feign.FeignException;

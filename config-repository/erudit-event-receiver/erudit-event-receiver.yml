@@ -1,0 +1,33 @@
+server:
+  port: ${SERVER_PORT:8085}
+
+spring:
+  r2dbc:
+    url: ${R2DBC_URL:r2dbc:postgresql://localhost:5432/erudit_event}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  sql:
+    init:
+      mode: never
+  # Flyway uses a short-lived JDBC connection during startup; requests remain R2DBC.
+  flyway:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/erudit_event}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    # Previous event releases used IF NOT EXISTS schema.sql, with no history.
+    baseline-on-migrate: true
+    baseline-version: 0
+
+erudit:
+  events:
+    pipeline-buffer: ${EVENT_PIPELINE_BUFFER:1024}
+    batch-size: ${EVENT_BATCH_SIZE:100}
+    clickhouse-retries: ${CLICKHOUSE_RETRIES:3}
+  clickhouse:
+    url: ${CLICKHOUSE_URL:http://localhost:8123}
+    username: ${CLICKHOUSE_USERNAME}
+    password: ${CLICKHOUSE_PASSWORD}
+    schema: |
+      CREATE TABLE IF NOT EXISTS analytics_events(
+      event_id UUID,event_type String,user_id Nullable(UUID),occurred_at DateTime64(3),payload String)
+      ENGINE=ReplacingMergeTree ORDER BY(event_id)

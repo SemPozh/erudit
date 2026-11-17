@@ -1,0 +1,26 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+erudit:
+  gateway:
+    allowed-origins: ${GATEWAY_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+    # 50 MiB file plus multipart overhead; whole requests are bounded before forwarding.
+    max-body-bytes: ${GATEWAY_MAX_BODY_BYTES:54525952}
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 5s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    config-url: /openapi/swagger-config

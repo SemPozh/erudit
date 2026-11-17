@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8087}
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/erudit_payment}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  # Each service owns a fresh Flyway history; never baseline a legacy monolith schema.
+  flyway:
+    baseline-on-migrate: false
+
+erudit:
+  payments:
+    webhook-secret: ${PAYMENT_WEBHOOK_SECRET}
+    mock:
+      # Public local mock key; never used with a real payment provider.
+      receipt-example: monthly-receipt-demo-87
+      webhook-signature-example: 4733679dfa15539535a042cc17b59898a29775016d638eca845beb47a1251465
+      webhook-key-example: local-webhook-secret
+
+springdoc:
+  swagger-ui:
+    url: /openapi.yaml

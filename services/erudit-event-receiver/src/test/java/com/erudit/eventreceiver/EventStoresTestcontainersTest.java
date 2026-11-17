@@ -31,16 +31,20 @@ import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
 @Testcontainers
 class EventStoresTestcontainersTest {
-    @Container static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine");
-    @Container static final ClickHouseContainer CLICKHOUSE = new ClickHouseContainer("clickhouse/clickhouse-server:25.8");
+    private static final Map<String, Object> PROPS = loadTestProperties();
+    @Container static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(image("test.containers.postgres.image"));
+    @Container static final ClickHouseContainer CLICKHOUSE = new ClickHouseContainer(image("test.containers.clickhouse.image"));
     static DatabaseClient database;
     static ClickHouseEventStore store;
 
     @BeforeAll static void schema() throws Exception {
+        String driver = String.valueOf(PROPS.get("test.r2dbc.driver"));
+        String clickhouseSchema = String.valueOf(PROPS.get("erudit.clickhouse.schema"));
+
         var options = ConnectionFactoryOptions.builder()
-                .option(DRIVER, "postgresql")
+                .option(DRIVER, driver)
                 .option(HOST, POSTGRES.getHost())
-                .option(PORT, POSTGRES.getMappedPort(5432))
+                .option(PORT, POSTGRES.getFirstMappedPort())
                 .option(DATABASE, POSTGRES.getDatabaseName())
                 .option(USER, POSTGRES.getUsername())
                 .option(PASSWORD, POSTGRES.getPassword())
@@ -50,7 +54,7 @@ class EventStoresTestcontainersTest {
                 .dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword()).load();
         flyway.migrate();
         assertThat(flyway.migrate().migrationsExecuted).isZero();
-        store=new ClickHouseEventStore(CLICKHOUSE.getJdbcUrl(),CLICKHOUSE.getUsername(),CLICKHOUSE.getPassword(),new ObjectMapper());
+        store = new ClickHouseEventStore(CLICKHOUSE.getJdbcUrl(), CLICKHOUSE.getUsername(), CLICKHOUSE.getPassword(), clickhouseSchema, new ObjectMapper());
         store.initialize().block();
     }
 
@@ -83,4 +87,11 @@ class EventStoresTestcontainersTest {
         assertThat(count).isEqualTo(5);
     }
     private static void set(Object target,String name,Object value)throws Exception{var field=target.getClass().getDeclaredField(name);field.setAccessible(true);field.set(target,value);}
+    private static Map<String,Object> loadTestProperties(){
+        try {
+            return (Map<String,Object>) new org.springframework.boot.env.YamlPropertySourceLoader()
+                    .load("test-config", new org.springframework.core.io.ClassPathResource("application-test.yml")).get(0).getSource();
+        } catch (Exception e) { throw new IllegalStateException("Cannot load application-test.yml", e); }
+    }
+    private static String image(String key){ return String.valueOf(PROPS.get(key)); }
 }

@@ -16,22 +16,21 @@ public class ClickHouseEventStore {
     private final String url;
     private final String username;
     private final String password;
+    private final String schema;
     private final ObjectMapper mapper;
     private final Scheduler jdbcScheduler = Schedulers.newBoundedElastic(4, 256, "clickhouse-jdbc");
 
     public ClickHouseEventStore(@Value("${erudit.clickhouse.url}") String url,
                                 @Value("${erudit.clickhouse.username:default}") String username,
-                                @Value("${erudit.clickhouse.password:}") String password, ObjectMapper mapper) {
+                                @Value("${erudit.clickhouse.password:}") String password,
+                                @Value("${erudit.clickhouse.schema}") String schema, ObjectMapper mapper) {
         this.url = url.startsWith("jdbc:") ? url : "jdbc:clickhouse:" + url;
-        this.username = username; this.password = password; this.mapper = mapper;
+        this.username = username; this.password = password; this.schema = schema; this.mapper = mapper;
     }
 
     public Mono<Void> initialize() {
         return blocking(() -> { try (var connection = DriverManager.getConnection(url, username, password); var statement = connection.createStatement()) {
-            statement.execute("""
-                CREATE TABLE IF NOT EXISTS analytics_events(
-                event_id UUID,event_type String,user_id Nullable(UUID),occurred_at DateTime64(3),payload String)
-                ENGINE=ReplacingMergeTree ORDER BY(event_id)""");
+            statement.execute(schema);
         } return null; }).then();
     }
 

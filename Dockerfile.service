@@ -9,7 +9,8 @@ COPY platform ./platform
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN --mount=type=cache,target=/root/.gradle,sharing=locked ./gradlew ${MODULE}:bootJar --no-daemon && \
     module_dir=$(echo "${MODULE}" | sed 's/^://;s/:/\//g') && \
-    cp "${module_dir}"/build/libs/*.jar /app/service.jar
+    module_jar=$(echo "${MODULE}" | sed 's/^://;s/.*://').jar && \
+    cp "${module_dir}"/build/libs/"${module_jar}" /app/service.jar
 
 FROM eclipse-temurin:25-jre
 WORKDIR /app

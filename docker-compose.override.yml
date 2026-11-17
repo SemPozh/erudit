@@ -1,0 +1,52 @@
+# LOCAL-ONLY override: imports corporate MITM-proxy CA into the build-stage JVM truststore
+# via a BuildKit secret. Not tracked in git; the CA file lives on the host (~/.erudit/corp-ca.crt).
+# Merge with the base docker-compose.yml (auto-loaded as docker-compose.override.yml).
+secrets:
+  corp_ca:
+    file: /Users/s.pozharskiy/.erudit/corp-ca.crt
+
+services:
+  config-server:
+    build:
+      dockerfile: infrastructure/erudit-config-server/Dockerfile.local
+      secrets: [corp_ca]
+  discovery-server:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  gateway:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  content-service:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  event-receiver:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  notificator:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  ai-platform:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  user-service:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  quiz-service:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  payment-service:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]
+  admin-service:
+    build:
+      dockerfile: Dockerfile.service.local
+      secrets: [corp_ca]

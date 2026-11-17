@@ -6,7 +6,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Properties;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.yaml.snakeyaml.Yaml;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +38,7 @@ class ConfigServerTest {
         for (String profile : new String[]{"default", "demo"}) {
             var response = get("/erudit-" + service + "/" + profile);
             assertThat(response.statusCode()).isEqualTo(200);
-            assertThat(response.body()).contains("erudit-" + service + ".properties",
+            assertThat(response.body()).contains("erudit-" + service + ".yml",
                     "erudit.pagination.max-size", "50", "connectTimeout");
             if (profile.equals("demo")) {
                 assertThat(response.body()).contains("erudit.demo.enabled");
@@ -58,22 +59,33 @@ class ConfigServerTest {
     void credentialsRemainUnresolvedEnvironmentPlaceholders() throws Exception {
         int checked = 0;
         try (var paths = Files.list(Path.of(System.getProperty("config.repository")))) {
-            for (Path path : paths.filter(p -> p.toString().endsWith(".properties")).toList()) {
-                var properties = new Properties();
+            for (Path path : paths.filter(p -> p.toString().endsWith(".yml")).toList()) {
+                Object root;
                 try (var reader = Files.newBufferedReader(path)) {
-                    properties.load(reader);
+                    root = new Yaml().load(reader);
                 }
-                for (String key : properties.stringPropertyNames()) {
-                    if (key.matches("(?i).*(password|secret|token|username|api-key).*")) {
-                        assertThat(properties.getProperty(key)).as(path + ": " + key)
-                                .matches("\\$\\{[A-Z][A-Z0-9_]*}");
-                        checked++;
-                    }
-                }
+                checked += assertPlaceholders(path, root);
             }
         }
         assertThat(checked).isGreaterThanOrEqualTo(16);
         assertThat(get("/erudit-user/default").body()).contains("${DB_PASSWORD}", "${DB_USERNAME}");
+    }
+
+    private int assertPlaceholders(Path path, Object node) {
+        int checked = 0;
+        if (node instanceof Map<?, ?> map) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() instanceof String key && key.matches("(?i).*(password|secret|token|username|api-key).*")) {
+                    assertThat(String.valueOf(entry.getValue())).as(path + ": " + key)
+                            .matches("\\$\\{[A-Z][A-Z0-9_]*}");
+                    checked++;
+                }
+                checked += assertPlaceholders(path, entry.getValue());
+            }
+        } else if (node instanceof Iterable<?> iterable) {
+            for (Object item : iterable) { checked += assertPlaceholders(path, item); }
+        }
+        return checked;
     }
 
     private HttpResponse<String> get(String path) throws Exception {

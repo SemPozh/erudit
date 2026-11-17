@@ -2,7 +2,7 @@ package com.erudit.quiz;
 
 import com.erudit.quiz.repository.QuizRepository;
 import com.erudit.quiz.service.QuizService;
-import com.erudit.integration.InternalClients.AiClient;
+import com.erudit.aiplatform.client.AiClient;
 import com.erudit.integration.InternalContracts.AiQuiz;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import java.util.*;

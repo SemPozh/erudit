@@ -136,7 +136,7 @@ class CategoryIntegrationTest {
     }
 
     @org.springframework.test.context.bean.override.mockito.MockitoBean
-    com.erudit.integration.InternalClients.EntitlementClient entitlements;
+    com.erudit.payment.client.EntitlementClient entitlements;
 
     @Autowired com.erudit.content.service.ContentItemService content;
 

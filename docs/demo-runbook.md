@@ -29,7 +29,7 @@ docker compose -p erudit-demo -f docker-compose.yml -f docker-compose.demo.yml -
 Payment/AI/notificator работают локально, бизнес-контейнеры находятся только во
 внутренней сети, доступа во внешнюю сеть у них нет. Старые миграции уже содержат
 базовые тарифы/категории/daily quiz/competition; новые fixtures подключаются только
-через `application-demo.properties`. Данные сохраняет только владелец домена.
+через `application-demo.yml`. Данные сохраняет только владелец домена.
 
 | Ресурс | Детерминированный ID / значение |
 | --- | --- |

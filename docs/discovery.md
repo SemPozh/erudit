@@ -2,15 +2,17 @@
 
 Eureka Server получает конфигурацию из Config Server и слушает порт 8761.
 Он не регистрирует себя и не получает реестр от самого себя. Собственных
-бизнес-контроллеров нет: используется стандартный API Eureka `/eureka/apps`.
-Инфраструктурные порты опубликованы Compose только на loopback; публичный
-Gateway не должен маршрутизировать Eureka (задача 70).
+бизнес-контроллеров нет: используется стандартный API Eureka `/eureka/apps` и
+встроенный HTML-дашборд. В Compose порт опубликован как
+`${EUREKA_PORT:-8761}:8761` (как у Gateway), поэтому дашборд открывается
+локально по `http://localhost:8761/`; публичный Gateway не должен
+маршрутизировать Eureka (задача 70).
 
 Все приложения имеют Eureka Client и Actuator. Service ID определяется
 `spring.application.name`, instance ID включает имя и уникальный идентификатор
 экземпляра. Health URL указывает на `/actuator/health`, status URL — на
 `/actuator/info`. При штатной остановке клиент снимает регистрацию.
-Глобальные параметры находятся в `config-repository/application.properties`.
+Глобальные параметры находятся в `config-repository/application.yml`.
 Config Server хранит bootstrap-параметры discovery локально, поскольку не
 может получать собственную конфигурацию через себя. Его health не зависит
 от Eureka: это предотвращает цикл готовности Config → Eureka → Config.

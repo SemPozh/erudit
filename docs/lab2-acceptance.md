@@ -152,7 +152,7 @@ GitHub API на 5 ноября 2026 подтвердил [main protection][branc
 
 [eureka]: ../infrastructure/erudit-discovery-server/src/main/java/com/erudit/discoveryserver/ServiceApplication.java
 [registry-test]: ../infrastructure/erudit-discovery-server/src/test/java/com/erudit/discoveryserver/RegistryTest.java
-[config]: ../infrastructure/erudit-config-server/src/main/resources/application.properties
+[config]: ../infrastructure/erudit-config-server/src/main/resources/application.yml
 [config-test]: ../infrastructure/erudit-config-server/src/test/java/com/erudit/configserver/ConfigClientTest.java
 [gateway]: ../infrastructure/erudit-gateway/src/main/java/com/erudit/gateway/GatewayConfiguration.java
 [gateway-test]: ../infrastructure/erudit-gateway/src/test/java/com/erudit/gateway/GatewayHttpTest.java

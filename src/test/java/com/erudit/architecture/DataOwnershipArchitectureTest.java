@@ -43,8 +43,8 @@ class DataOwnershipArchitectureTest {
                 assertThat(tables).as(service.getKey() + " foreign key " + references.group(1))
                         .contains(references.group(1).toLowerCase(Locale.ROOT));
             }
-            String config = Files.readString(Path.of("config-repository", service.getKey() + ".properties"));
-            assertThat(config).contains(service.getKey().equals("erudit-event-receiver") ? "spring.r2dbc.url=" : "spring.datasource.url=");
+            String config = Files.readString(Path.of("config-repository", service.getKey() + ".yml"));
+            assertThat(config).contains(service.getKey().equals("erudit-event-receiver") ? "r2dbc:" : "datasource:");
             assertThat(config).contains("${DB_USERNAME}", "${DB_PASSWORD}");
             for (String foreign : namespaces.keySet()) {
                 if (!foreign.equals(service.getKey())) {
