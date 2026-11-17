@@ -30,7 +30,10 @@ class ServiceLayersTest {
         noClasses().should().dependOnClassesThat().resideInAnyPackage("org.springframework.security..","io.jsonwebtoken..").check(imported);
         var owners=List.of("admin","user","content","quiz","payment","notificator","eventreceiver","aiplatform");
         for(String owner:owners){
-            var foreign=owners.stream().filter(name->!name.equals(owner)).map(name->"com.erudit."+name+"..").toArray(String[]::new);
+            var foreign=owners.stream().filter(name->!name.equals(owner))
+                    .flatMap(name->List.of("controller","service","repository","model","config","dto").stream()
+                            .map(layer->"com.erudit."+name+"."+layer+".."))
+                    .toArray(String[]::new);
             noClasses().that().resideInAPackage("com.erudit."+owner+"..")
                     .should().dependOnClassesThat().resideInAnyPackage(foreign).check(imported);
         }

@@ -28,7 +28,10 @@ class ConfigServerTest {
     @DynamicPropertySource
     static void repository(DynamicPropertyRegistry registry) {
         registry.add("spring.cloud.config.server.native.search-locations",
-                () -> Path.of(System.getProperty("config.repository")).toUri().toString());
+                () -> {
+                    String root = Path.of(System.getProperty("config.repository")).toUri().toString();
+                    return root + "," + root + "{application}/";
+                });
     }
 
     @ParameterizedTest
@@ -58,7 +61,7 @@ class ConfigServerTest {
     @Test
     void credentialsRemainUnresolvedEnvironmentPlaceholders() throws Exception {
         int checked = 0;
-        try (var paths = Files.list(Path.of(System.getProperty("config.repository")))) {
+        try (var paths = Files.walk(Path.of(System.getProperty("config.repository")))) {
             for (Path path : paths.filter(p -> p.toString().endsWith(".yml")).toList()) {
                 Object root;
                 try (var reader = Files.newBufferedReader(path)) {

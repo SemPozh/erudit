@@ -16,6 +16,9 @@ build
 # Local database credentials
 .env
 
+# Developer-specific Docker build override and corporate CA path
+docker-compose.override.yml
+
 # Python CI planner cache
 __pycache__/
 *.pyc

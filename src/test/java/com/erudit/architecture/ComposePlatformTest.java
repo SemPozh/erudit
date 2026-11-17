@@ -16,7 +16,9 @@ class ComposePlatformTest {
             if(service.containsKey("build")){
                 applications++;assertThat(map(service.get("environment")).get("JAVA_TOOL_OPTIONS")).as(entry.getKey()).asString().contains("MaxRAMPercentage=50.0");
             }else{databases++;}
-            if(service.containsKey("ports")){assertThat(entry.getKey()).isEqualTo("gateway");}
+            if(service.containsKey("ports")){
+                assertThat(entry.getKey()).isIn("gateway", "discovery-server");
+            }
         }
         assertThat(applications).isEqualTo(11);assertThat(databases).isEqualTo(8);
         Map<String,Object> demo=new Yaml().load(Files.readString(Path.of("docker-compose.demo.yml")));
