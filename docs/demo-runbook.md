@@ -117,7 +117,7 @@ reset собирает образы партиями максимум по дв�
 `./gradlew test openApiValidate build` запускает PostgreSQL/R2DBC/ClickHouse
 Testcontainers владельцев, HTTP/Feign stub tests, guards границ/fixtures/OpenAPI,
 проверки ошибок, rollback, fallback и pagination. Generated DTO исключены из
-JaCoCo, порог 70% сохранён. CI запускает каждый модуль независимо через test/check,
+JaCoCo, порог 80% для каждого модуля сохранён. CI запускает каждый модуль независимо через test/check,
 публикует JUnit/HTML/JaCoCo даже при ошибке и отдельно выполняет demo HTTP suite.
 Suite сверяет ответы с публичными schemas (required/type/enum/format/allOf/ref),
 проверяет отрицательные pagination/sort, CRUD, state transitions, conflict,

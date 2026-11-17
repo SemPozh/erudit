@@ -49,7 +49,7 @@ tasks.named('jacocoTestReport') {
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('test')
     classDirectories.setFrom(applicationClasses)
-    violationRules { rule { limit { counter = 'LINE'; minimum = 0.70 } } }
+    violationRules { rule { limit { counter = 'LINE'; minimum = 0.80 } } }
 }
 tasks.named('check') { dependsOn tasks.named('jacocoTestCoverageVerification') }
 

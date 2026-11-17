@@ -62,7 +62,7 @@ PostgreSQL хранит транзакционные данные. ClickHouse х
 - JUnit Jupiter используется для модульных и интеграционных тестов.
 - PostgreSQL-интеграции проверяются Testcontainers; тесты отмечены
   `@Testcontainers(disabledWithoutDocker = true)`.
-- JaCoCo проверяет общий порог покрытия 70%, исключая сгенерированный OpenAPI-код.
+- JaCoCo проверяет порог покрытия строк 80% для каждого модуля, исключая сгенерированный OpenAPI-код.
 - CI выполняет `openApiValidate`, тесты, проверку покрытия и сборку.
 - Локальный полный прогон: `./gradlew test openApiValidate build`.
 - Переходный монолит: `docker compose --profile legacy up --build`.
