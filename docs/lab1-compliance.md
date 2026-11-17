@@ -20,7 +20,7 @@
 | Enum как строки | JPA enum поля используют `EnumType.STRING`; JDBC схемы хранят текстовые значения с `CHECK`. |
 | Обработка ошибок | `GlobalExceptionHandler` возвращает человекочитаемый `ApiErrorResponse`. |
 | Связи сущностей | One-to-many/many-to-one: пользователь и verification tokens; many-to-many: пользователи и приглашения; many-to-many с полем `joined_at`: `competition_participants`. |
-| JUnit Jupiter, Testcontainers, покрытие | PostgreSQL и ClickHouse запускаются Testcontainers; JaCoCo останавливает сборку ниже 70%. |
+| JUnit Jupiter, Testcontainers, покрытие | PostgreSQL и ClickHouse запускаются Testcontainers; JaCoCo останавливает сборку любого модуля ниже 80% строк. |
 | Docker Compose и env | Приложение, PostgreSQL и ClickHouse запускаются `docker compose`; параметры читаются из переменных окружения. |
 | OpenAPI 3 и Swagger UI | Единая спецификация валидируется и генерирует интерфейсы; Swagger UI доступен на `/swagger-ui/index.html`. |
 

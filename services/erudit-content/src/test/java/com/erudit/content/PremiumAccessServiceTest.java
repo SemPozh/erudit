@@ -1,7 +1,7 @@
 package com.erudit.content;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import com.erudit.integration.InternalClients.EntitlementClient;
+import com.erudit.payment.client.EntitlementClient;
 import com.erudit.integration.InternalContracts.Entitlement;
 import com.erudit.content.service.PremiumAccessService;
 import java.util.UUID;

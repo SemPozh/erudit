@@ -1,5 +1,5 @@
 package com.erudit.content.service;
-import com.erudit.integration.InternalClients.EntitlementClient;
+import com.erudit.payment.client.EntitlementClient;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 @Service

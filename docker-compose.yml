@@ -14,6 +14,7 @@ x-java-env: &java-env
 
 services:
   config-server:
+    hostname: config-server
     <<: *java-runtime
     build:
       context: .
@@ -22,7 +23,7 @@ services:
     environment:
       <<: *java-env
       SPRING_PROFILES_ACTIVE: native
-      CONFIG_REPOSITORY_LOCATION: file:/config-repository/
+      CONFIG_REPOSITORY_LOCATION: file:/config-repository/,file:/config-repository/{application}/
       EUREKA_URL: http://discovery-server:8761/eureka/
     volumes:
       - ./config-repository:/config-repository:ro
@@ -38,6 +39,7 @@ services:
       start_period: 20s
 
   discovery-server:
+    hostname: discovery-server
     <<: *java-runtime
     build:
       context: .
@@ -53,6 +55,8 @@ services:
         condition: service_healthy
     networks:
       - internal
+    ports:
+      - "${EUREKA_PORT:-8761}:8761"
     restart: unless-stopped
     stop_grace_period: 20s
     healthcheck:
@@ -63,6 +67,7 @@ services:
       start_period: 30s
 
   gateway:
+    hostname: gateway
     <<: *java-runtime
     build:
       context: .
@@ -94,6 +99,7 @@ services:
     stop_grace_period: 20s
 
   content-service:
+    hostname: content-service
     <<: *java-runtime
     build:
       context: .
@@ -111,6 +117,7 @@ services:
       MEDIA_STORAGE_PATH: /app/data/media
     networks:
       - internal
+      - content-db
     volumes:
       - content_media_data:/app/data/media
     depends_on:
@@ -144,7 +151,7 @@ services:
       - content_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
     networks:
-      - internal
+      - content-db
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -153,6 +160,7 @@ services:
     restart: unless-stopped
 
   event-receiver:
+    hostname: event-receiver
     <<: *java-runtime
     build:
       context: .
@@ -169,7 +177,7 @@ services:
       CLICKHOUSE_URL: http://event-clickhouse:8123/erudit_events
       CLICKHOUSE_USERNAME: ${EVENT_CLICKHOUSE_USER:-erudit_event}
       CLICKHOUSE_PASSWORD: ${EVENT_CLICKHOUSE_PASSWORD:-erudit_event}
-    networks: [internal]
+    networks: [internal, event-db]
     depends_on:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
@@ -197,7 +205,7 @@ services:
     volumes:
       - event_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
-    networks: [internal]
+    networks: [event-db]
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -217,7 +225,7 @@ services:
     volumes:
       - event_clickhouse_data:/var/lib/clickhouse
       - ./docker/clickhouse/local-budget.xml:/etc/clickhouse-server/config.d/local-budget.xml:ro
-    networks: [internal]
+    networks: [event-db]
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8123/ping"]
       interval: 5s
@@ -225,6 +233,7 @@ services:
       retries: 30
 
   notificator:
+    hostname: notificator
     <<: *java-runtime
     build:
       context: .
@@ -237,7 +246,7 @@ services:
       DB_URL: jdbc:postgresql://notification-postgres:5432/erudit_notification
       DB_USERNAME: ${NOTIFICATION_DB_USER:-erudit_notification}
       DB_PASSWORD: ${NOTIFICATION_DB_PASSWORD:-erudit_notification}
-    networks: [internal]
+    networks: [internal, notification-db]
     depends_on:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
@@ -264,7 +273,7 @@ services:
     volumes:
       - notification_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
-    networks: [internal]
+    networks: [notification-db]
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -286,6 +295,7 @@ services:
       retries: 20
 
   ai-platform:
+    hostname: ai-platform
     <<: *java-runtime
     build:
       context: .
@@ -313,6 +323,7 @@ services:
         condition: service_healthy
 
   user-service:
+    hostname: user-service
     <<: *java-runtime
     build:
       context: .
@@ -325,7 +336,7 @@ services:
       DB_URL: jdbc:postgresql://user-postgres:5432/erudit_user
       DB_USERNAME: ${USER_DB_USER:-erudit_user}
       DB_PASSWORD: ${USER_DB_PASSWORD:-erudit_user}
-    networks: [internal]
+    networks: [internal, user-db]
     depends_on:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
@@ -352,7 +363,7 @@ services:
     volumes:
       - user_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
-    networks: [internal]
+    networks: [user-db]
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -360,6 +371,7 @@ services:
       retries: 20
 
   quiz-service:
+    hostname: quiz-service
     <<: *java-runtime
     build:
       context: .
@@ -372,7 +384,7 @@ services:
       DB_URL: jdbc:postgresql://quiz-postgres:5432/erudit_quiz
       DB_USERNAME: ${QUIZ_DB_USER:-erudit_quiz}
       DB_PASSWORD: ${QUIZ_DB_PASSWORD:-erudit_quiz}
-    networks: [internal]
+    networks: [internal, quiz-db]
     depends_on:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
@@ -399,7 +411,7 @@ services:
     volumes:
       - quiz_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
-    networks: [internal]
+    networks: [quiz-db]
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -407,6 +419,7 @@ services:
       retries: 20
 
   payment-service:
+    hostname: payment-service
     <<: *java-runtime
     build:
       context: .
@@ -420,7 +433,7 @@ services:
       DB_URL: jdbc:postgresql://payment-postgres:5432/erudit_payment
       DB_USERNAME: ${PAYMENT_DB_USER:-erudit_payment}
       DB_PASSWORD: ${PAYMENT_DB_PASSWORD:-erudit_payment}
-    networks: [internal]
+    networks: [internal, payment-db]
     depends_on:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
@@ -447,7 +460,7 @@ services:
     volumes:
       - payment_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
-    networks: [internal]
+    networks: [payment-db]
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -455,6 +468,7 @@ services:
       retries: 20
 
   admin-service:
+    hostname: admin-service
     <<: *java-runtime
     build:
       context: .
@@ -467,7 +481,7 @@ services:
       DB_URL: jdbc:postgresql://admin-postgres:5432/erudit_admin
       DB_USERNAME: ${ADMIN_DB_USER:-erudit_admin}
       DB_PASSWORD: ${ADMIN_DB_PASSWORD:-erudit_admin}
-    networks: [internal]
+    networks: [internal, admin-db]
     depends_on:
       config-server: {condition: service_healthy}
       discovery-server: {condition: service_healthy}
@@ -494,7 +508,7 @@ services:
     volumes:
       - admin_postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init-domain.sh:/docker-entrypoint-initdb.d/10-domain.sh:ro
-    networks: [internal]
+    networks: [admin-db]
     healthcheck:
       test: [CMD-SHELL, 'PGPASSWORD="$$APP_DB_PASSWORD" psql -h 127.0.0.1 -U "$$APP_DB_USER" -d "$$POSTGRES_DB" -tAc "SELECT 1" > /dev/null']
       interval: 5s
@@ -518,4 +532,25 @@ networks:
     name: ${COMPOSE_PROJECT_NAME:-erudit}-edge
   internal:
     name: ${COMPOSE_PROJECT_NAME:-erudit}-internal
+    internal: true
+  content-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-content-db
+    internal: true
+  event-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-event-db
+    internal: true
+  notification-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-notification-db
+    internal: true
+  user-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-user-db
+    internal: true
+  quiz-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-quiz-db
+    internal: true
+  payment-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-payment-db
+    internal: true
+  admin-db:
+    name: ${COMPOSE_PROJECT_NAME:-erudit}-admin-db
     internal: true

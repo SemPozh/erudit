@@ -27,8 +27,8 @@ class ApprovedApiTest {
         assertThat(actual).containsExactlyElementsOf(approved);
         assertThat(Path.of("src/main")).doesNotExist();assertThat(Path.of("Dockerfile")).doesNotExist();
         assertThat(Files.readString(Path.of("docker-compose.yml"))).doesNotContain("profiles: [legacy]","jdbc:postgresql://postgres:","image: erudit:latest");
-        try(var configs=Files.list(Path.of("config-repository"))){
-            for(var config:configs.toList()){
+        try(var configs=Files.walk(Path.of("config-repository"))){
+            for(var config:configs.filter(Files::isRegularFile).toList()){
                 String source=Files.readString(config);
                 assertThat(source).doesNotContain("spring.cloud.openfeign.client.config.default.url=","spring.security.");
             }

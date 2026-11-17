@@ -1,0 +1,15 @@
+erudit:
+  clickhouse:
+    schema: |
+      CREATE TABLE IF NOT EXISTS analytics_events(
+      event_id UUID,event_type String,user_id Nullable(UUID),occurred_at DateTime64(3),payload String)
+      ENGINE=ReplacingMergeTree ORDER BY(event_id)
+
+test:
+  r2dbc:
+    driver: postgresql
+  containers:
+    postgres:
+      image: postgres:17-alpine
+    clickhouse:
+      image: clickhouse/clickhouse-server:25.8

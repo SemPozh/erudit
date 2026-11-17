@@ -32,7 +32,7 @@ tasks.jacocoTestReport {
 }
 tasks.jacocoTestCoverageVerification {
     dependsOn(tasks.test)
-    violationRules { rule { limit { counter = "LINE"; minimum = "0.70".toBigDecimal() } } }
+    violationRules { rule { limit { counter = "LINE"; minimum = "0.80".toBigDecimal() } } }
 }
 val verifyNoDatabaseDependencies = tasks.register("verifyNoDatabaseDependencies") {
     doLast {

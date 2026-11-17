@@ -3,6 +3,7 @@ apply(from = rootProject.file("gradle/service-conventions.gradle"))
 dependencies {
     "implementation"(project(":platform:erudit-observability"))
     "implementation"(project(":platform:erudit-integration"))
+    "implementation"(project(":services:erudit-user"))
     "implementation"("org.springframework.boot:spring-boot-starter-data-jdbc")
     "implementation"("org.springframework.boot:spring-boot-starter-validation")
     "implementation"("org.springframework.boot:spring-boot-starter-flyway")

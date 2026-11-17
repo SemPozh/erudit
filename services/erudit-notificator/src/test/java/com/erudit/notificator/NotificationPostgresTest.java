@@ -18,4 +18,23 @@ import org.testcontainers.junit.jupiter.*;import org.testcontainers.postgresql.P
   service.readAll(user).block();StepVerifier.create(service.unread(user)).expectNext(0L).verifyComplete();
  }
  @Test void storesOnlyMockDeliveryAttempts(){UUID user=UUID.randomUUID();var notification=service.enqueue(user,"DEMO",null,null).block();assertThat(deliveries.pending(10)).extracting(NotificationRecord::id).contains(notification.id());var attempt=deliveries.record(notification,"MOCK_DELIVERED");assertThat(attempt.payloadPreview()).contains("Erudit update");assertThat(deliveries.deliveredToday(user)).isOne();assertThat(deliveries.attempts(notification.id())).extracting(DeliveryAttempt::status).containsExactly("MOCK_DELIVERED");assertThat(deliveries.pending(10)).extracting(NotificationRecord::id).doesNotContain(notification.id());}
+ @Test void coversPreferenceDefaultsTemplateCrudAndIndividualReads(){
+  UUID user=UUID.randomUUID(),templateId=UUID.randomUUID();String code="TEST_"+UUID.randomUUID().toString().replace("-","");
+  StepVerifier.create(service.preference(user)).assertNext(v->{assertThat(v.enabled()).isTrue();assertThat(v.channels()).containsExactly("IN_APP");}).verifyComplete();
+  var created=new Template(templateId,code,"Initial title","Initial body",true);
+  StepVerifier.create(service.saveTemplate(created)).expectNext(created).verifyComplete();
+  StepVerifier.create(service.templates().collectList()).assertNext(v->assertThat(v).extracting(Template::id).contains(templateId)).verifyComplete();
+  StepVerifier.create(service.template(templateId)).expectNext(created).verifyComplete();
+  var updated=new Template(templateId,code,"Updated title","Updated body",true);
+  StepVerifier.create(service.updateTemplate(updated)).expectNext(updated).verifyComplete();
+  var notification=service.enqueue(user,code,"Custom title","Custom body").block();
+  assertThat(notification.title()).isEqualTo("Custom title");
+  StepVerifier.create(service.read(user,notification.id())).verifyComplete();
+  StepVerifier.create(service.read(user,UUID.randomUUID())).expectError(IllegalArgumentException.class).verify();
+  deliveries.record(notification,"MOCK_DELIVERED");
+  StepVerifier.create(service.attempts(notification.id())).expectNextCount(1).verifyComplete();
+  StepVerifier.create(service.deleteTemplate(templateId)).verifyComplete();
+  StepVerifier.create(service.template(templateId)).expectError(IllegalArgumentException.class).verify();
+  StepVerifier.create(service.deleteTemplate(templateId)).expectError(IllegalArgumentException.class).verify();
+ }
 }

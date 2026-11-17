@@ -18,7 +18,13 @@ dependencyManagement {
 }
 
 tasks.named('bootJar') { archiveFileName = "${project.name}.jar" }
-tasks.named('jar') { enabled = false }
+// Thin jar for cross-service project dependencies. Classes only: dependency modules must
+// not leak their resources (Flyway migrations, application.yml, contracts) onto consumers.
+tasks.named('jar') {
+    archiveFileName = "${project.name}-plain.jar"
+    exclude('db/**', 'static/**', 'openapi*.yaml', 'application*.yml')
+    from(sourceSets.main.output.classesDirs)
+}
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
@@ -43,7 +49,7 @@ tasks.named('jacocoTestReport') {
 tasks.named('jacocoTestCoverageVerification') {
     dependsOn tasks.named('test')
     classDirectories.setFrom(applicationClasses)
-    violationRules { rule { limit { counter = 'LINE'; minimum = 0.70 } } }
+    violationRules { rule { limit { counter = 'LINE'; minimum = 0.80 } } }
 }
 tasks.named('check') { dependsOn tasks.named('jacocoTestCoverageVerification') }
 

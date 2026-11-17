@@ -30,4 +30,5 @@ dependencies {
 
 tasks.named<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerate") {
     configOptions.put("reactive", "true")
+    configOptions.put("useResponseEntity", "false")
 }

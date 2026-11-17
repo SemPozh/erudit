@@ -29,7 +29,7 @@ docker compose -p erudit-demo -f docker-compose.yml -f docker-compose.demo.yml -
 Payment/AI/notificator работают локально, бизнес-контейнеры находятся только во
 внутренней сети, доступа во внешнюю сеть у них нет. Старые миграции уже содержат
 базовые тарифы/категории/daily quiz/competition; новые fixtures подключаются только
-через `application-demo.properties`. Данные сохраняет только владелец домена.
+через `application-demo.yml`. Данные сохраняет только владелец домена.
 
 | Ресурс | Детерминированный ID / значение |
 | --- | --- |
@@ -117,7 +117,7 @@ reset собирает образы партиями максимум по дв�
 `./gradlew test openApiValidate build` запускает PostgreSQL/R2DBC/ClickHouse
 Testcontainers владельцев, HTTP/Feign stub tests, guards границ/fixtures/OpenAPI,
 проверки ошибок, rollback, fallback и pagination. Generated DTO исключены из
-JaCoCo, порог 70% сохранён. CI запускает каждый модуль независимо через test/check,
+JaCoCo, порог 80% для каждого модуля сохранён. CI запускает каждый модуль независимо через test/check,
 публикует JUnit/HTML/JaCoCo даже при ошибке и отдельно выполняет demo HTTP suite.
 Suite сверяет ответы с публичными schemas (required/type/enum/format/allOf/ref),
 проверяет отрицательные pagination/sort, CRUD, state transitions, conflict,

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.erudit.integration.InternalClients.UserClient;
+import com.erudit.user.client.UserClient;
 import com.erudit.integration.InternalContracts.UserLookup;
 import com.erudit.payment.repository.PaymentRepository;
 import com.erudit.payment.service.*;

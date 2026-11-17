@@ -1,0 +1,42 @@
+# LOCAL-ONLY override for corporate MITM proxy: imports corp CA via BuildKit secret.
+# Not tracked in git. Runtime image does NOT contain the CA (build stage only).
+FROM eclipse-temurin:25-jdk AS build
+WORKDIR /app
+ARG MODULE
+COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
+COPY gradle ./gradle
+COPY infrastructure ./infrastructure
+COPY services ./services
+COPY platform ./platform
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
+RUN --mount=type=secret,id=corp_ca \
+    if [ -f /run/secrets/corp_ca ]; then \
+      keytool -importcert -noprompt -alias corp-ca \
+        -file /run/secrets/corp_ca \
+        -keystore "$JAVA_HOME/lib/security/cacerts" -storepass changeit \
+      && echo "corp CA imported"; \
+    else echo "no corp CA secret, skipping"; fi
+RUN --mount=type=cache,target=/root/.gradle,sharing=locked ./gradlew ${MODULE}:bootJar --no-daemon && \
+    module_dir=$(echo "${MODULE}" | sed 's/^://;s/:/\//g') && \
+    module_jar=$(echo "${MODULE}" | sed 's/^://;s/.*://').jar && \
+    cp "${module_dir}"/build/libs/"${module_jar}" /app/service.jar
+
+FROM eclipse-temurin:25-jre
+WORKDIR /app
+ARG VCS_REF=worktree
+ARG BUILD_DATE=unspecified
+ARG WORKTREE_STATE=local
+ARG MODULE
+LABEL org.opencontainers.image.source="https://github.com/SemPozh/erudit" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.title="${MODULE}" \
+      io.erudit.worktree-state="${WORKTREE_STATE}"
+RUN useradd --system --uid 10001 appuser \
+    && mkdir -p /app/data/media && chown appuser:appuser /app/data/media \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /app/service.jar app.jar
+USER appuser
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

@@ -1,7 +1,7 @@
 package com.erudit.payment;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import com.erudit.integration.InternalClients.UserClient;
+import com.erudit.user.client.UserClient;
 import com.erudit.integration.InternalContracts.UserLookup;
 import com.erudit.payment.model.Subscription;
 import com.erudit.payment.repository.PaymentRepository;

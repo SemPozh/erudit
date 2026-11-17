@@ -3,6 +3,8 @@ apply(from = rootProject.file("gradle/service-conventions.gradle"))
 dependencies {
     "implementation"(project(":platform:erudit-observability"))
     "implementation"(project(":platform:erudit-integration"))
+    "implementation"(project(":services:erudit-ai-platform"))
+    "implementation"(project(":services:erudit-payment"))
     "implementation"("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
     "implementation"("org.springframework.boot:spring-boot-starter-actuator")
     "implementation"("org.springframework.boot:spring-boot-starter-webmvc")

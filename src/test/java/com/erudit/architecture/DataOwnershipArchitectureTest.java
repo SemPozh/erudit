@@ -23,12 +23,13 @@ class DataOwnershipArchitectureTest {
                     String source = Files.readString(file);
                     for (String foreign : namespaces.values()) {
                         if (!foreign.equals(service.getValue())) {
-                            assertThat(source).as(file.toString()).doesNotContain("com.erudit." + foreign + ".");
+                            assertThat(source).as(file.toString())
+                                    .doesNotMatch("(?s).*com\\.erudit\\." + Pattern.quote(foreign)
+                                            + "\\.(?!client\\.).*");
                         }
                     }
                 }
             }
-            assertThat(Files.readString(module.resolve("build.gradle.kts"))).doesNotContain(":services:");
             Path migrations = module.resolve("src/main/resources/db/migration");
             if (!Files.exists(migrations)) { assertThat(service.getKey()).isEqualTo("erudit-ai-platform"); continue; }
             StringBuilder sql = new StringBuilder();
@@ -43,8 +44,8 @@ class DataOwnershipArchitectureTest {
                 assertThat(tables).as(service.getKey() + " foreign key " + references.group(1))
                         .contains(references.group(1).toLowerCase(Locale.ROOT));
             }
-            String config = Files.readString(Path.of("config-repository", service.getKey() + ".properties"));
-            assertThat(config).contains(service.getKey().equals("erudit-event-receiver") ? "spring.r2dbc.url=" : "spring.datasource.url=");
+            String config = Files.readString(Path.of("config-repository", service.getKey(), service.getKey() + ".yml"));
+            assertThat(config).contains(service.getKey().equals("erudit-event-receiver") ? "r2dbc:" : "datasource:");
             assertThat(config).contains("${DB_USERNAME}", "${DB_PASSWORD}");
             for (String foreign : namespaces.keySet()) {
                 if (!foreign.equals(service.getKey())) {

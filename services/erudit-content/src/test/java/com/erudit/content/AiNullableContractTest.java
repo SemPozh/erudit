@@ -2,7 +2,7 @@ package com.erudit.content;
 
 import com.erudit.content.model.ContentItem;
 import com.erudit.content.service.LocalQuizCardGenerator;
-import com.erudit.integration.InternalClients.AiClient;
+import com.erudit.aiplatform.client.AiClient;
 import com.erudit.integration.InternalContracts.AiCard;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import java.time.Instant;

@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.erudit.content.model.ContentItem;
 import com.erudit.content.service.*;
 import com.erudit.content.repository.ContentWorkflowRepository;
-import com.erudit.integration.InternalClients.EntitlementClient;
+import com.erudit.payment.client.EntitlementClient;
 import com.erudit.integration.InternalContracts.Entitlement;
 import java.util.*;
 import java.util.concurrent.*;

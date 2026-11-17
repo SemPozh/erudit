@@ -1,0 +1,19 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/erudit_admin}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  # Each service owns a fresh Flyway history; never baseline a legacy monolith schema.
+  flyway:
+    baseline-on-migrate: false
+  cloud:
+    loadbalancer:
+      retry:
+        enabled: false
+
+springdoc:
+  swagger-ui:
+    url: /openapi.yaml

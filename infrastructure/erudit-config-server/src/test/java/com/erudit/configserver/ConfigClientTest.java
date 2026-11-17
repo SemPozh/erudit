@@ -24,15 +24,15 @@ class ConfigClientTest {
 
     @Test
     void restartLoadsChangedRemoteConfiguration() throws Exception {
-        Path config = repository.resolve("erudit-ai-platform.properties");
-        Files.writeString(config, "erudit.pagination.max-size=40\n");
+        Path config = repository.resolve("erudit-ai-platform.yml");
+        Files.writeString(config, "erudit:\n  pagination:\n    max-size: 40\n");
         var application = new SpringApplication(ServiceApplication.class);
         try (var server = application.run("--server.port=0", "--spring.cloud.config.enabled=false",
                 "--spring.cloud.config.server.native.search-locations=" + repository.toUri())) {
             int port = ((WebServerApplicationContext) server).getWebServer().getPort();
             try (var client = startClient(port)) {
                 assertThat(client.getEnvironment().getProperty("erudit.pagination.max-size")).isEqualTo("40");
-                Files.writeString(config, "erudit.pagination.max-size=30\n");
+                Files.writeString(config, "erudit:\n  pagination:\n    max-size: 30\n");
                 assertThat(client.getEnvironment().getProperty("erudit.pagination.max-size")).isEqualTo("40");
             }
             try (var client = startClient(port)) {

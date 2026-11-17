@@ -1,0 +1,21 @@
+server:
+  port: ${SERVER_PORT:8088}
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/erudit_notification}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  flyway:
+    enabled: true
+    # Each service owns a fresh Flyway history; never baseline a legacy monolith schema.
+    baseline-on-migrate: false
+
+erudit:
+  notifications:
+    jdbc-threads: ${NOTIFICATION_JDBC_THREADS:4}
+    jdbc-queue: ${NOTIFICATION_JDBC_QUEUE:256}
+    daily-limit: ${NOTIFICATION_DAILY_LIMIT:10}
+    quiet-start: ${NOTIFICATION_QUIET_START:22}
+    quiet-end: ${NOTIFICATION_QUIET_END:8}
+    trigger-cron: ${NOTIFICATION_TRIGGER_CRON:0 */5 * * * *}
