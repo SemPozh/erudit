@@ -247,6 +247,12 @@
   },
   {
     "owner": "erudit-user",
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "operationId": "login"
+  },
+  {
+    "owner": "erudit-user",
     "method": "GET",
     "path": "/api/v1/friends",
     "operationId": "listFriends"

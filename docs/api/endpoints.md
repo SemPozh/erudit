@@ -78,6 +78,7 @@
 | erudit-quiz | GET | `/api/v1/assessments/sessions/{id}/result` | `getAssessmentResult` |
 | erudit-quiz | GET | `/api/v1/learning-program` | `getLearningProgram` |
 | erudit-quiz | GET | `/api/v1/learning-program/next` | `getNextLearningStep` |
+| erudit-user | POST | `/api/v1/auth/login` | `login` |
 | erudit-user | POST | `/api/v1/users/register` | `register` |
 | erudit-user | POST | `/api/v1/users/verify` | `verifyEmail` |
 | erudit-user | GET | `/api/v1/users` | `searchUsers` |

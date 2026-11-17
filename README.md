@@ -30,11 +30,13 @@ http://localhost:18089/swagger-ui/index.html. Секреты окружения 
 - [Изоляция баз и baseline](docs/database-isolation.md)
 - [Gateway Swagger](docs/gateway-swagger.md)
 
-Авторизации/JWT/проверок ролей в ЛР2 нет. X-User-Id выбирает непроверяемый
-контекст; AI/payment/notificator работают локально, email/push/SMS не отправляются.
+В ветке ЛР3 внешние API защищены Spring Security и JWT в заголовке `Authorization: Bearer <token>`.
+Роль и `X-User-Id` формирует Gateway из проверенного токена; пользовательские значения этих заголовков игнорируются.
+Получить demo-токен можно через `POST /api/v1/auth/login` с `demo@erudit.local` / `password`.
+AI/payment/notificator работают локально, email/push/SMS не отправляются.
 Сервисные OpenAPI в `services/erudit-*/src/main/resources/static/openapi.yaml` —
 источник внешнего контракта. `docs/api/public-operations.json` фиксирует утверждённые
-83 method/path/operationId. Изменение списка требует явного обновления baseline.
+84 method/path/operationId. Изменение списка требует явного обновления baseline.
 
 История ЛР1 сохранена в Git и `docs/history/legacy-inventory.json`;
 старые aliases уже не входили в сервисные контракты после №93. Исторические

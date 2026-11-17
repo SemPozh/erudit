@@ -103,7 +103,10 @@ public class PublicApiCatalog {
                 group.put(tokens[3], value);
                 collectRefs(value, pending);
             }
+            components.put("securitySchemes", Map.of("bearerAuth", Map.of(
+                    "type", "http", "scheme", "bearer", "bearerFormat", "JWT")));
             document.put("components", components);
+            document.put("security", List.of(Map.of("bearerAuth", List.of())));
             // Retain only public tags; internal endpoint tags and DTOs never reach Swagger.
             var tags = new LinkedHashSet<String>();
             collectTags(paths, tags);
@@ -154,9 +157,9 @@ public class PublicApiCatalog {
         if (node instanceof Map<?, ?> map) {
             var result = new LinkedHashMap<String, Object>();
             map.forEach((key, value) -> {
-                if (!Set.of("security", "securitySchemes", "servers").contains(key)) {
+                if (!key.equals("servers")) {
                     result.put((String) key, clean(value));
-                } else if (key.equals("servers")) {
+                } else {
                     result.put("servers", List.of(Map.of("url", "/")));
                 }
             });

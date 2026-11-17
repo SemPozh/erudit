@@ -27,7 +27,6 @@ class ServiceLayersTest {
                 .should().dependOnClassesThat().resideInAPackage("..controller..").check(imported);
         classes().that().resideInAPackage("..repository..")
                 .should().onlyBeAccessed().byAnyPackage("..service..","..repository..").check(imported);
-        noClasses().should().dependOnClassesThat().resideInAnyPackage("org.springframework.security..","io.jsonwebtoken..").check(imported);
         var owners=List.of("admin","user","content","quiz","payment","notificator","eventreceiver","aiplatform");
         for(String owner:owners){
             var foreign=owners.stream().filter(name->!name.equals(owner))
