@@ -1,7 +1,7 @@
 -- Disposable demo profile only; never included in normal migrations.
-INSERT INTO users(id,email,display_name,verified,created_at) VALUES
-('00000000-0000-0000-0000-000000000002','friend@erudit.local','Demo Friend',TRUE,'2026-01-01T00:00:00Z'),
-('00000000-0000-0000-0000-000000000003','pending@erudit.local','Demo Pending Friend',TRUE,'2026-01-01T00:00:00Z') ON CONFLICT DO NOTHING;
+INSERT INTO users(id,email,display_name,password_hash,role,verified,created_at) VALUES
+('00000000-0000-0000-0000-000000000002','friend@erudit.local','Demo Friend','$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy','AUTHOR',TRUE,'2026-01-01T00:00:00Z'),
+('00000000-0000-0000-0000-000000000003','pending@erudit.local','Demo Pending Friend','$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy','LEARNER',TRUE,'2026-01-01T00:00:00Z') ON CONFLICT DO NOTHING;
 INSERT INTO user_settings(user_id) SELECT id FROM users ON CONFLICT DO NOTHING;
 INSERT INTO friendships(user_low,user_high) VALUES('00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002') ON CONFLICT DO NOTHING;
 INSERT INTO friend_requests(id,requester_id,addressee_id,status) VALUES('f0000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000003','PENDING') ON CONFLICT DO NOTHING;

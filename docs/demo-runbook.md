@@ -24,7 +24,8 @@ $env:GATEWAY_PORT=18089
 docker compose -p erudit-demo -f docker-compose.yml -f docker-compose.demo.yml --profile demo up --build -d --wait
 ```
 
-Авторизации нет. Заголовок `X-User-Id` — непроверяемый контекст, по умолчанию
+В ЛР3 используется Bearer JWT. Demo supervisor входит как `demo@erudit.local` / `password`;
+заголовок `X-User-Id` Gateway формирует из `sub` токена, по умолчанию
 `00000000-0000-0000-0000-000000000001`. Реальные email/push/SMS не отправляются.
 Payment/AI/notificator работают локально, бизнес-контейнеры находятся только во
 внутренней сети, доступа во внешнюю сеть у них нет. Старые миграции уже содержат

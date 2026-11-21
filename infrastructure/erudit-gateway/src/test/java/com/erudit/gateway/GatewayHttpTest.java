@@ -11,7 +11,10 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +27,11 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.config.name=isolated-test", "spring.cloud.config.enabled=false", "eureka.client.enabled=false",
         "erudit.gateway.max-body-bytes=64", "spring.cloud.loadbalancer.cache.enabled=false",
         "spring.cloud.gateway.server.webflux.httpclient.connect-timeout=300",
-        "spring.cloud.gateway.server.webflux.httpclient.response-timeout=1s"
+        "spring.cloud.gateway.server.webflux.httpclient.response-timeout=1s",
+        "erudit.jwt.secret=local-erudit-jwt-secret-at-least-32-bytes", "erudit.jwt.issuer=erudit-user"
 })
 class GatewayHttpTest {
     private static final HttpServer UPSTREAM;
@@ -81,11 +90,11 @@ class GatewayHttpTest {
             "/api/v1/friends", "/api/v1/content", "/api/v1/media/123", "/api/v1/quizzes/daily",
             "/api/v1/learning-program", "/api/v1/assessments/questions", "/api/v1/competitions/123/leaderboard", "/api/v1/ratings",
             "/api/v1/notifications", "/api/v1/admin/content/moderation", "/api/v1/admin/content/reports"})
-    void routesWithoutAuthorizationAndKeepsPathAndContext(String path) throws Exception {
-        var response = send(request(path + "?page=2").header("X-User-Id", "42")
+    void routesWithAuthorizationAndDerivesTrustedContext(String path) throws Exception {
+        var response = send(request(path + "?page=2").header("X-User-Id", "spoofed")
                 .header("X-Request-ID", "trace-123").GET().build());
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains(path + "?page=2", "user=42", "id=trace-123", "auth=null");
+        assertThat(response.body()).contains(path + "?page=2", "user=00000000-0000-0000-0000-000000000001", "id=trace-123", "auth=Bearer ");
         assertThat(response.headers().allValues("X-Request-ID")).containsExactly("trace-123");
     }
 
@@ -93,7 +102,7 @@ class GatewayHttpTest {
         var response = send(request("/api/v1/content").POST(HttpRequest.BodyPublishers.ofString("hello")).build());
         String id = response.headers().firstValue("X-Request-ID").orElseThrow();
         assertThat(id).matches("[a-f0-9-]{36}");
-        assertThat(response.body()).contains("id=" + id, "body=hello", "user=null");
+        assertThat(response.body()).contains("id=" + id, "body=hello", "user=00000000-0000-0000-0000-000000000001");
     }
 
     @Test void replacesInvalidRequestId() throws Exception {
@@ -132,7 +141,7 @@ class GatewayHttpTest {
     @Test void corsAllowsConfiguredOriginsAndRejectsOthers() throws Exception {
         var allowed = send(request("/api/v1/content").header("Origin", "http://localhost:3000")
                 .header("Access-Control-Request-Method", "POST")
-                .header("Access-Control-Request-Headers", "X-User-Id,X-Request-ID,Content-Type")
+                .header("Access-Control-Request-Headers", "Authorization,X-Request-ID,Content-Type")
                 .method("OPTIONS", HttpRequest.BodyPublishers.noBody()).build());
         assertThat(allowed.statusCode()).isEqualTo(200);
         assertThat(allowed.headers().firstValue("Access-Control-Allow-Origin")).contains("http://localhost:3000");
@@ -170,13 +179,14 @@ class GatewayHttpTest {
         for (var url : urls) {
             var response = send(request(url.get("url").asText()).GET().build());
             assertThat(response.statusCode()).isEqualTo(200);
-            assertThat(response.body()).doesNotContain("/internal/", "securitySchemes", "Internal Users", "localhost:");
+            assertThat(response.body()).doesNotContain("/internal/", "Internal Users", "localhost:");
+            assertThat(response.body()).contains("securitySchemes", "bearerAuth");
             var doc = mapper.readTree(response.body());
             assertThat(doc.get("servers").get(0).get("url").asText()).isEqualTo("/");
             assertThat(doc.get("paths").propertyNames()).allMatch(path -> path.startsWith("/api/v1/"));
             if (url.get("name").asText().equals("erudit-ai-platform")) {
                 assertThat(doc.get("paths").size()).isZero();
-                assertThat(doc.get("components").size()).isZero();
+                assertThat(doc.get("components").get("securitySchemes")).isNotNull();
             }
         }
         assertThat(send(request("/openapi/unknown").GET().build()).statusCode()).isEqualTo(404);
@@ -195,7 +205,25 @@ class GatewayHttpTest {
         assertThat(REQUESTS.get()).isEqualTo(before);
     }
 
-    private HttpRequest.Builder request(String path) { return HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)); }
+    @Test void rejectsMissingTokenAndInsufficientRoleButAllowsLogin() throws Exception {
+        assertThat(send(plainRequest("/api/v1/content").GET().build()).statusCode()).isEqualTo(401);
+        assertThat(send(plainRequest("/api/v1/auth/login").POST(HttpRequest.BodyPublishers.ofString("{}")).build()).statusCode()).isEqualTo(200);
+        assertThat(send(plainRequest("/api/v1/users/register").header("Authorization", "Bearer " + token("LEARNER"))
+                .POST(HttpRequest.BodyPublishers.ofString("{}")).build()).statusCode()).isEqualTo(403);
+        assertThat(send(plainRequest("/api/v1/content").header("Authorization", "Bearer " + token("LEARNER"))
+                .POST(HttpRequest.BodyPublishers.ofString("{}")).build()).statusCode()).isEqualTo(403);
+    }
+
+    private HttpRequest.Builder request(String path) { return plainRequest(path).header("Authorization", "Bearer " + token("SUPERVISOR")); }
+    private HttpRequest.Builder plainRequest(String path) { return HttpRequest.newBuilder(URI.create("http://localhost:" + port + path)); }
+    private static String token(String role) {
+        var key = new SecretKeySpec("local-erudit-jwt-secret-at-least-32-bytes".getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        var encoder = NimbusJwtEncoder.withSecretKey(key).build();
+        Instant now = Instant.now();
+        var claims = JwtClaimsSet.builder().issuer("erudit-user").subject("00000000-0000-0000-0000-000000000001")
+                .issuedAt(now).expiresAt(now.plusSeconds(3600)).claim("roles", List.of(role)).build();
+        return encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
+    }
     private HttpResponse<String> send(HttpRequest request) throws Exception {
         try (var client = HttpClient.newHttpClient()) {
             return client.send(request, HttpResponse.BodyHandlers.ofString());

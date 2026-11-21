@@ -2,7 +2,8 @@
 
 Spring Cloud Gateway WebFlux — внешняя точка входа ЛР2. Все маршруты используют
 `lb://erudit-*`, разрешение адресов выполняют LoadBalancer и Eureka. Путь,
-query и необязательный `X-User-Id` передаются без изменения. Авторизация,
+query передаётся без изменения. Gateway проверяет Bearer JWT, удаляет клиентские
+`X-User-Id`/`X-User-Roles` и формирует их из подтверждённых claims. Авторизация,
 JWT, SecurityFilterChain и проверки ролей отсутствуют.
 
 | Префиксы `/api/v1/` | Service ID |

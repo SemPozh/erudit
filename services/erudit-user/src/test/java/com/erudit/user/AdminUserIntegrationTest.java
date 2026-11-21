@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.*;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers @AutoConfigureMockMvc
-@SpringBootTest(properties={"spring.cloud.config.enabled=false","eureka.client.enabled=false","spring.config.name=isolated-test"})
+@SpringBootTest(properties={"spring.cloud.config.enabled=false","eureka.client.enabled=false","spring.config.name=isolated-test","erudit.jwt.secret=local-erudit-jwt-secret-at-least-32-bytes"})
 class AdminUserIntegrationTest{
     @Container @ServiceConnection static final PostgreSQLContainer POSTGRES=new PostgreSQLContainer("postgres:17-alpine");
     @Autowired MockMvc mvc;
