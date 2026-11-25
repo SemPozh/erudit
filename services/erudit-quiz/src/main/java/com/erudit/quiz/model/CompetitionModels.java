@@ -1,1 +1,0 @@
-package com.erudit.quiz.model;import java.util.UUID;public final class CompetitionModels {private CompetitionModels(){}public record Competition(UUID id,String title,UUID owner,String status){}public record Rating(UUID user,int score,int position){}}

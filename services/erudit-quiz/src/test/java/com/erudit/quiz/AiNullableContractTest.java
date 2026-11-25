@@ -1,7 +1,7 @@
 package com.erudit.quiz;
 
-import com.erudit.quiz.repository.QuizRepository;
-import com.erudit.quiz.service.QuizService;
+import com.erudit.quiz.adapter.out.persistence.QuizRepository;
+import com.erudit.quiz.application.QuizService;
 import com.erudit.aiplatform.client.AiClient;
 import com.erudit.integration.InternalContracts.AiQuiz;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -14,7 +14,7 @@ class AiNullableContractTest {
     @Test void missingOrBlankAiFieldsNeverReachTheQuizRepository() {
         var ai=mock(AiClient.class);var repository=mock(QuizRepository.class);
         var beans=new StaticListableBeanFactory(Map.of("ai",ai));
-        var service=new QuizService(repository,beans.getBeanProvider(AiClient.class),CircuitBreakerRegistry.ofDefaults());
+        var service=new QuizService(repository,new com.erudit.quiz.adapter.out.http.QuizRemoteAdapter(ai,mock(com.erudit.user.client.UserClient.class),mock(com.erudit.notificator.client.NotificationClient.class),CircuitBreakerRegistry.ofDefaults()));
         for(var malformed:List.of(new AiQuiz(null,List.of("A","B"),0),new AiQuiz("",List.of("A","B"),0),
                 new AiQuiz("Question",Arrays.asList(null,"B"),0),new AiQuiz("Question",List.of("","B"),0))){
             when(ai.quiz(any())).thenReturn(malformed);

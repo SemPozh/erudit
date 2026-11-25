@@ -3,12 +3,12 @@ package com.erudit.quiz;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import com.erudit.quiz.controller.CompetitionController;
-import com.erudit.quiz.model.CompetitionModels.Competition;
-import com.erudit.quiz.model.CompetitionModels.Rating;
+import com.erudit.quiz.adapter.in.web.CompetitionController;
+import com.erudit.quiz.domain.CompetitionModels.Competition;
+import com.erudit.quiz.domain.CompetitionModels.Rating;
 import com.erudit.quiz.openapi.model.CompetitionRequest;
 import com.erudit.quiz.openapi.model.InviteRequest;
-import com.erudit.quiz.service.CompetitionService;
+import com.erudit.quiz.application.CompetitionService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

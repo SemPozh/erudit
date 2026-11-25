@@ -16,7 +16,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class AdminUserIntegrationTest{
     @Container @ServiceConnection static final PostgreSQLContainer POSTGRES=new PostgreSQLContainer("postgres:17-alpine");
     @Autowired MockMvc mvc;
-    @Autowired com.erudit.user.repository.SocialRepository social;
+    @Autowired com.erudit.user.adapter.out.persistence.SocialRepository social;
     @Test void internalSearchBlockAndLookupUseOnlyUserOwnedData()throws Exception{
         UUID id=UUID.fromString("00000000-0000-0000-0000-000000000001");
         mvc.perform(get("/internal/v1/admin/users").param("query","demo@erudit.local")).andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"));

@@ -1,8 +1,8 @@
 package com.erudit.user;
 import static org.assertj.core.api.Assertions.*;
-import com.erudit.user.model.UserSettings;
-import com.erudit.user.repository.UserRepository;
-import com.erudit.user.repository.SocialRepository;
+import com.erudit.user.domain.UserSettings;
+import com.erudit.user.adapter.out.persistence.UserRepository;
+import com.erudit.user.adapter.out.persistence.SocialRepository;
 import java.nio.file.*;import java.time.OffsetDateTime;
 import org.junit.jupiter.api.*;import org.springframework.jdbc.core.simple.JdbcClient;import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.junit.jupiter.*;import org.testcontainers.postgresql.PostgreSQLContainer;

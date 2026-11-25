@@ -1,4 +1,4 @@
-package com.erudit.quiz.controller;
+package com.erudit.quiz.adapter.in.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
