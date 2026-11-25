@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.erudit.user.controller.AuthenticationController;
+import com.erudit.user.adapter.in.web.AuthenticationController;
 import com.erudit.user.openapi.model.LoginRequest;
-import com.erudit.user.service.AuthenticationService;
+import com.erudit.user.application.AuthenticationService;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 

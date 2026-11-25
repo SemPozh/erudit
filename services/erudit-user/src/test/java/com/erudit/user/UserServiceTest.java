@@ -1,15 +1,15 @@
 package com.erudit.user;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import com.erudit.user.model.*;
-import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.UserService;
+import com.erudit.user.domain.*;
+import com.erudit.user.application.port.UserRepository;
+import com.erudit.user.application.UserService;
 import java.time.OffsetDateTime;
 import java.util.*;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.erudit.user.application.port.Passwords;
 class UserServiceTest {
- private final UserRepository repository=mock(UserRepository.class);private final PasswordEncoder encoder=mock(PasswordEncoder.class);private final UserService service=new UserService(repository,encoder);private final UUID id=UUID.randomUUID();
+ private final UserRepository repository=mock(UserRepository.class);private final Passwords encoder=mock(Passwords.class);private final UserService service=new UserService(repository,encoder);private final UUID id=UUID.randomUUID();
  @Test void supportsRegistrationProfileSearchAndSettings(){var user=new User(id,"user@example.com","User","LEARNER",false,OffsetDateTime.now());when(encoder.encode("secret-pass")).thenReturn("hash");when(repository.create(any(),any(),any(),any(),any(),any())).thenReturn(user);when(repository.get(id)).thenReturn(Optional.of(user));when(repository.search("u",0,20)).thenReturn(List.of(user));when(repository.count("u")).thenReturn(1L);when(repository.update(id,"New")).thenReturn(user);var settings=new UserSettings(id,"ru",10);when(repository.settings(id)).thenReturn(settings);when(repository.save(any())).thenReturn(settings);
   assertThat(service.register(" USER@EXAMPLE.COM "," User ","secret-pass","LEARNER")).isEqualTo(user);assertThat(service.get(id)).isEqualTo(user);assertThat(service.search("u",0,20).total()).isOne();assertThat(service.update(id," New ")).isEqualTo(user);assertThat(service.settings(id)).isEqualTo(settings);assertThat(service.settings(id,"ru",10)).isEqualTo(settings);service.delete(id);verify(repository).delete(id);
  }

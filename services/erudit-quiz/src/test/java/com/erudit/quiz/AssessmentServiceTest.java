@@ -1,9 +1,9 @@
 package com.erudit.quiz;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import com.erudit.quiz.model.Assessment.*;
-import com.erudit.quiz.repository.AssessmentRepository;
-import com.erudit.quiz.service.AssessmentService;
+import com.erudit.quiz.domain.Assessment.*;
+import com.erudit.quiz.application.port.AssessmentRepository;
+import com.erudit.quiz.application.AssessmentService;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 class AssessmentServiceTest {

@@ -1,6 +1,7 @@
 apply(from = rootProject.file("gradle/service-conventions.gradle"))
 
 dependencies {
+    "testImplementation"("com.tngtech.archunit:archunit:1.5.1")
     "implementation"(project(":platform:erudit-observability"))
     "implementation"(project(":platform:erudit-integration"))
     "implementation"("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")

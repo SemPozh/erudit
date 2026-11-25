@@ -1,4 +1,5 @@
-package com.erudit.admin.service;
+package com.erudit.admin.application;
+import com.erudit.admin.application.port.AuditLog;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import java.util.*;
@@ -9,7 +10,7 @@ class AdminOperationRunnerTest {
         assertThatThrownBy(()->AdminFacadeService.render("Hello {{name}}",Map.of())).isInstanceOf(AdminFailure.class);
     }
     @Test void auditIntentIsCommittedBeforeCallAndFailuresKeepTheirOutcome(){
-        var writer=mock(AdminAuditWriter.class);var runner=new AdminOperationRunner(writer);UUID audit=UUID.randomUUID();
+        var writer=mock(AuditLog.class);var runner=new AdminOperationRunner(writer);UUID audit=UUID.randomUUID();
         var context=new AdminOperationRunner.Context(UUID.randomUUID(),"unit-90");
         when(writer.start(any(),anyString(),anyString(),anyString(),anyString())).thenReturn(audit);
         assertThatThrownBy(()->runner.execute(context,"ACTION","USER","id",()->{throw new AdminFailure(503,"PARTIAL_FAILURE","partial","PARTIAL",Map.of("sent",1));})).isInstanceOf(AdminFailure.class);

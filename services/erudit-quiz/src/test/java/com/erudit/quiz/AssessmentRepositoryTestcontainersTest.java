@@ -1,8 +1,8 @@
 package com.erudit.quiz;
 import static org.assertj.core.api.Assertions.*;
-import com.erudit.quiz.model.Assessment.*;import com.erudit.quiz.repository.AssessmentRepository;
-import com.erudit.quiz.repository.QuizRepository;
-import com.erudit.quiz.repository.CompetitionRepository;
+import com.erudit.quiz.domain.Assessment.*;import com.erudit.quiz.adapter.out.persistence.AssessmentRepository;
+import com.erudit.quiz.adapter.out.persistence.QuizRepository;
+import com.erudit.quiz.adapter.out.persistence.CompetitionRepository;
 import java.nio.file.*;import java.util.UUID;
 import org.junit.jupiter.api.*;import org.springframework.jdbc.core.simple.JdbcClient;import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.testcontainers.junit.jupiter.*;import org.testcontainers.postgresql.PostgreSQLContainer;

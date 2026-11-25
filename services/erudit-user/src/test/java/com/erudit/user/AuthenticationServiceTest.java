@@ -5,21 +5,21 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.erudit.user.model.User;
-import com.erudit.user.model.UserCredentials;
-import com.erudit.user.repository.UserRepository;
-import com.erudit.user.service.AuthenticationService;
-import com.erudit.user.service.InvalidCredentialsException;
-import com.erudit.user.service.JwtTokenService;
+import com.erudit.user.domain.User;
+import com.erudit.user.domain.UserCredentials;
+import com.erudit.user.application.port.UserRepository;
+import com.erudit.user.application.AuthenticationService;
+import com.erudit.user.application.InvalidCredentialsException;
+import com.erudit.user.adapter.out.security.JwtTokenService;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.erudit.user.application.port.Passwords;
 
 class AuthenticationServiceTest {
     private final UserRepository repository = mock(UserRepository.class);
-    private final PasswordEncoder passwords = mock(PasswordEncoder.class);
+    private final Passwords passwords = mock(Passwords.class);
     private final JwtTokenService tokens = new JwtTokenService(
             "local-erudit-jwt-secret-at-least-32-bytes", "erudit-user", java.time.Duration.ofHours(1));
     private final AuthenticationService service = new AuthenticationService(repository, passwords, tokens);

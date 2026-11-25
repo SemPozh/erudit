@@ -43,3 +43,21 @@ AI/payment/notificator работают локально, email/push/SMS не о
 документы ЛР1 не являются инструкцией запуска текущей системы.
 
 Финальная матрица требований, каталог API и демонстрация: [приёмка ЛР2](docs/lab2-acceptance.md).
+
+## Clean Architecture (task 109)
+
+User, quiz and admin use `domain`, `application` (use cases and ports),
+`adapter.in.web`, `adapter.out.persistence/http/security`, and `config` packages.
+Domain and application have no Spring, JDBC, Feign or generated OpenAPI dependencies.
+Web adapters implement the generated API interfaces and map HTTP DTOs to application inputs/results.
+Output adapters implement application ports; only configuration wires implementations together.
+
+User and quiz configuration applies transactions around use cases: registration creates
+the user and settings atomically; assessment submission commits its result and learning
+program together. Admin audit intent and outcome retain separate `REQUIRES_NEW`
+transactions so downstream failures cannot roll back the audit trail.
+`CleanArchitectureTest` in each module checks dependency direction and package cycles;
+use-case tests instantiate plain Java services with mocked ports.
+
+Kafka adapters and event-publisher wiring depend on tasks 100/102 and the producer tasks
+105/106. Existing synchronous integrations remain behind output ports until those contracts land.
